@@ -7,9 +7,9 @@ import ReaderPage from './pages/ReaderPage';
 // Layout comum: título clicável (volta pra home) + <Outlet/> das rotas.
 const rootRoute = createRootRoute({
   component: () => (
-    <main style={{ fontFamily: 'system-ui, sans-serif', maxWidth: 760, margin: '40px auto', padding: 16 }}>
-      <Link to="/" search={{ q: '' }} style={{ textDecoration: 'none', color: 'inherit' }}>
-        <h1 style={{ margin: '0 0 16px' }}>Busca de obras</h1>
+    <main className="app">
+      <Link to="/" search={{ q: '' }} className="brand" style={{ color: 'inherit' }}>
+        <h1>MangaReader<span className="dot">.</span></h1>
       </Link>
       <Outlet />
     </main>
@@ -25,7 +25,7 @@ const indexRoute = createRoute({
 });
 
 const errorComponent = ({ error }: { error: Error }) => (
-  <p style={{ color: '#c00' }}>Erro: {error.message}</p>
+  <p className="notice">Erro: {error.message}</p>
 );
 
 // /manga/$slug  — lista de capítulos (carregada via loader).
@@ -34,7 +34,9 @@ const chaptersRoute = createRoute({
   path: 'manga/$slug',
   validateSearch: (s: Record<string, unknown>) => ({ title: typeof s.title === 'string' ? s.title : '' }),
   loader: ({ params: { slug } }) => fetchChapters(mangaUrl(slug)),
-  pendingComponent: () => <p>Carregando capítulos…</p>,
+  pendingComponent: () => (
+    <div className="loading"><span className="spinner" /> Carregando capítulos…</div>
+  ),
   errorComponent,
   component: ChaptersPage,
 });
@@ -44,8 +46,16 @@ const readerRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: 'manga/$slug/$chapter',
   validateSearch: (s: Record<string, unknown>) => ({ title: typeof s.title === 'string' ? s.title : '' }),
-  loader: ({ params: { slug, chapter } }) => fetchChapterImages(chapterUrl(slug, chapter)),
-  pendingComponent: () => <p>Montando páginas (sondando o CDN)…</p>,
+  loader: async ({ params: { slug, chapter } }) => {
+    const [pages, chapters] = await Promise.all([
+      fetchChapterImages(chapterUrl(slug, chapter)),
+      fetchChapters(mangaUrl(slug)),
+    ]);
+    return { pages, chapters };
+  },
+  pendingComponent: () => (
+    <div className="loading"><span className="spinner" /> Montando páginas (sondando o CDN)…</div>
+  ),
   errorComponent,
   component: ReaderPage,
 });

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { getRouteApi, Link } from '@tanstack/react-router';
 import { chapterSlug } from '../api';
 
@@ -8,21 +9,36 @@ export default function ChaptersPage() {
   const { title } = route.useSearch();
   const chapters = route.useLoaderData();
 
+  const [filter, setFilter] = useState('');
   const heading = title || slug.replace(/-/g, ' ');
+
+  const f = filter.trim().toLowerCase();
+  const shown = f ? chapters.filter((c) => c.title.toLowerCase().includes(f)) : chapters;
 
   return (
     <>
-      <Link to="/" search={{ q: '' }}>← Voltar à busca</Link>
-      <h2 style={{ marginTop: 12 }}>{heading}</h2>
-      <p style={{ fontSize: 13, color: '#666' }}>{chapters.length} capítulo(s)</p>
-      <ul style={{ lineHeight: 1.8, listStyle: 'none', padding: 0, maxHeight: '70vh', overflow: 'auto' }}>
-        {chapters.map((c) => (
+      <Link to="/" search={{ q: '' }} className="back">← Voltar à busca</Link>
+      <h2 style={{ margin: '0 0 4px', textTransform: 'capitalize' }}>{heading}</h2>
+
+      <div className="row" style={{ margin: '12px 0 4px' }}>
+        <input
+          className="field"
+          style={{ flex: 1, minWidth: 180 }}
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          placeholder="Filtrar capítulos…"
+        />
+        <span className="muted">{shown.length} de {chapters.length}</span>
+      </div>
+
+      <ul className="chapters-grid">
+        {shown.map((c) => (
           <li key={c.url}>
             <Link
+              className="chip"
               to="/manga/$slug/$chapter"
               params={{ slug, chapter: chapterSlug(c.url) }}
               search={{ title: c.title }}
-              style={{ color: '#06c' }}
             >
               {c.title}
             </Link>

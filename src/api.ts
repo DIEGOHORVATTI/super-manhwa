@@ -103,9 +103,15 @@ function toProxyPath(absUrl: string): string {
   return '/api' + absUrl.replace(SITE_ORIGIN, '');
 }
 
+// Cache em memória da sessão: navegar entre capítulos não rebusca a lista.
+const chaptersCache = new Map<string, Chapter[]>();
+
 // O tema Madara serve a lista de capítulos num endpoint próprio:
 // POST <url-da-obra>/ajax/chapters/  ->  HTML com <a href=".../capitulo-N/">.
 export async function fetchChapters(mangaUrl: string): Promise<Chapter[]> {
+  const cached = chaptersCache.get(mangaUrl);
+  if (cached) return cached;
+
   const url = toProxyPath(mangaUrl).replace(/\/?$/, '/') + 'ajax/chapters/';
   const res = await fetch(url, {
     method: 'POST',
@@ -125,6 +131,7 @@ export async function fetchChapters(mangaUrl: string): Promise<Chapter[]> {
     const title = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
     chapters.push({ title: title || url, url });
   }
+  chaptersCache.set(mangaUrl, chapters);
   return chapters;
 }
 

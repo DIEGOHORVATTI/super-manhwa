@@ -55,48 +55,47 @@ export default function SearchPage() {
 
   return (
     <>
-      <p style={{ color: '#666', fontSize: 14 }}>
-        Cliente da API <code>wp-manga-search-manga</code> com cache em localStorage (TTL 5 min).
-      </p>
+      <p className="subtitle">Busque uma obra e leia os capítulos direto aqui.</p>
 
-      <form onSubmit={onSubmit} style={{ display: 'flex', gap: 8, margin: '16px 0' }}>
+      <form onSubmit={onSubmit} className="row searchbar">
         <input
+          className="field"
           value={term}
           onChange={(e) => setTerm(e.target.value)}
-          placeholder="Digite um termo (ex.: cavaleiro)"
-          style={{ flex: 1, padding: 8, fontSize: 16 }}
+          placeholder="Buscar manga… (ex.: cavaleiro)"
+          autoFocus
         />
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px' }}>
+        <button type="submit" className="btn btn-primary" disabled={loading}>
           {loading ? 'Buscando…' : 'Buscar'}
         </button>
-        <button type="button" onClick={() => clearCache()} style={{ padding: '8px 12px' }}>
+        <button type="button" className="btn btn-ghost" onClick={() => clearCache()}>
           Limpar cache
         </button>
       </form>
 
-      {error && <p style={{ color: '#c00' }}>Erro: {error}</p>}
+      {loading && <div className="loading"><span className="spinner" /> Buscando…</div>}
+      {error && <p className="notice">Erro: {error}</p>}
 
       {results.length > 0 && (
         <>
-          <p style={{ fontSize: 13, color: fromCache ? '#0a0' : '#06c' }}>
-            {fromCache ? '✓ servido do cache (localStorage)' : '↓ buscado da API'} — {results.length} resultado(s)
+          <p className="muted">
+            {fromCache ? '✓ cache (localStorage)' : '↓ API'} — {results.length} resultado(s)
           </p>
-          <ul style={{ lineHeight: 1.8, listStyle: 'none', padding: 0 }}>
+          <ul className="results">
             {results.map((r) => (
-              <li key={r.url}>
-                <Link
-                  to="/manga/$slug"
-                  params={{ slug: mangaSlug(r.url) }}
-                  search={{ title: r.title }}
-                  style={{ color: '#06c' }}
-                >
+              <li key={r.url} className="card">
+                <Link to="/manga/$slug" params={{ slug: mangaSlug(r.url) }} search={{ title: r.title }}>
                   {r.title}
-                </Link>{' '}
-                <small style={{ color: '#999' }}>({r.type})</small>
+                </Link>
+                <span className="tag">{r.type}</span>
               </li>
             ))}
           </ul>
         </>
+      )}
+
+      {!loading && !error && q && results.length === 0 && (
+        <p className="muted">Nenhum resultado para “{q}”.</p>
       )}
     </>
   );
