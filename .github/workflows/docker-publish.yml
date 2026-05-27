@@ -29,8 +29,8 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          # GHCR requires a lowercase image path.
-          images: ghcr.io/diegohorvatti/manga-search-app
+          # ghcr.io/horvatti-digital/super-manhwa (owner+name are already lowercase).
+          images: ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=latest
             type=sha,format=short
