@@ -1,12 +1,11 @@
 {
+  "buildCommand": "bun run build",
+  "outputDirectory": "apps/frontend/dist",
+  "functions": {
+    "api/index.ts": { "maxDuration": 60, "memory": 1024 }
+  },
   "rewrites": [
-    {
-      "source": "/api/:path(.*)",
-      "destination": "/api/proxy?path=:path"
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/:path(.*)", "destination": "/api/index?__p=:path" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ]
 }

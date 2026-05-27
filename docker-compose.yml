@@ -1,0 +1,27 @@
+# VPS deploy (ADR-0008): the delivery service + a FlareSolverr sidecar (real
+# headless Chromium) that solves Cloudflare for sources flagged hasCloudflare.
+# Usage on the VPS:  docker compose up -d
+# Then point the Vercel frontend at this host: set DELIVERY_SERVICE_URL on Vercel.
+services:
+  app:
+    # Use the CI-built image, or `build:` to build locally from the repo root.
+    image: ghcr.io/diegohorvatti/manga-search-app:latest
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+    ports:
+      - "8787:8787"
+    environment:
+      PORT: "8787"
+      # The app routes hasCloudflare sources through this sidecar.
+      FLARESOLVERR_URL: "http://flaresolverr:8191/v1"
+    restart: unless-stopped
+    depends_on:
+      - flaresolverr
+
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    environment:
+      LOG_LEVEL: info
+    # Not exposed publicly; only the app talks to it over the internal network.
+    restart: unless-stopped

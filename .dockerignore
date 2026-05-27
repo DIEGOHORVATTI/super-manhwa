@@ -1,0 +1,11 @@
+node_modules
+**/dist
+.git
+.github
+.vercel
+.claude
+# Frontend & Vercel-only bits (not part of the delivery service)
+apps/frontend
+api
+vercel.json
+*.log
