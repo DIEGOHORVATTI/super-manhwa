@@ -4,8 +4,12 @@ node_modules
 .github
 .vercel
 .claude
-# Frontend & Vercel-only bits (not part of the delivery service)
-apps/frontend
+# Frontend & Vercel-only bits (the Dockerfile only copies apps/backend + packages,
+# but apps/frontend/package.json must stay in context for the workspace glob).
+apps/frontend/src
+apps/frontend/index.html
+apps/frontend/vite.config.ts
+apps/frontend/tsconfig.json
 api
 vercel.json
 *.log
