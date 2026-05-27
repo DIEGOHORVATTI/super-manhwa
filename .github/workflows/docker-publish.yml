@@ -1,19 +1,18 @@
-name: Build & push delivery image
+name: build-and-push-delivery-image
 
 # Builds the delivery-service Docker image and pushes it to GHCR (ADR-0008).
 on:
   push:
     branches: [main, master]
     paths:
-      - "server/**"
+      - "apps/backend/**"
       - "packages/**"
-      - "Dockerfile"
       - "package.json"
       - "bun.lock"
   workflow_dispatch:
 
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -21,28 +20,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker metadata
-        id: meta
+      - id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}
+          # GHCR requires a lowercase image path.
+          images: ghcr.io/diegohorvatti/manga-search-app
           tags: |
             type=raw,value=latest
             type=sha,format=short
 
-      - name: Build and push
-        uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v6
         with:
           context: .
+          file: apps/backend/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
