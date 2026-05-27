@@ -29,8 +29,8 @@ jobs:
       - id: meta
         uses: docker/metadata-action@v5
         with:
-          # ghcr.io/horvatti-digital/super-manhwa (owner+name are already lowercase).
-          images: ghcr.io/${{ github.repository }}
+          # Hardcoded lowercase (GHCR rejects uppercase; the owner login is mixed-case).
+          images: ghcr.io/diegohorvatti/super-manhwa
           tags: |
             type=raw,value=latest
             type=sha,format=short
