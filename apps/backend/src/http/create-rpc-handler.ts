@@ -34,7 +34,11 @@ export type CreateRpcHandlerOptions = {
  * (typo "randler" → "handler" intentionally fixed).
  */
 export const createRpcHandler = ({
-  router, allowedOrigins, info, docsPath = "/docs", exposeDocs = true,
+  router,
+  allowedOrigins,
+  info,
+  docsPath = "/docs",
+  exposeDocs = true,
 }: CreateRpcHandlerOptions) =>
   new OpenAPIHandler(router, {
     plugins: [
@@ -48,14 +52,16 @@ export const createRpcHandler = ({
       new RequestHeadersPlugin(),
       new ResponseHeadersPlugin(),
       new ZodSmartCoercionPlugin(),
-      ...(exposeDocs ? [
-        new OpenAPIReferencePlugin({
-          docsProvider: "scalar",
-          docsPath,
-          schemaConverters: [new ZodToJsonSchemaConverter()],
-          specGenerateOptions: { servers: [{ url: "/" }], info },
-        }),
-      ] : []),
+      ...(exposeDocs
+        ? [
+            new OpenAPIReferencePlugin({
+              docsProvider: "scalar",
+              docsPath,
+              schemaConverters: [new ZodToJsonSchemaConverter()],
+              specGenerateOptions: { servers: [{ url: "/" }], info },
+            }),
+          ]
+        : []),
     ],
     interceptors: [
       async ({ request: { method, url }, next }) => {
@@ -64,7 +70,8 @@ export const createRpcHandler = ({
         try {
           const result = await next();
           logger.info("rpc", {
-            method, path: pathname,
+            method,
+            path: pathname,
             ms: Number((performance.now() - startedAt).toFixed(0)),
             matched: result.matched,
             status: result.response?.status,
@@ -72,7 +79,8 @@ export const createRpcHandler = ({
           return result;
         } catch (error) {
           logger.error("rpc error", {
-            method, path: pathname,
+            method,
+            path: pathname,
             ms: Number((performance.now() - startedAt).toFixed(0)),
             error: error instanceof Error ? error.message : String(error),
           });

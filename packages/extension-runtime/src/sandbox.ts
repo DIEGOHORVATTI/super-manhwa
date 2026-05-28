@@ -22,8 +22,13 @@ import {
 import variant from "@jitl/quickjs-singlefile-cjs-release-sync";
 import { PRELUDE } from "./prelude";
 import {
-  DomStore, hostFetch, hostPrefGet,
-  aesEncryptCryptoJS, aesDecryptCryptoJS, cryptoHandler, unpackJs,
+  DomStore,
+  hostFetch,
+  hostPrefGet,
+  aesEncryptCryptoJS,
+  aesDecryptCryptoJS,
+  cryptoHandler,
+  unpackJs,
   type HostRequest,
 } from "./host";
 
@@ -87,7 +92,10 @@ export async function runExtension<T = unknown>(opts: RunOptions): Promise<T> {
 
   try {
     reg("__hostLog", (levelH, msgH) => {
-      (opts.onLog ?? ((l, m) => console.log(`[ext:${l}]`, m)))(ctx.getString(levelH), ctx.getString(msgH));
+      (opts.onLog ?? ((l, m) => console.log(`[ext:${l}]`, m)))(
+        ctx.getString(levelH),
+        ctx.getString(msgH),
+      );
     });
     reg("__hostPrefGet", (keyH) => {
       const v = hostPrefGet(ctx.getString(keyH));
@@ -98,10 +106,21 @@ export async function runExtension<T = unknown>(opts: RunOptions): Promise<T> {
     });
 
     // --- host: crypto (utils.dart) ---
-    reg("__aesEncrypt", (pH, passH) => ctx.newString(aesEncryptCryptoJS(ctx.getString(pH), ctx.getString(passH))));
-    reg("__aesDecrypt", (eH, passH) => ctx.newString(aesDecryptCryptoJS(ctx.getString(eH), ctx.getString(passH))));
+    reg("__aesEncrypt", (pH, passH) =>
+      ctx.newString(aesEncryptCryptoJS(ctx.getString(pH), ctx.getString(passH))),
+    );
+    reg("__aesDecrypt", (eH, passH) =>
+      ctx.newString(aesDecryptCryptoJS(ctx.getString(eH), ctx.getString(passH))),
+    );
     reg("__cryptoHandler", (tH, ivH, kH, encH) =>
-      ctx.newString(cryptoHandler(ctx.getString(tH), ctx.getString(ivH), ctx.getString(kH), ctx.dump(encH) === true)),
+      ctx.newString(
+        cryptoHandler(
+          ctx.getString(tH),
+          ctx.getString(ivH),
+          ctx.getString(kH),
+          ctx.dump(encH) === true,
+        ),
+      ),
     );
     reg("__unpackJs", (sH) => ctx.newString(unpackJs(ctx.getString(sH))));
     // --- host: HTML DOM (cheerio) ---
@@ -124,8 +143,12 @@ export async function runExtension<T = unknown>(opts: RunOptions): Promise<T> {
       ctx.newString(JSON.stringify(dom.byTag(ctx.getNumber(idH), ctx.getString(tH)))),
     );
     reg("__domText", (idH) => ctx.newString(dom.text(ctx.getNumber(idH))));
-    reg("__domAttr", (idH, nameH) => ctx.newString(dom.attr(ctx.getNumber(idH), ctx.getString(nameH))));
-    reg("__domHasAttr", (idH, nameH) => ctx.newNumber(dom.hasAttr(ctx.getNumber(idH), ctx.getString(nameH)) ? 1 : 0));
+    reg("__domAttr", (idH, nameH) =>
+      ctx.newString(dom.attr(ctx.getNumber(idH), ctx.getString(nameH))),
+    );
+    reg("__domHasAttr", (idH, nameH) =>
+      ctx.newNumber(dom.hasAttr(ctx.getNumber(idH), ctx.getString(nameH)) ? 1 : 0),
+    );
     reg("__domHtml", (idH) => ctx.newString(dom.html(ctx.getNumber(idH))));
     reg("__domOuterHtml", (idH) => ctx.newString(dom.outerHtml(ctx.getNumber(idH))));
 
@@ -195,7 +218,12 @@ export async function runExtension<T = unknown>(opts: RunOptions): Promise<T> {
 
       const idH = ctx.newNumber(winner.id);
       const payloadH = ctx.newString(winner.ok ? winner.raw! : winner.err!);
-      const call = ctx.callFunction(winner.ok ? resolveFetch : rejectFetch, ctx.undefined, idH, payloadH);
+      const call = ctx.callFunction(
+        winner.ok ? resolveFetch : rejectFetch,
+        ctx.undefined,
+        idH,
+        payloadH,
+      );
       idH.dispose();
       payloadH.dispose();
       if (call.error) {
@@ -210,7 +238,9 @@ export async function runExtension<T = unknown>(opts: RunOptions): Promise<T> {
 
     if (!settled) throw new Error("Extension finished without producing a result");
     if (!settled.ok) {
-      throw new Error("Extension error: " + settled.error + (settled.stack ? "\n" + settled.stack : ""));
+      throw new Error(
+        "Extension error: " + settled.error + (settled.stack ? "\n" + settled.stack : ""),
+      );
     }
     return settled.value as T;
   } finally {

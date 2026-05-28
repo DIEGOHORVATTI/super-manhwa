@@ -10,17 +10,17 @@ import { ORPCError } from "@orpc/server";
  */
 
 export type HttpOrpcErrorCode =
-  | "UNAUTHORIZED" | "FORBIDDEN" | "NOT_FOUND" | "BAD_REQUEST"
-  | "CONFLICT" | "INTERNAL_SERVER_ERROR";
+  | "UNAUTHORIZED"
+  | "FORBIDDEN"
+  | "NOT_FOUND"
+  | "BAD_REQUEST"
+  | "CONFLICT"
+  | "INTERNAL_SERVER_ERROR";
 
 export type HttpOrpcErrorData = { details?: string };
 export type HttpOrpcError = ORPCError<HttpOrpcErrorCode, HttpOrpcErrorData | undefined>;
 
-const make = (
-  code: HttpOrpcErrorCode,
-  message: string,
-  details?: string,
-): HttpOrpcError =>
+const make = (code: HttpOrpcErrorCode, message: string, details?: string): HttpOrpcError =>
   new ORPCError(code, {
     message,
     data: details ? { details } : undefined,

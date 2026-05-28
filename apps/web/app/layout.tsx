@@ -15,7 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <main className="app">
           <Link href="/" className="brand" style={{ color: "inherit" }}>
-            <h1>Super Manhwa<span className="dot">.</span></h1>
+            <h1>
+              Super Manhwa<span className="dot">.</span>
+            </h1>
           </Link>
           <p className="subtitle">Leitor web · Next.js (RSC) · extensões Mangayomi</p>
           {children}

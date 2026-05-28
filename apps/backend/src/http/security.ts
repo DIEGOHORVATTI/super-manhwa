@@ -10,7 +10,5 @@ export const createDefaultSecurityHeaders = ({
   "x-content-type-options": "nosniff",
   "x-frame-options": "DENY",
   "referrer-policy": "no-referrer",
-  ...(production
-    ? { "strict-transport-security": "max-age=31536000; includeSubDomains" }
-    : {}),
+  ...(production ? { "strict-transport-security": "max-age=31536000; includeSubDomains" } : {}),
 });

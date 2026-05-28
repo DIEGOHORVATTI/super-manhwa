@@ -1,4 +1,4 @@
-import packageJson from '../../package.json' with { type: 'json' };
+import packageJson from "../../package.json" with { type: "json" };
 
 /**
  * Static, build-time application metadata. Combined with `env.VERSION` (which
@@ -8,12 +8,12 @@ import packageJson from '../../package.json' with { type: 'json' };
 export const APP_INFO = {
   name: packageJson.name,
   version: packageJson.version,
-  title: 'Super Manhwa API',
+  title: "Super Manhwa API",
   description:
-    'Catálogo agregado de mangás/manhwas em torno de extensões Mangayomi. ' +
-    'Wire source-agnostic, ids opacos, imagens via proxy.',
+    "Catálogo agregado de mangás/manhwas em torno de extensões Mangayomi. " +
+    "Wire source-agnostic, ids opacos, imagens via proxy.",
   contact: {
-    name: 'Super Manhwa API Maintainer',
-    email: 'supermanhwa@gmail.com'
-  }
+    name: "Super Manhwa API Maintainer",
+    email: "supermanhwa@gmail.com",
+  },
 } as const;

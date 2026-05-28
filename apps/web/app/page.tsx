@@ -45,7 +45,8 @@ export default async function Home({
       <SortTabs active={sort} lang={lang} />
 
       <p className="muted" style={{ marginTop: 12 }}>
-        {sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos"} · {popular.list.length} obras
+        {sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos"} ·{" "}
+        {popular.list.length} obras
       </p>
       {error && <p className="notice">{error}</p>}
 

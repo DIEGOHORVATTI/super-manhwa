@@ -20,7 +20,12 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
 
   useEffect(() => {
     const Q = q.trim();
-    if (Q.length < 2) { setItems([]); setOpen(false); setLoading(false); return; }
+    if (Q.length < 2) {
+      setItems([]);
+      setOpen(false);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setOpen(true);
     const ctrl = new AbortController();
@@ -39,7 +44,10 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
         setLoading(false);
       }
     }, 220);
-    return () => { clearTimeout(t); ctrl.abort(); };
+    return () => {
+      clearTimeout(t);
+      ctrl.abort();
+    };
   }, [q, lang]);
 
   useEffect(() => {
@@ -58,10 +66,16 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open || items.length === 0) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, items.length - 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
-    else if (e.key === "Enter") { e.preventDefault(); go(items[active]); }
-    else if (e.key === "Escape") setOpen(false);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive((a) => Math.min(a + 1, items.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive((a) => Math.max(a - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      go(items[active]);
+    } else if (e.key === "Escape") setOpen(false);
   };
 
   const showSpinner = loading || navigating;
@@ -69,7 +83,18 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
   return (
     <div className={`combobox${open ? " is-open" : ""}`} ref={boxRef}>
       <div className="combobox-input">
-        <svg className="combobox-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg
+          className="combobox-icon"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
           <circle cx="11" cy="11" r="7" />
           <path d="m21 21-4.3-4.3" />
         </svg>
@@ -85,7 +110,17 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
         />
         {showSpinner && <span className="spinner" aria-label="carregando" />}
         {!showSpinner && q && (
-          <button className="combobox-clear" onClick={() => { setQ(""); setItems([]); setOpen(false); }} aria-label="limpar">×</button>
+          <button
+            className="combobox-clear"
+            onClick={() => {
+              setQ("");
+              setItems([]);
+              setOpen(false);
+            }}
+            aria-label="limpar"
+          >
+            ×
+          </button>
         )}
       </div>
 
@@ -101,9 +136,7 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
               ))}
             </>
           )}
-          {!loading && items.length === 0 && (
-            <li className="combobox-empty">nada encontrado</li>
-          )}
+          {!loading && items.length === 0 && <li className="combobox-empty">nada encontrado</li>}
           {items.map((m, i) => (
             <li
               key={m.id}
@@ -111,7 +144,10 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
               aria-selected={i === active}
               className={`combobox-item${i === active ? " is-active" : ""}`}
               onMouseEnter={() => setActive(i)}
-              onMouseDown={(e) => { e.preventDefault(); go(m); }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                go(m);
+              }}
             >
               {m.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element

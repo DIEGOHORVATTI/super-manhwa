@@ -1,6 +1,9 @@
 import type { Cache } from "../domain/cache";
 
-interface Entry { exp: number; value: unknown }
+interface Entry {
+  exp: number;
+  value: unknown;
+}
 
 /**
  * In-process TTL cache with a hard size cap. Process-scoped — survives requests
@@ -51,7 +54,10 @@ export const makeMemoryCache = (maxEntries = 500): Cache => {
     get(key) {
       const hit = map.get(key);
       if (!hit) return undefined;
-      if (hit.exp <= Date.now()) { map.delete(key); return undefined; }
+      if (hit.exp <= Date.now()) {
+        map.delete(key);
+        return undefined;
+      }
       return hit.value as never;
     },
   };

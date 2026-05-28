@@ -1,21 +1,32 @@
+import { httpFetchRaw } from "@/shared/http-fetch";
+
 import type { ImageFetcher } from "../domain/image-fetcher";
 
 const DEFAULT_UA =
   "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36";
 
 /**
- * Plain `fetch()` with the headers most hotlinking CDNs check: a recognised UA
- * and a Referer derived from the source's baseUrl. Without these, Naver/Webtoons
- * and friends return 403.
+ * Streams image bytes from the upstream CDN with the headers most hotlinking
+ * CDNs check (UA + Referer derived from source.baseUrl). The proxy keeps the
+ * response body opaque to the caller via `Response.body` — no buffering. When
+ * upstream errors, we surface a same-shaped error response so the caller
+ * doesn't have to special-case it.
  */
 export const makeHttpImageFetcher = (): ImageFetcher => ({
   async fetch({ url, referer }) {
-    const upstream = await fetch(url, {
+    const result = await httpFetchRaw(url, {
       headers: {
         Referer: referer ?? "",
         "User-Agent": DEFAULT_UA,
       },
     });
+    if (result.error) {
+      return new Response(result.error.body || "upstream image error", {
+        status: result.error.status,
+        headers: { "content-type": "text/plain", "access-control-allow-origin": "*" },
+      });
+    }
+    const upstream = result.value;
     return new Response(upstream.body, {
       status: upstream.status,
       headers: {

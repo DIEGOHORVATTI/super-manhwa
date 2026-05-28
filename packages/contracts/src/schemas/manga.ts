@@ -5,7 +5,12 @@ import { z } from "zod";
  * `unknown` is added for items where the source didn't report one.
  */
 export const mangaStatusSchema = z.enum([
-  "ongoing", "completed", "hiatus", "cancelled", "publishing-finished", "unknown",
+  "ongoing",
+  "completed",
+  "hiatus",
+  "cancelled",
+  "publishing-finished",
+  "unknown",
 ]);
 export type MangaStatus = z.infer<typeof mangaStatusSchema>;
 

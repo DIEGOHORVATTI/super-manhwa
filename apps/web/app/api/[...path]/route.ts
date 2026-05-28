@@ -15,7 +15,10 @@ const API_KEY = process.env.API_KEY ?? "dev-api-key-change-in-prod";
 
 const PASS_HEADERS = new Set(["content-type", "cache-control", "etag", "last-modified"]);
 
-export async function GET(req: Request, ctx: { params: Promise<{ path: string[] }> }): Promise<Response> {
+export async function GET(
+  req: Request,
+  ctx: { params: Promise<{ path: string[] }> },
+): Promise<Response> {
   const { path } = await ctx.params;
   const url = new URL(req.url);
   const upstream = await fetch(`${BACKEND}/api/${path.join("/")}${url.search}`, {

@@ -13,11 +13,9 @@ import { createDefaultSecurityHeaders } from "./security";
  * declines (returning null/undefined), letting the chain move on. Used for raw
  * routes that sit outside the oRPC dispatch — in our case `/api/img/<token>`.
  */
-export type FetchHandler = (req: Request) =>
-  | Response
-  | null
-  | undefined
-  | Promise<Response | null | undefined>;
+export type FetchHandler = (
+  req: Request,
+) => Response | null | undefined | Promise<Response | null | undefined>;
 
 export type StartBunServerOptions<TContext> = {
   port: number;
@@ -53,21 +51,30 @@ const DEFAULT_NOT_FOUND = { error: "Route not found" };
  * Mirrors `novo-horizonte/server/src/http/orpc-server.ts`.
  */
 export const startBunServer = async <TContext>({
-  port, hostname = "0.0.0.0",
+  port,
+  hostname = "0.0.0.0",
   publicUrl,
-  info, docsPath, exposeDocs,
+  info,
+  docsPath,
+  exposeDocs,
   prefix,
-  router, createContext,
+  router,
+  createContext,
   securityHeaders = createDefaultSecurityHeaders({ production: isProduction }),
   beforeHandlers = [],
   customHandlers = [],
   notFoundBody = DEFAULT_NOT_FOUND,
-  initialize, onListen,
+  initialize,
+  onListen,
 }: StartBunServerOptions<TContext>): Promise<ReturnType<typeof serve>> => {
   await initialize?.();
 
   const rpcHandler = createRpcHandler({
-    router, allowedOrigins: publicUrl, info, docsPath, exposeDocs,
+    router,
+    allowedOrigins: publicUrl,
+    info,
+    docsPath,
+    exposeDocs,
   });
 
   const stripPrefix = prefix
@@ -80,7 +87,8 @@ export const startBunServer = async <TContext>({
     : (req: Request) => req;
 
   const server = serve({
-    port, hostname,
+    port,
+    hostname,
     async fetch(req: Request): Promise<Response> {
       for (const handler of beforeHandlers) {
         const response = await handler(req);

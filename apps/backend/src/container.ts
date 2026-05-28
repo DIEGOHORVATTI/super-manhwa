@@ -13,9 +13,13 @@ import {
   makeMangayomiMangaCatalog,
 } from "@/modules/catalog/infrastructure";
 import {
-  makeListPopular, makeSearchManga, makeSuggestManga,
-  makeGetMangaDetail, makeGetChapterPages,
-  makeListLangs, makeListGenres,
+  makeListPopular,
+  makeSearchManga,
+  makeSuggestManga,
+  makeGetMangaDetail,
+  makeGetChapterPages,
+  makeListLangs,
+  makeListGenres,
 } from "@/modules/catalog/application";
 
 import { makeHttpImageFetcher } from "@/modules/media/infrastructure";

@@ -7,10 +7,8 @@
  */
 
 import { load, type CheerioAPI } from "cheerio";
+import type { AnyNode } from "domhandler";
 import CryptoJS from "crypto-js";
-
-// cheerio works with domhandler nodes; we keep them opaque (no direct dep).
-type AnyNode = NonNullable<unknown>;
 
 /** Minimal CSS identifier escape for id/class lookups. */
 function cssEscape(s: string): string {
@@ -60,7 +58,12 @@ export async function hostFetch(req: HostRequest, opts: FetchOpts = {}): Promise
   }
 
   let body: string | undefined;
-  if (req.body !== null && req.body !== undefined && req.method !== "GET" && req.method !== "HEAD") {
+  if (
+    req.body !== null &&
+    req.body !== undefined &&
+    req.method !== "GET" &&
+    req.method !== "HEAD"
+  ) {
     if (typeof req.body === "string") {
       body = req.body;
     } else {
@@ -155,7 +158,9 @@ export function cryptoHandler(text: string, iv: string, key: string, encrypt: bo
   const i = CryptoJS.enc.Utf8.parse(iv);
   const cfg = { iv: i, mode: CryptoJS.mode.CBC, padding: CryptoJS.pad.Pkcs7 };
   if (encrypt) {
-    return CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(text), k, cfg).ciphertext.toString(CryptoJS.enc.Hex);
+    return CryptoJS.AES.encrypt(CryptoJS.enc.Utf8.parse(text), k, cfg).ciphertext.toString(
+      CryptoJS.enc.Hex,
+    );
   }
   const params = CryptoJS.lib.CipherParams.create({ ciphertext: CryptoJS.enc.Hex.parse(text) });
   return CryptoJS.AES.decrypt(params, k, cfg).toString(CryptoJS.enc.Utf8);

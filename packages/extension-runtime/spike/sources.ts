@@ -8,7 +8,8 @@
 import { runExtension } from "../src/sandbox";
 import type { MangasPage } from "@packages/core";
 
-const RAW = "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/javascript/manga/src/";
+const RAW =
+  "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/javascript/manga/src/";
 
 interface Candidate {
   name: string;
@@ -56,7 +57,9 @@ async function main() {
       console.log(`✓ ${String(r.n).padStart(2)} items (${r.ms}ms)  e.g. "${r.sample}"`);
       results.push(`✓ ${c.name}`);
     } catch (e) {
-      const msg = String(e instanceof Error ? e.message : e).split("\n")[0].slice(0, 90);
+      const msg = String(e instanceof Error ? e.message : e)
+        .split("\n")[0]
+        .slice(0, 90);
       console.log(`✗ ${msg}`);
       results.push(`✗ ${c.name}: ${msg}`);
     }

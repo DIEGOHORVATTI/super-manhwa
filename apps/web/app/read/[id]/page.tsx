@@ -10,7 +10,7 @@ type SP = Promise<{ n?: string; m?: string; mn?: string }>;
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const { n, mn } = await searchParams;
-  const title = mn ? `${mn} — ${n ?? "capítulo"}` : (n || "Leitor");
+  const title = mn ? `${mn} — ${n ?? "capítulo"}` : n || "Leitor";
   return { title, robots: { index: false } };
 }
 
@@ -25,11 +25,15 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   ]);
 
   if (pagesRes.status === "rejected") {
-    const err = pagesRes.reason instanceof Error ? pagesRes.reason.message : String(pagesRes.reason);
+    const err =
+      pagesRes.reason instanceof Error ? pagesRes.reason.message : String(pagesRes.reason);
     return <p className="notice">{err}</p>;
   }
   const { pages } = pagesRes.value;
-  const chapters = detailRes.status === "fulfilled" && detailRes.value ? detailRes.value.detail.chapters ?? [] : [];
+  const chapters =
+    detailRes.status === "fulfilled" && detailRes.value
+      ? (detailRes.value.detail.chapters ?? [])
+      : [];
 
   return (
     <>
@@ -38,8 +42,13 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
-          <Link className="btn" href="/">← início</Link>
-          <span className="muted" style={{ flex: 1 }}>{n ? `${n} · ` : ""}{pages.length} páginas</span>
+          <Link className="btn" href="/">
+            ← início
+          </Link>
+          <span className="muted" style={{ flex: 1 }}>
+            {n ? `${n} · ` : ""}
+            {pages.length} páginas
+          </span>
         </div>
       )}
 

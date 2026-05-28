@@ -10,8 +10,8 @@ type LogContext = Record<string, unknown>;
 const RESET = "\x1b[0m";
 const LEVEL_META: Record<LogLevel, { ansi: string; prefix: string }> = {
   debug: { prefix: "·", ansi: "\x1b[90m" }, // gray
-  info: { prefix: "ℹ", ansi: "\x1b[36m" },  // cyan
-  warn: { prefix: "!", ansi: "\x1b[33m" },  // yellow
+  info: { prefix: "ℹ", ansi: "\x1b[36m" }, // cyan
+  warn: { prefix: "!", ansi: "\x1b[33m" }, // yellow
   error: { prefix: "✖", ansi: "\x1b[31m" }, // red
 };
 
@@ -20,9 +20,14 @@ const colorize = (ansi: string, text: string) => `${ansi}${text}${RESET}`;
 const emit = (level: LogLevel, message: string, context?: LogContext) => {
   const timestamp = new Date();
   if (isProduction || process.env.LOG_FORMAT === "json") {
-    process.stdout.write(JSON.stringify({
-      level, message, timestamp: timestamp.toISOString(), ...context,
-    }) + "\n");
+    process.stdout.write(
+      JSON.stringify({
+        level,
+        message,
+        timestamp: timestamp.toISOString(),
+        ...context,
+      }) + "\n",
+    );
     return;
   }
   const { prefix, ansi } = LEVEL_META[level];

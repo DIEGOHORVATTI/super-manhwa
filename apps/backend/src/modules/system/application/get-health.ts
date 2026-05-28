@@ -9,9 +9,11 @@ import { APP_INFO } from "@/config/app";
  * `version` comes from package.json via `APP_INFO`, satisfying the requirement
  * that the backend version is part of the response.
  */
-export const makeGetHealth = (startedAt: number = Date.now()) => async (): Promise<Health> => ({
-  ok: true,
-  version: APP_INFO.version,
-  uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
-  timestamp: new Date().toISOString(),
-});
+export const makeGetHealth =
+  (startedAt: number = Date.now()) =>
+  async (): Promise<Health> => ({
+    ok: true,
+    version: APP_INFO.version,
+    uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
+    timestamp: new Date().toISOString(),
+  });

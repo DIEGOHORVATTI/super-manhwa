@@ -10,16 +10,32 @@ type P = Promise<{ id: string }>;
 type SP = Promise<{ n?: string }>;
 
 /** URL-friendly slug for the genre route — must round-trip with the backend's normGenre. */
-const slugifyGenre = (g: string) => g.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const slugifyGenre = (g: string) =>
+  g
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
 
-export async function generateMetadata({ params, searchParams }: { params: P; searchParams: SP }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: P;
+  searchParams: SP;
+}): Promise<Metadata> {
   const [{ id }, { n }] = await Promise.all([params, searchParams]);
   let name = n;
   if (!name) {
-    try { name = (await api.manga.detail({ id })).detail.title; } catch {}
+    try {
+      name = (await api.manga.detail({ id })).detail.title;
+    } catch {}
   }
   const title = name ?? "Mangá";
-  return { title, description: `Leia ${title} online — capítulos e detalhes.`, openGraph: { title, type: "book" } };
+  return {
+    title,
+    description: `Leia ${title} online — capítulos e detalhes.`,
+    openGraph: { title, type: "book" },
+  };
 }
 
 export default async function MangaPage({ params, searchParams }: { params: P; searchParams: SP }) {
@@ -27,16 +43,21 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
 
   let data: Awaited<ReturnType<typeof api.manga.detail>> | undefined;
   let error: string | null = null;
-  try { data = await api.manga.detail({ id, name: n }); }
-  catch (e) { error = e instanceof Error ? e.message : String(e); }
+  try {
+    data = await api.manga.detail({ id, name: n });
+  } catch (e) {
+    error = e instanceof Error ? e.message : String(e);
+  }
 
   if (error) {
     return (
       <>
-        <Link className="back" href="/">← voltar</Link>
+        <Link className="back" href="/">
+          ← voltar
+        </Link>
         <p className="notice">
-          Não foi possível carregar esta obra em nenhuma das integrações disponíveis.
-          A fonte original retornou um erro e nenhuma alternativa tem o título no catálogo.
+          Não foi possível carregar esta obra em nenhuma das integrações disponíveis. A fonte
+          original retornou um erro e nenhuma alternativa tem o título no catálogo.
         </p>
         <details className="muted" style={{ marginTop: 8 }}>
           <summary>detalhes técnicos</summary>
@@ -53,7 +74,9 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
 
   return (
     <>
-      <Link className="back" href="/">← voltar</Link>
+      <Link className="back" href="/">
+        ← voltar
+      </Link>
 
       <div className="detail-head">
         {detail.imageUrl && (
@@ -69,7 +92,9 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
           {detail.genre && detail.genre.length > 0 && (
             <div className="genres">
               {detail.genre.slice(0, 16).map((g) => (
-                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">{g}</Link>
+                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
+                  {g}
+                </Link>
               ))}
             </div>
           )}

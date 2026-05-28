@@ -9,9 +9,13 @@ export type RawListPage = { list?: RawListItem[]; hasNextPage?: boolean };
 
 export type RawChapter = { name: string; url: string; scanlator?: string; dateUpload?: string };
 export type RawDetail = {
-  name?: string; title?: string; description?: string;
-  author?: string; artist?: string;
-  genre?: string[]; status?: number;
+  name?: string;
+  title?: string;
+  description?: string;
+  author?: string;
+  artist?: string;
+  genre?: string[];
+  status?: number;
   imageUrl?: string;
   chapters?: RawChapter[];
 };

@@ -17,7 +17,7 @@
       "@packages/contracts": ["../../packages/contracts/src/index.ts"],
       "@packages/extension-runtime": ["../../packages/extension-runtime/src/index.ts"]
     },
-    "types": ["bun-types", "node"]
+    "types": ["bun"]
   },
   "include": ["src/**/*.ts"]
 }

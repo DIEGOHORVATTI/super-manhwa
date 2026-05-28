@@ -3,8 +3,13 @@ import { z } from "zod";
 
 import { langFilterSchema, paginationSchema } from "../schemas/base";
 import {
-  detailResultSchema, genresResultSchema, langsResultSchema,
-  mangaListSchema, mangaSortSchema, pagesResultSchema, suggestResultSchema,
+  detailResultSchema,
+  genresResultSchema,
+  langsResultSchema,
+  mangaListSchema,
+  mangaSortSchema,
+  pagesResultSchema,
+  suggestResultSchema,
 } from "../schemas/manga";
 
 const prefix = oc.route({ tags: ["Manga"] });
@@ -42,12 +47,14 @@ export const manga = oc.prefix("/manga").router({
 
   detail: prefix
     .route({ method: "GET", path: "/detail", summary: "Manga details + chapters (by opaque id)" })
-    .input(z.object({
-      id: z.string(),
-      /** Optional title hint — enables cross-source fallback when the primary
-       *  returns zero chapters or an extension-side parse error. */
-      name: z.string().optional(),
-    }))
+    .input(
+      z.object({
+        id: z.string(),
+        /** Optional title hint — enables cross-source fallback when the primary
+         *  returns zero chapters or an extension-side parse error. */
+        name: z.string().optional(),
+      }),
+    )
     .output(detailResultSchema),
 
   pages: prefix

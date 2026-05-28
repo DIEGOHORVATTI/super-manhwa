@@ -15,20 +15,33 @@ async function main() {
 
   const t0 = Date.now();
   const page = await runExtension<MangasPage>({
-    code, method: "getPopular", args: [1], source: { lang: "en" },
+    code,
+    method: "getPopular",
+    args: [1],
+    source: { lang: "en" },
     onLog: (level, msg) => console.log(`  [ext:${level}] ${msg}`),
   });
-  console.log(`✓ getPopular: ${page.list.length} entries in ${Date.now() - t0}ms (hasNextPage=${page.hasNextPage})\n`);
+  console.log(
+    `✓ getPopular: ${page.list.length} entries in ${Date.now() - t0}ms (hasNextPage=${page.hasNextPage})\n`,
+  );
   for (const m of page.list.slice(0, 8)) console.log(`  • ${m.name}`);
   if (page.list.length === 0) throw new Error("Empty list");
 
   const first = page.list[0];
   console.log(`\n→ getDetail("${first.link}") — multiple sequential fetches…`);
   const detail = await runExtension<MangaDetail>({
-    code, method: "getDetail", args: [first.link], source: { lang: "en" },
+    code,
+    method: "getDetail",
+    args: [first.link],
+    source: { lang: "en" },
   });
-  console.log(`✓ getDetail: ${detail.chapters?.length ?? 0} chapters, ${detail.genre?.length ?? 0} genres`);
+  console.log(
+    `✓ getDetail: ${detail.chapters?.length ?? 0} chapters, ${detail.genre?.length ?? 0} genres`,
+  );
   console.log("\n✅ SPIKE PASSED — Mangayomi JS extension ran unmodified on the TS runtime.");
 }
 
-main().catch((e) => { console.error("\n❌ SPIKE FAILED:\n", e); process.exit(1); });
+main().catch((e) => {
+  console.error("\n❌ SPIKE FAILED:\n", e);
+  process.exit(1);
+});

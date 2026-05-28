@@ -13,6 +13,12 @@
     "dev:api": "cd apps/backend && bun run dev",
     "start": "cd apps/backend && bun run start",
     "build": "cd apps/web && bun run build",
+    "type-check": "cd apps/backend && bunx tsc --noEmit && cd ../web && bunx tsc --noEmit",
+    "format": "bunx biome format . --write",
+    "format:check": "bunx biome format .",
+    "lint": "bunx biome lint .",
+    "ci": "bun run format:check && bun run lint && bun run type-check",
+    "test": "cd apps/backend && bun test",
     "spike:mangadex": "bun packages/extension-runtime/spike/mangadex.ts",
     "spike:sources": "bun packages/extension-runtime/spike/sources.ts"
   },
@@ -31,6 +37,8 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.16",
+    "@types/bun": "^1.3.14",
     "concurrently": "^9.2.1",
     "typescript": "^5.5.3"
   }

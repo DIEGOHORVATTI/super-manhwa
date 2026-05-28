@@ -10,7 +10,10 @@ import type { Chapter } from "@packages/contracts";
  * so the combobox can be interactive without a full reload between chapters.
  */
 export function ReaderNav({
-  chapters, currentId, mangaId, mangaName,
+  chapters,
+  currentId,
+  mangaId,
+  mangaName,
 }: {
   chapters: Chapter[];
   currentId: string;
@@ -46,14 +49,23 @@ export function ReaderNav({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const go = (c: Chapter) => { setOpen(false); router.push(hrefFor(c)); };
+  const go = (c: Chapter) => {
+    setOpen(false);
+    router.push(hrefFor(c));
+  };
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (!open) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setActive((a) => Math.min(a + 1, filtered.length - 1)); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
-    else if (e.key === "Enter") { e.preventDefault(); if (filtered[active]) go(filtered[active]); }
-    else if (e.key === "Escape") setOpen(false);
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActive((a) => Math.min(a + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActive((a) => Math.max(a - 1, 0));
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (filtered[active]) go(filtered[active]);
+    } else if (e.key === "Escape") setOpen(false);
   };
 
   const current = chapters[idx];
@@ -71,7 +83,9 @@ export function ReaderNav({
       <div className="reader-nav-spacer" />
 
       {prev ? (
-        <Link className="btn" href={hrefFor(prev)} title={prev.name}>← anterior</Link>
+        <Link className="btn" href={hrefFor(prev)} title={prev.name}>
+          ← anterior
+        </Link>
       ) : (
         <span className="btn btn-disabled">← anterior</span>
       )}
@@ -81,8 +95,16 @@ export function ReaderNav({
           className="field"
           value={open ? q : (current?.name ?? "—")}
           placeholder="Capítulo…"
-          onFocus={() => { setQ(""); setOpen(true); setActive(0); }}
-          onChange={(e) => { setQ(e.target.value); setOpen(true); setActive(0); }}
+          onFocus={() => {
+            setQ("");
+            setOpen(true);
+            setActive(0);
+          }}
+          onChange={(e) => {
+            setQ(e.target.value);
+            setOpen(true);
+            setActive(0);
+          }}
           onKeyDown={onKey}
           aria-label="Selecionar capítulo"
         />
@@ -96,7 +118,10 @@ export function ReaderNav({
                 aria-selected={i === active}
                 className={`combobox-item${i === active ? " is-active" : ""}${c.id === currentId ? " is-current" : ""}`}
                 onMouseEnter={() => setActive(i)}
-                onMouseDown={(e) => { e.preventDefault(); go(c); }}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  go(c);
+                }}
               >
                 <span className="combobox-name">{c.name}</span>
                 {c.scanlator && <span className="combobox-lang">{c.scanlator}</span>}
@@ -107,7 +132,9 @@ export function ReaderNav({
       </div>
 
       {next ? (
-        <Link className="btn" href={hrefFor(next)} title={next.name}>próximo →</Link>
+        <Link className="btn" href={hrefFor(next)} title={next.name}>
+          próximo →
+        </Link>
       ) : (
         <span className="btn btn-disabled">próximo →</span>
       )}

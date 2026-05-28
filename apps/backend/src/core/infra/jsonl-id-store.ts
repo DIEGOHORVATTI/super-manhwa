@@ -4,7 +4,11 @@ import { dirname } from "node:path";
 
 import type { IdStore, Ref } from "../domain/id-store";
 
-interface Entry { id: string; s: string; u: string }
+interface Entry {
+  id: string;
+  s: string;
+  u: string;
+}
 
 /**
  * Append-only JSONL-backed short-id store. Reads the whole file once at boot
@@ -18,7 +22,9 @@ interface Entry { id: string; s: string; u: string }
  * used as a kill-switch).
  */
 export const makeJsonlIdStore = ({
-  secret, file, shortBytes = 5,
+  secret,
+  file,
+  shortBytes = 5,
 }: {
   secret: string;
   file: string;
@@ -35,7 +41,9 @@ export const makeJsonlIdStore = ({
         try {
           const e = JSON.parse(line) as Entry;
           map.set(e.id, { source: e.s, url: e.u });
-        } catch { /* skip corrupt line */ }
+        } catch {
+          /* skip corrupt line */
+        }
       }
       console.log(`[idstore] loaded ${map.size} ids from ${file}`);
     }

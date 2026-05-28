@@ -19,13 +19,18 @@ export function LangFilter({ langs, lang }: { langs: string[]; lang: string }) {
       value={lang}
       onChange={(e) => {
         const sp = new URLSearchParams(params);
-        if (e.target.value) sp.set("lang", e.target.value); else sp.delete("lang");
+        if (e.target.value) sp.set("lang", e.target.value);
+        else sp.delete("lang");
         const qs = sp.toString();
         startTransition(() => router.push(qs ? `/?${qs}` : "/"));
       }}
     >
       <option value="">todos idiomas</option>
-      {langs.map((l) => <option key={l} value={l}>{l}</option>)}
+      {langs.map((l) => (
+        <option key={l} value={l}>
+          {l}
+        </option>
+      ))}
     </select>
   );
 }
