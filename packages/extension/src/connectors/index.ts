@@ -1,11 +1,3 @@
-import type { MangaConnector } from "../types";
-import { asurascans } from "./asurascans";
-import { mangadex, mangadexPtBr } from "./mangadex";
-import { mangaworld } from "./mangaworld";
-import { manhwaz } from "./manhwaz";
-import { webtoons } from "./webtoons";
-import { weebcentral } from "./weebcentral";
-
 // Native pt-br connectors. They're currently `hasCloudflare: true` because
 // the upstream sites use WAFs / SPAs that need real-browser execution (see
 // `../native/README.md` for the per-site situation). Registered as typed
@@ -15,6 +7,13 @@ import { weebcentral } from "./weebcentral";
 import { mangaLivre } from "../native/manga-livre";
 import { mangasYabu } from "../native/mangas-yabu";
 import { tsukiMangas } from "../native/tsuki-mangas";
+import type { MangaConnector } from "../types";
+import { asurascans } from "./asurascans";
+import { mangadex, mangadexPtBr } from "./mangadex";
+import { mangaworld } from "./mangaworld";
+import { manhwaz } from "./manhwaz";
+import { webtoons } from "./webtoons";
+import { weebcentral } from "./weebcentral";
 
 /**
  * Hand-picked, validated connectors we actively aggregate from. Order matters

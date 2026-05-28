@@ -41,7 +41,11 @@ const findAlternate = async (
   const searches = await Promise.allSettled(
     pool.map((connector) =>
       connector.search(name, 1).then((r) => {
-        const hit = (r.list ?? []).find((m) => normName(m.name) === target) ?? r.list?.[0];
+        // STRICT exact-name match only. Falling back to the first hit causes
+        // wrong-manga substitutions — e.g. searching "Solo Leveling" on
+        // Manhwaz returns "Solo Leveling: Ragnarok" (the sequel) as the top
+        // result, and we'd silently serve the wrong title's chapters.
+        const hit = (r.list ?? []).find((m) => normName(m.name) === target);
         return { connector, hit };
       }),
     ),

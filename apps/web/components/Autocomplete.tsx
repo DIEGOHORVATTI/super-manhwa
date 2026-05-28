@@ -3,12 +3,15 @@ import type { MangaSummary } from "@packages/contracts";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+/** Frontend is pt-br locked, so suggest always filters to pt-br titles. */
+const LANG = "pt-br";
+
 /**
  * Search combobox. Debounced fetch → spinner inline while loading → dropdown of
  * matches with cover thumb + lang badge. Click or Enter on a row navigates to
  * /manga/<opaque-id>?n=<name> (the frontend never learns which source backed it).
  */
-export function Autocomplete({ lang = "" }: { lang?: string }) {
+export function Autocomplete() {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [items, setItems] = useState<MangaSummary[]>([]);
@@ -31,8 +34,7 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
     const ctrl = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const params = new URLSearchParams({ q: Q });
-        if (lang) params.set("lang", lang);
+        const params = new URLSearchParams({ q: Q, lang: LANG });
         const r = await fetch(`/api/manga/suggest?${params}`, { signal: ctrl.signal });
         if (!r.ok) throw new Error(`${r.status}`);
         const data = (await r.json()) as { list: MangaSummary[] };
@@ -48,7 +50,7 @@ export function Autocomplete({ lang = "" }: { lang?: string }) {
       clearTimeout(t);
       ctrl.abort();
     };
-  }, [q, lang]);
+  }, [q]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {

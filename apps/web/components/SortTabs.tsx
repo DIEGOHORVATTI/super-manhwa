@@ -9,16 +9,11 @@ const TABS: Array<{ key: MangaSort; label: string }> = [
 
 /**
  * Pure server-rendered tab strip. Switching tabs is a normal navigation —
- * RSC re-fetches with the new sort and the URL stays shareable.
+ * RSC re-fetches with the new sort and the URL stays shareable. Language is
+ * pinned at pt-br by the frontend; there's no `?lang=` to round-trip.
  */
-export function SortTabs({ active, lang }: { active: MangaSort; lang?: string }) {
-  const hrefFor = (sort: MangaSort) => {
-    const sp = new URLSearchParams();
-    if (sort !== "popular") sp.set("sort", sort);
-    if (lang) sp.set("lang", lang);
-    const qs = sp.toString();
-    return qs ? `/?${qs}` : "/";
-  };
+export function SortTabs({ active }: { active: MangaSort }) {
+  const hrefFor = (sort: MangaSort) => (sort === "popular" ? "/" : `/?sort=${sort}`);
   return (
     <nav className="sort-tabs" aria-label="Ordenação">
       {TABS.map((t) => (

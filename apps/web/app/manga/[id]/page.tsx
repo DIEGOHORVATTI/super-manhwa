@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
 
@@ -100,7 +101,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         </div>
       </div>
 
-      {detail.description && <p className="detail-desc">{detail.description}</p>}
+      {detail.description && <MarkdownDescription text={detail.description} />}
 
       <h2 className="section">Capítulos</h2>
       {chapters.length === 0 && <p className="muted">Nenhum capítulo disponível.</p>}

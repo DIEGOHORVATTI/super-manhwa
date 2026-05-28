@@ -6,7 +6,6 @@ import { api } from "@/lib/orpc.server";
 export const dynamic = "force-dynamic";
 
 type P = Promise<{ genre: string }>;
-type SP = Promise<{ lang?: string }>;
 
 const prettify = (slug: string) =>
   decodeURIComponent(slug)
@@ -18,25 +17,20 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const name = prettify(genre);
   return {
     title: `${name} — Super Manhwa`,
-    description: `Obras do gênero ${name} agregadas de várias fontes.`,
+    description: `Obras do gênero ${name} em português.`,
   };
 }
 
-export default async function GenrePage({ params, searchParams }: { params: P; searchParams: SP }) {
-  const [{ genre }, { lang = "" }] = await Promise.all([params, searchParams]);
+export default async function GenrePage({ params }: { params: P }) {
+  const { genre } = await params;
   const label = prettify(genre);
 
-  const result = await api.manga
-    .popular({
-      lang: lang || undefined,
-      genre,
-      page: 1,
-    })
-    .catch((e) => ({
-      list: [] as Awaited<ReturnType<typeof api.manga.popular>>["list"],
-      hasNextPage: false,
-      _error: e instanceof Error ? e.message : String(e),
-    }));
+  // pt-br pinned to match the rest of the frontend.
+  const result = await api.manga.popular({ lang: "pt-br", genre, page: 1 }).catch((e) => ({
+    list: [] as Awaited<ReturnType<typeof api.manga.popular>>["list"],
+    hasNextPage: false,
+    _error: e instanceof Error ? e.message : String(e),
+  }));
   const error = "_error" in result ? result._error : null;
 
   return (
