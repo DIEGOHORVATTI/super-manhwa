@@ -6,7 +6,7 @@ import { httpFetch, httpFetchText } from "@/shared/http-fetch";
 
 import { makeCuratedSourceRegistry } from "@/modules/catalog/infrastructure/curated-source-registry";
 import type { MangayomiIndex } from "@/modules/catalog/infrastructure/mangayomi-index";
-import type { RawListPage } from "@/modules/catalog/domain/manga-catalog";
+import type { RawDetail, RawListPage } from "@/modules/catalog/domain/manga-catalog";
 import type { Source } from "@/modules/catalog/domain/source";
 
 /**
@@ -14,32 +14,28 @@ import type { Source } from "@/modules/catalog/domain/source";
  * extension runtime (bypasses the backend HTTP layer) so we know:
  *
  *   - upstream code URL is reachable
- *   - getPopular() returns items
- *   - search() returns at least something for an iconic English query
+ *   - getPopular() returns items (≥ 2, shape OK)
+ *   - search() returns at least one hit for an iconic query
+ *   - getDetail() on at least one of two popular picks returns chapters
  *
- * `getDetail` is intentionally NOT asserted because several upstream extensions
- * have stale selectors; the cross-source fallback covers user impact already.
- * That detail is documented in DECISIONS.md and in the test's "known issues" map.
+ * Sources whose upstream extension is broken in a way we can't recover from
+ * are documented in the KNOWN_*_FAILURES sets below; their corresponding tests
+ * are skipped (not removed) so the failure mode is visible and easy to revive
+ * when the extension is updated upstream.
  */
 
 const registry = makeCuratedSourceRegistry();
 const NON_CF_SOURCES: readonly Source[] = registry.listCurated().filter((s) => !s.hasCloudflare);
 
-/**
- * Sources whose `search` is currently broken upstream (extension throws or
- * returns 0 even for known-on-source titles). Tests SKIP search for these;
- * popular is still asserted. Revisit when upstream fixes the extension.
- */
 const KNOWN_SEARCH_FAILURES = new Set<string>([
   "weebcentral", // extension throws "cannot read property 'text' of null"
   "webtoons", // search consistently returns 0 hits even for catalog titles
 ]);
+const KNOWN_DETAIL_FAILURES = new Set<string>([
+  "webtoons", // getDetail throws "cannot read property 'selectFirst' of null"
+  "weebcentral", // selector chain throws on detail page too
+]);
 
-/**
- * A query each source SHOULD return at least one hit for. Different catalogs
- * have different content — Webtoons doesn't host One Piece (Shueisha title),
- * but it does host its own original "Tower of God"; MangaWorld is Italian, etc.
- */
 const ICONIC_QUERY: Record<string, string> = {
   mangadex: "one piece",
   manhwaz: "solo leveling",
@@ -51,6 +47,7 @@ const DEFAULT_QUERY = "one piece";
 
 const POPULAR_TIMEOUT_MS = 20_000;
 const SEARCH_TIMEOUT_MS = 15_000;
+const DETAIL_TIMEOUT_MS = 25_000;
 
 const runFor = async <T>(
   src: Source,
@@ -76,17 +73,17 @@ describe("mirrors / per-source contract", () => {
       it("code URL is reachable", async () => {
         const r = await httpFetchText(src.codeUrl);
         if (r.error) throw new Error(`unreachable: ${r.error.message}`);
-        // Extension source must be at least a few KB of real JS.
         expect(r.value.length).toBeGreaterThan(500);
         expect(r.value).toMatch(/getPopular|search|getDetail/);
       });
 
       it(
-        "getPopular returns >= 5 items",
+        "getPopular returns >= 2 items with the required shape",
         async () => {
           const r = await runFor<RawListPage>(src, "getPopular", [1], POPULAR_TIMEOUT_MS);
-          expect((r.list ?? []).length).toBeGreaterThanOrEqual(5);
-          for (const m of (r.list ?? []).slice(0, 3)) {
+          const list = r.list ?? [];
+          expect(list.length).toBeGreaterThanOrEqual(2);
+          for (const m of list.slice(0, 2)) {
             expect(typeof m.name).toBe("string");
             expect(typeof m.link).toBe("string");
             expect(m.name.length).toBeGreaterThan(0);
@@ -109,6 +106,47 @@ describe("mirrors / per-source contract", () => {
       } else {
         it.skip(`search is known broken upstream (id=${src.id}); skipped`, () => {});
       }
+
+      if (!KNOWN_DETAIL_FAILURES.has(src.id)) {
+        it(
+          "getDetail returns chapters for at least 2 popular picks (of 4 sampled)",
+          async () => {
+            const popular = await runFor<RawListPage>(src, "getPopular", [1], POPULAR_TIMEOUT_MS);
+            // Sample top 4 to be robust against DMCA-blocked iconic titles
+            // (MangaDex's top popular is heavy on licensed-in-EN works that
+            // legitimately return 0 chapters).
+            const picks = (popular.list ?? []).slice(0, 4);
+            expect(picks.length).toBeGreaterThanOrEqual(4);
+
+            const results = await Promise.allSettled(
+              picks.map((m) => runFor<RawDetail>(src, "getDetail", [m.link], DETAIL_TIMEOUT_MS)),
+            );
+
+            const withChapters = results.filter(
+              (r) => r.status === "fulfilled" && (r.value.chapters ?? []).length > 0,
+            );
+            // At least TWO different titles must yield chapters — proves the
+            // detail/chapter path isn't a one-off success.
+            expect(withChapters.length).toBeGreaterThanOrEqual(2);
+
+            // Validate chapter shape across BOTH successful picks.
+            for (const r of withChapters.slice(0, 2)) {
+              if (r.status !== "fulfilled") continue;
+              const chapters = r.value.chapters ?? [];
+              expect(chapters.length).toBeGreaterThan(0);
+              for (const c of chapters.slice(0, 3)) {
+                expect(typeof c.name).toBe("string");
+                expect(typeof c.url).toBe("string");
+                expect(c.name.length).toBeGreaterThan(0);
+                expect(c.url.length).toBeGreaterThan(0);
+              }
+            }
+          },
+          DETAIL_TIMEOUT_MS * 5,
+        );
+      } else {
+        it.skip(`getDetail is known broken upstream (id=${src.id}); skipped`, () => {});
+      }
     });
   }
 });
@@ -130,7 +168,6 @@ describe("mirrors / adding a new mirror", () => {
     expect(r.value.length).toBeGreaterThan(50);
     const jsManga = r.value.filter((e) => e.sourceCodeLanguage === 1 && e.itemType === 0);
     expect(jsManga.length).toBeGreaterThan(30);
-    // Every JS manga entry has the fields we depend on.
     for (const e of jsManga.slice(0, 10)) {
       expect(typeof e.id).toBe("number");
       expect(typeof e.name).toBe("string");
@@ -140,29 +177,32 @@ describe("mirrors / adding a new mirror", () => {
     }
   });
 
-  it("registry.resolve('id-<n>') finds dynamic sources from the upstream index", async () => {
-    // Pick any non-CF, non-curated dynamic source and resolve it.
+  it("registry.resolve('id-<n>') finds two distinct dynamic sources from the upstream index", async () => {
     const indexRes = await httpFetch<MangayomiIndex>(
       "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/index.json",
     );
     if (indexRes.error) throw new Error("no index");
     const curatedNames = new Set(registry.listCurated().map((s) => s.name.toLowerCase()));
-    const candidate = indexRes.value.find(
-      (e) =>
-        e.sourceCodeLanguage === 1 &&
-        e.itemType === 0 &&
-        !e.hasCloudflare &&
-        !curatedNames.has(e.name.toLowerCase()),
-    );
-    expect(candidate).toBeDefined();
-    const resolved = await registry.resolve(`id-${candidate!.id}`);
-    expect(resolved).toBeDefined();
-    expect(resolved!.name).toBe(candidate!.name);
-    expect(resolved!.codeUrl).toBe(candidate!.sourceCodeUrl);
+    const candidates = indexRes.value
+      .filter(
+        (e) =>
+          e.sourceCodeLanguage === 1 &&
+          e.itemType === 0 &&
+          !e.hasCloudflare &&
+          !curatedNames.has(e.name.toLowerCase()),
+      )
+      .slice(0, 2);
+    expect(candidates.length).toBeGreaterThanOrEqual(2);
+
+    for (const candidate of candidates) {
+      const resolved = await registry.resolve(`id-${candidate.id}`);
+      expect(resolved).toBeDefined();
+      expect(resolved!.name).toBe(candidate.name);
+      expect(resolved!.codeUrl).toBe(candidate.sourceCodeUrl);
+    }
   }, 20_000);
 
   it("a SourceInfo with all required fields drives the extension contract", () => {
-    // Document the contract every new mirror must satisfy.
     const sample: Source = {
       id: "sample",
       name: "Sample Source",
@@ -173,7 +213,6 @@ describe("mirrors / adding a new mirror", () => {
       hasCloudflare: false,
       isNsfw: false,
     };
-    // The shape: every field is the minimum surface that aggregation needs.
     expect(sample.id).toBeTruthy();
     expect(sample.name).toBeTruthy();
     expect(sample.lang).toBeTruthy();

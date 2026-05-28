@@ -71,33 +71,75 @@ describe("catalog / aggregation", () => {
 });
 
 describe("catalog / detail + pages flow", () => {
-  it("detail returns chapters for a popular title (with cross-source fallback when needed)", async () => {
-    const popular = await apiClient.manga.popular();
-    // Pick "Solo Leveling" — MangaDex has it but DMCA-blocked; fallback must recover.
-    const target =
-      popular.list.find((m) => m.name === "Solo Leveling") ??
-      popular.list.find((m) => /eminence/i.test(m.name)) ??
-      popular.list[0];
-    const r = await apiClient.manga.detail({ id: target.id, name: target.name });
-    expect(r.detail.chapters).toBeDefined();
-    expect((r.detail.chapters ?? []).length).toBeGreaterThan(0);
-  });
+  // Two distinct titles exercise two distinct paths through the fallback logic:
+  // - "Solo Leveling": MangaDex DMCA-blocks chapters → cross-source fallback recovers
+  // - "Eminence in Shadow" (or first popular): primary source returns chapters directly
+  const pickTitles = (popular: { name: string; id: string }[]) => {
+    const soloLeveling = popular.find((m) => m.name === "Solo Leveling");
+    const eminence = popular.find((m) => /eminence/i.test(m.name));
+    const picks = [soloLeveling, eminence, popular[0], popular[1]].filter(Boolean) as Array<{
+      name: string;
+      id: string;
+    }>;
+    // Dedupe by id, keep first two.
+    const seen = new Set<string>();
+    return picks.filter((p) => (seen.has(p.id) ? false : seen.add(p.id))).slice(0, 2);
+  };
 
-  it("pages returns opaque /api/img/<token> paths only — no upstream CDN URLs leak", async () => {
+  it("detail returns chapters for TWO different popular titles (fallback works when primary fails)", async () => {
     const popular = await apiClient.manga.popular();
-    const target = popular.list.find((m) => /eminence/i.test(m.name)) ?? popular.list[0];
-    const detail = await apiClient.manga.detail({ id: target.id, name: target.name });
-    const firstChapter = (detail.detail.chapters ?? [])[0];
-    expect(firstChapter).toBeDefined();
-    const pages = await apiClient.manga.pages(firstChapter.id);
-    expect(pages.pages.length).toBeGreaterThan(0);
-    for (const p of pages.pages) {
-      expect(p.startsWith("/api/img/")).toBe(true);
+    const targets = pickTitles(popular.list);
+    expect(targets.length).toBe(2);
+
+    for (const target of targets) {
+      const r = await apiClient.manga.detail({ id: target.id, name: target.name });
+      const chapters = r.detail.chapters ?? [];
+      expect(chapters.length).toBeGreaterThan(0);
+      // Chapter shape sanity — id opaque, name string.
+      for (const c of chapters.slice(0, 3)) {
+        expect(typeof c.id).toBe("string");
+        expect(c.id.length).toBeLessThan(20);
+        expect(typeof c.name).toBe("string");
+      }
     }
-  });
+  }, 120_000);
+
+  it("pages from TWO different chapters return opaque /api/img/<token> paths (and the bytes are real images)", async () => {
+    const popular = await apiClient.manga.popular();
+    const targets = pickTitles(popular.list);
+    expect(targets.length).toBe(2);
+
+    for (const target of targets) {
+      const detail = await apiClient.manga.detail({ id: target.id, name: target.name });
+      const firstChapter = (detail.detail.chapters ?? [])[0];
+      expect(firstChapter).toBeDefined();
+
+      const pages = await apiClient.manga.pages(firstChapter.id);
+      expect(pages.pages.length).toBeGreaterThan(0);
+      for (const p of pages.pages) {
+        expect(p.startsWith("/api/img/")).toBe(true);
+      }
+
+      // Fetch first page bytes — confirms end-to-end that the proxy works
+      // for chapter pages on both kinds of titles (direct + fallback).
+      const token = pages.pages[0].split("/").pop()!;
+      const imgRes = await apiClient.image(token);
+      expect(imgRes.status).toBe(200);
+      expect(imgRes.headers.get("content-type")).toMatch(/^image\//);
+      const buf = new Uint8Array(await imgRes.arrayBuffer());
+      expect(buf.byteLength).toBeGreaterThan(1000);
+    }
+  }, 180_000);
 
   it("invalid manga id is rejected with 400", async () => {
     const res = await apiClient.rawGet("/api/manga/detail?id=not-a-real-id", {
+      headers: { "X-API-KEY": apiClient.apiKey },
+    });
+    expect(res.status).toBe(400);
+  });
+
+  it("invalid chapter id is rejected with 400", async () => {
+    const res = await apiClient.rawGet("/api/manga/pages?id=not-a-real-id", {
       headers: { "X-API-KEY": apiClient.apiKey },
     });
     expect(res.status).toBe(400);
