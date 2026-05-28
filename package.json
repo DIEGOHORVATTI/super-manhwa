@@ -19,13 +19,12 @@
     "lint": "bunx biome lint .",
     "ci": "bun run format:check && bun run lint && bun run type-check",
     "test": "cd apps/backend && bun test",
-    "spike:mangadex": "bun packages/extension-runtime/spike/mangadex.ts",
-    "spike:sources": "bun packages/extension-runtime/spike/sources.ts"
+    "extensions:list": "bun -e 'import { CONNECTORS } from \"@packages/extension\"; for (const c of CONNECTORS) console.log(c.id, c.lang, c.hasCloudflare ? \"CF\" : \"\");'"
   },
   "dependencies": {
     "@packages/contracts": "workspace:*",
     "@packages/core": "workspace:*",
-    "@packages/extension-runtime": "workspace:*",
+    "@packages/extension": "workspace:*",
     "@jitl/quickjs-singlefile-cjs-release-sync": "0.31.0",
     "@orpc/contract": "^1.14.3",
     "@orpc/openapi": "^1.14.3",

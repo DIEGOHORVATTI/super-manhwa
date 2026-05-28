@@ -1,14 +1,13 @@
 import type { MangaStatus } from "@packages/contracts";
+import type { ConnectorMeta, RawChapter, RawDetail, RawListItem } from "@packages/extension";
 import type { IdStore } from "@/core/domain/id-store";
 
 import type { Chapter, MangaDetail, MangaSummary } from "../domain/manga";
-import type { RawChapter, RawDetail, RawListItem } from "../domain/manga-catalog";
-import type { Source } from "../domain/source";
 
 /**
- * Mangayomi extension raw shape ↔ our domain types. Centralised here so a
- * future change in the extension protocol (e.g. new fields) is a one-file
- * patch.
+ * Raw connector shapes ↔ our domain types. Centralised here so a change in
+ * the connector contract (new optional fields, status mapping tweaks) is a
+ * one-file patch.
  */
 
 const STATUS_MAP: Record<number, MangaStatus> = {
@@ -30,25 +29,25 @@ const imagePath = (idStore: IdStore, source: string, url?: string): string | und
   url ? `/api/img/${idStore.encode({ source, url })}` : undefined;
 
 export const MangaMapper = {
-  toSummary(idStore: IdStore, src: Source, raw: RawListItem): MangaSummary {
+  toSummary(idStore: IdStore, meta: ConnectorMeta, raw: RawListItem): MangaSummary {
     return {
-      id: idStore.encode({ source: src.id, url: raw.link }),
+      id: idStore.encode({ source: meta.id, url: raw.link }),
       name: raw.name,
-      imageUrl: imagePath(idStore, src.id, raw.imageUrl),
-      lang: src.lang,
+      imageUrl: imagePath(idStore, meta.id, raw.imageUrl),
+      lang: meta.lang,
     };
   },
 
-  toChapter(idStore: IdStore, src: Source, raw: RawChapter): Chapter {
+  toChapter(idStore: IdStore, meta: ConnectorMeta, raw: RawChapter): Chapter {
     return {
-      id: idStore.encode({ source: src.id, url: raw.url }),
+      id: idStore.encode({ source: meta.id, url: raw.url }),
       name: raw.name,
       scanlator: raw.scanlator,
       dateUpload: raw.dateUpload,
     };
   },
 
-  toDetail(idStore: IdStore, src: Source, raw: RawDetail): MangaDetail {
+  toDetail(idStore: IdStore, meta: ConnectorMeta, raw: RawDetail): MangaDetail {
     return {
       // MangaDex's extension omits the title from getDetail; some others use
       // `title`, some `name`. We accept either; callers can fall back to the
@@ -59,9 +58,9 @@ export const MangaMapper = {
       artist: raw.artist,
       genre: raw.genre,
       status: mapStatus(raw.status),
-      imageUrl: imagePath(idStore, src.id, raw.imageUrl),
-      chapters: (raw.chapters ?? []).map((c) => MangaMapper.toChapter(idStore, src, c)),
-      lang: src.lang,
+      imageUrl: imagePath(idStore, meta.id, raw.imageUrl),
+      chapters: (raw.chapters ?? []).map((c) => MangaMapper.toChapter(idStore, meta, c)),
+      lang: meta.lang,
     };
   },
 };

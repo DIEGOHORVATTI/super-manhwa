@@ -1,3 +1,2 @@
-export * from "./curated-source-registry";
+export * from "./connector-registry";
 export * from "./manga-mapper";
-export * from "./mangayomi-manga-catalog";

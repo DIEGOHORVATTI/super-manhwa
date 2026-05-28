@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@packages/contracts": "workspace:*",
-    "@packages/extension-runtime": "workspace:*",
+    "@packages/extension": "workspace:*",
     "@orpc/openapi": "^1.14.3",
     "@orpc/server": "^1.14.3",
     "@orpc/zod": "^1.14.3",

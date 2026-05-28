@@ -12,7 +12,7 @@
         "@orpc/zod": "^1.14.3",
         "@packages/contracts": "workspace:*",
         "@packages/core": "workspace:*",
-        "@packages/extension-runtime": "workspace:*",
+        "@packages/extension": "workspace:*",
         "@types/crypto-js": "^4.2.2",
         "crypto-js": "^4.2.0",
         "quickjs-emscripten-core": "0.31.0",
@@ -33,7 +33,7 @@
         "@orpc/server": "^1.14.3",
         "@orpc/zod": "^1.14.3",
         "@packages/contracts": "workspace:*",
-        "@packages/extension-runtime": "workspace:*",
+        "@packages/extension": "workspace:*",
         "zod": "^4.4.3",
       },
     },
@@ -68,8 +68,8 @@
       "name": "@packages/core",
       "version": "0.0.0",
     },
-    "packages/extension-runtime": {
-      "name": "@packages/extension-runtime",
+    "packages/extension": {
+      "name": "@packages/extension",
       "version": "0.0.0",
       "dependencies": {
         "@packages/core": "workspace:*",
@@ -260,7 +260,7 @@
 
     "@packages/core": ["@packages/core@workspace:packages/core"],
 
-    "@packages/extension-runtime": ["@packages/extension-runtime@workspace:packages/extension-runtime"],
+    "@packages/extension": ["@packages/extension@workspace:packages/extension"],
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 

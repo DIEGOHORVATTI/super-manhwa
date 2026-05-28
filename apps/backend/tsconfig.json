@@ -15,7 +15,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@packages/contracts": ["../../packages/contracts/src/index.ts"],
-      "@packages/extension-runtime": ["../../packages/extension-runtime/src/index.ts"]
+      "@packages/extension": ["../../packages/extension/src/index.ts"]
     },
     "types": ["bun"]
   },

@@ -1,29 +1,28 @@
 import { describe, expect, it } from "bun:test";
 
-import { runExtension } from "@packages/extension-runtime";
-import type { RawDetail, RawListPage } from "@/modules/catalog/domain/manga-catalog";
-import type { Source } from "@/modules/catalog/domain/source";
-import { makeCuratedSourceRegistry } from "@/modules/catalog/infrastructure/curated-source-registry";
-import type { MangayomiIndex } from "@/modules/catalog/infrastructure/mangayomi-index";
-import { httpFetch, httpFetchText } from "@/shared/http-fetch";
+import {
+  CONNECTORS,
+  type MangaConnector,
+  type RawDetail,
+  type RawListPage,
+} from "@packages/extension";
+
+import { httpFetch } from "@/shared/http-fetch";
 
 /**
- * Mirror validation suite — exercises each curated source DIRECTLY through the
- * extension runtime (bypasses the backend HTTP layer) so we know:
+ * Mirror validation suite — exercises each curated connector directly through
+ * its typed methods (no QuickJS dispatch, no raw codeUrls). Asserts:
  *
- *   - upstream code URL is reachable
- *   - getPopular() returns items (≥ 2, shape OK)
- *   - search() returns at least one hit for an iconic query
- *   - getDetail() on at least one of two popular picks returns chapters
+ *   - getPopular() yields ≥ 2 items with the required shape
+ *   - search() returns ≥ 1 hit for an iconic query
+ *   - getDetail() yields chapters for at least 2 different popular titles
  *
- * Sources whose upstream extension is broken in a way we can't recover from
- * are documented in the KNOWN_*_FAILURES sets below; their corresponding tests
- * are skipped (not removed) so the failure mode is visible and easy to revive
- * when the extension is updated upstream.
+ * Connectors whose upstream extension is broken in a way we can't recover
+ * from are documented in the KNOWN_*_FAILURES sets below; their tests are
+ * skipped (not removed) so the failure mode stays visible.
  */
 
-const registry = makeCuratedSourceRegistry();
-const NON_CF_SOURCES: readonly Source[] = registry.listCurated().filter((s) => !s.hasCloudflare);
+const NON_CF_CONNECTORS: readonly MangaConnector[] = CONNECTORS.filter((c) => !c.hasCloudflare);
 
 const KNOWN_SEARCH_FAILURES = new Set<string>([
   "weebcentral", // extension throws "cannot read property 'text' of null"
@@ -36,6 +35,7 @@ const KNOWN_DETAIL_FAILURES = new Set<string>([
 
 const ICONIC_QUERY: Record<string, string> = {
   mangadex: "one piece",
+  "mangadex-ptbr": "one piece",
   manhwaz: "solo leveling",
   webtoons: "tower of god",
   mangaworld: "one piece",
@@ -47,38 +47,22 @@ const POPULAR_TIMEOUT_MS = 20_000;
 const SEARCH_TIMEOUT_MS = 15_000;
 const DETAIL_TIMEOUT_MS = 25_000;
 
-const runFor = async <T>(
-  src: Source,
-  method: string,
-  args: unknown[],
-  timeoutMs: number,
-): Promise<T> => {
-  const codeRes = await httpFetchText(src.codeUrl);
-  if (codeRes.error) throw new Error(`fetch code: ${codeRes.error.message}`);
-  return runExtension<T>({
-    code: codeRes.value,
-    method,
-    args,
-    source: { lang: src.lang },
-    cloudflare: src.hasCloudflare,
-    timeoutMs,
-  });
-};
-
-describe("mirrors / per-source contract", () => {
-  for (const src of NON_CF_SOURCES) {
-    describe(`source: ${src.id}`, () => {
-      it("code URL is reachable", async () => {
-        const r = await httpFetchText(src.codeUrl);
-        if (r.error) throw new Error(`unreachable: ${r.error.message}`);
-        expect(r.value.length).toBeGreaterThan(500);
-        expect(r.value).toMatch(/getPopular|search|getDetail/);
+describe("mirrors / per-connector contract", () => {
+  for (const c of NON_CF_CONNECTORS) {
+    describe(`connector: ${c.id}`, () => {
+      it("metadata has the fields the backend needs", () => {
+        expect(c.id).toBeTruthy();
+        expect(c.name).toBeTruthy();
+        expect(c.lang).toBeTruthy();
+        expect(c.baseUrl).toMatch(/^https?:\/\//);
+        expect(typeof c.hasCloudflare).toBe("boolean");
+        expect(typeof c.isNsfw).toBe("boolean");
       });
 
       it(
         "getPopular returns >= 2 items with the required shape",
         async () => {
-          const r = await runFor<RawListPage>(src, "getPopular", [1], POPULAR_TIMEOUT_MS);
+          const r: RawListPage = await c.getPopular(1);
           const list = r.list ?? [];
           expect(list.length).toBeGreaterThanOrEqual(2);
           for (const m of list.slice(0, 2)) {
@@ -91,81 +75,82 @@ describe("mirrors / per-source contract", () => {
         POPULAR_TIMEOUT_MS + 2_000,
       );
 
-      if (!KNOWN_SEARCH_FAILURES.has(src.id)) {
+      if (!KNOWN_SEARCH_FAILURES.has(c.id)) {
         it(
           "search returns at least 1 hit for an iconic query",
           async () => {
-            const q = ICONIC_QUERY[src.id] ?? DEFAULT_QUERY;
-            const r = await runFor<RawListPage>(src, "search", [q, 1, []], SEARCH_TIMEOUT_MS);
+            const q = ICONIC_QUERY[c.id] ?? DEFAULT_QUERY;
+            const r: RawListPage = await c.search(q, 1);
             expect((r.list ?? []).length).toBeGreaterThanOrEqual(1);
           },
           SEARCH_TIMEOUT_MS + 2_000,
         );
       } else {
-        it.skip(`search is known broken upstream (id=${src.id}); skipped`, () => {});
+        it.skip(`search is known broken upstream (id=${c.id}); skipped`, () => {});
       }
 
-      if (!KNOWN_DETAIL_FAILURES.has(src.id)) {
+      if (!KNOWN_DETAIL_FAILURES.has(c.id)) {
         it(
           "getDetail yields chapters for at least 2 different popular titles",
           async () => {
-            const popular = await runFor<RawListPage>(src, "getPopular", [1], POPULAR_TIMEOUT_MS);
-            // Sample a wider window to be robust against DMCA-blocked iconic
-            // titles. MangaDex's top-10 popular skews heavily toward
-            // English-licensed works (Solo Leveling, One Piece, Chainsaw Man,
-            // etc.) which legitimately return 0 chapters in the EN feed.
+            const popular = await c.getPopular(1);
+            // Sample top 10 to be robust against DMCA-blocked iconic titles.
             const picks = (popular.list ?? []).slice(0, 10);
             expect(picks.length).toBeGreaterThanOrEqual(2);
 
             const succeeded: Array<{ name: string; chapters: RawDetail["chapters"] }> = [];
-            // Walk picks SEQUENTIALLY and stop early once we have 2 working titles.
             for (const m of picks) {
               if (succeeded.length >= 2) break;
               try {
-                const det = await runFor<RawDetail>(src, "getDetail", [m.link], DETAIL_TIMEOUT_MS);
+                const det: RawDetail = await c.getDetail(m.link);
                 if ((det.chapters ?? []).length > 0) {
                   succeeded.push({ name: m.name, chapters: det.chapters });
                 }
               } catch {
-                // Stale-selector errors are tolerated as long as we eventually
-                // find two working titles.
+                /* tolerate per-title stale-selector errors */
               }
             }
 
             expect(succeeded.length).toBeGreaterThanOrEqual(2);
-
-            // Validate chapter shape across BOTH successful picks.
             for (const s of succeeded) {
               const chapters = s.chapters ?? [];
               expect(chapters.length).toBeGreaterThan(0);
-              for (const c of chapters.slice(0, 3)) {
-                expect(typeof c.name).toBe("string");
-                expect(typeof c.url).toBe("string");
-                expect(c.name.length).toBeGreaterThan(0);
-                expect(c.url.length).toBeGreaterThan(0);
+              for (const ch of chapters.slice(0, 3)) {
+                expect(typeof ch.name).toBe("string");
+                expect(typeof ch.url).toBe("string");
+                expect(ch.name.length).toBeGreaterThan(0);
+                expect(ch.url.length).toBeGreaterThan(0);
               }
             }
           },
           DETAIL_TIMEOUT_MS * 10,
         );
       } else {
-        it.skip(`getDetail is known broken upstream (id=${src.id}); skipped`, () => {});
+        it.skip(`getDetail is known broken upstream (id=${c.id}); skipped`, () => {});
       }
     });
   }
 });
 
 /**
- * "Can we add a new mirror?" — exercises the contract a new integration must
- * satisfy. We pick a candidate from the upstream index.json that's NOT in our
- * curated list, resolve it through SourceRegistry, and validate it can list
- * popular. This is the same path used by `/api/manga/detail` when an opaque id
- * points to a dynamic source.
+ * "Can we add a new mirror?" — the dynamic-resolution path. We don't directly
+ * invoke `resolveConnector` here because that would download a fresh JS file
+ * per test. Just validate the upstream index is fetchable + well-shaped, the
+ * contract a new entry would need to satisfy.
  */
-describe("mirrors / adding a new mirror", () => {
-  it("the upstream index.json is fetchable and well-formed", async () => {
-    const r = await httpFetch<MangayomiIndex>(
-      "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/index.json",
+describe("mirrors / adding a new mirror (upstream index)", () => {
+  interface UpstreamEntry {
+    id: number;
+    name: string;
+    lang: string;
+    sourceCodeUrl: string;
+    sourceCodeLanguage: number;
+    itemType: number;
+  }
+
+  it("upstream index.json is fetchable and well-formed", async () => {
+    const r = await httpFetch<UpstreamEntry[]>(
+      "https://kodjodevf.github.io/mangayomi-extensions/index.json",
     );
     if (r.error) throw new Error(`index fetch failed: ${r.error.message}`);
     expect(Array.isArray(r.value)).toBe(true);
@@ -176,53 +161,7 @@ describe("mirrors / adding a new mirror", () => {
       expect(typeof e.id).toBe("number");
       expect(typeof e.name).toBe("string");
       expect(typeof e.lang).toBe("string");
-      expect(typeof e.sourceCodeUrl).toBe("string");
       expect(e.sourceCodeUrl).toMatch(/^https?:\/\//);
     }
-  });
-
-  it("registry.resolve('id-<n>') finds two distinct dynamic sources from the upstream index", async () => {
-    const indexRes = await httpFetch<MangayomiIndex>(
-      "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/index.json",
-    );
-    if (indexRes.error) throw new Error("no index");
-    const curatedNames = new Set(registry.listCurated().map((s) => s.name.toLowerCase()));
-    const candidates = indexRes.value
-      .filter(
-        (e) =>
-          e.sourceCodeLanguage === 1 &&
-          e.itemType === 0 &&
-          !e.hasCloudflare &&
-          !curatedNames.has(e.name.toLowerCase()),
-      )
-      .slice(0, 2);
-    expect(candidates.length).toBeGreaterThanOrEqual(2);
-
-    for (const candidate of candidates) {
-      const resolved = await registry.resolve(`id-${candidate.id}`);
-      expect(resolved).toBeDefined();
-      expect(resolved!.name).toBe(candidate.name);
-      expect(resolved!.codeUrl).toBe(candidate.sourceCodeUrl);
-    }
-  }, 20_000);
-
-  it("a SourceInfo with all required fields drives the extension contract", () => {
-    const sample: Source = {
-      id: "sample",
-      name: "Sample Source",
-      lang: "en",
-      baseUrl: "https://example.com",
-      iconUrl: "https://example.com/favicon.ico",
-      codeUrl: "https://example.com/sample.js",
-      hasCloudflare: false,
-      isNsfw: false,
-    };
-    expect(sample.id).toBeTruthy();
-    expect(sample.name).toBeTruthy();
-    expect(sample.lang).toBeTruthy();
-    expect(sample.baseUrl).toMatch(/^https?:\/\//);
-    expect(sample.codeUrl).toMatch(/^https?:\/\//);
-    expect(typeof sample.hasCloudflare).toBe("boolean");
-    expect(typeof sample.isNsfw).toBe("boolean");
   });
 });
