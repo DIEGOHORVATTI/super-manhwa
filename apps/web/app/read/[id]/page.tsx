@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { api } from "@/lib/orpc.server";
 import { ReaderNav } from "@/components/ReaderNav";
+import { api } from "@/lib/orpc.server";
 
 export const dynamic = "force-dynamic";
 

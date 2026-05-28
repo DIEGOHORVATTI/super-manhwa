@@ -4,12 +4,15 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
-  title: { default: "Super Manhwa — leitor de mangás web", template: "%s · Super Manhwa" },
+  title: {
+    default: "Super Manhwa — leitor de mangás web",
+    template: "%s · Super Manhwa",
+  },
   description: "Busque e leia mangás de várias fontes, num leitor web rápido.",
   openGraph: { type: "website", siteName: "Super Manhwa" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
     <html lang="pt-br">
       <body>
@@ -19,7 +22,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               Super Manhwa<span className="dot">.</span>
             </h1>
           </Link>
-          <p className="subtitle">Leitor web · Next.js (RSC) · extensões Mangayomi</p>
+
           {children}
         </main>
       </body>

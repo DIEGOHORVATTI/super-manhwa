@@ -1,9 +1,9 @@
-import { api } from "@/lib/orpc.server";
+import type { MangaSort } from "@packages/contracts";
 import { Autocomplete } from "@/components/Autocomplete";
 import { LangFilter } from "@/components/LangFilter";
 import { PosterGrid } from "@/components/PosterGrid";
 import { SortTabs } from "@/components/SortTabs";
-import type { MangaSort } from "@packages/contracts";
+import { api } from "@/lib/orpc.server";
 
 export const dynamic = "force-dynamic";
 

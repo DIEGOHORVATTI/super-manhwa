@@ -3,8 +3,9 @@
  * UNMODIFIED MangaDex extension from the Mangayomi repo and runs getPopular(1)
  * + getDetail in the QuickJS sandbox. Run: bun run spike:mangadex
  */
-import { runExtension } from "../src/sandbox";
+
 import type { MangaDetail, MangasPage } from "@packages/core";
+import { runExtension } from "../src/sandbox";
 
 const CODE_URL =
   "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/javascript/manga/src/all/mangadex.js";

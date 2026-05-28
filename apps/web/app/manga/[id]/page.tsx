@@ -1,8 +1,7 @@
-import Link from "next/link";
 import type { Metadata } from "next";
-
-import { api } from "@/lib/orpc.server";
+import Link from "next/link";
 import { StatusBadge } from "@/components/StatusBadge";
+import { api } from "@/lib/orpc.server";
 
 export const dynamic = "force-dynamic";
 

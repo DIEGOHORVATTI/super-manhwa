@@ -1,3 +1,3 @@
 export * from "./manga";
-export * from "./source";
 export * from "./manga-catalog";
+export * from "./source";

@@ -5,8 +5,9 @@
  *
  * Run:  bun run spike:sources
  */
-import { runExtension } from "../src/sandbox";
+
 import type { MangasPage } from "@packages/core";
+import { runExtension } from "../src/sandbox";
 
 const RAW =
   "https://raw.githubusercontent.com/kodjodevf/mangayomi-extensions/main/javascript/manga/src/";

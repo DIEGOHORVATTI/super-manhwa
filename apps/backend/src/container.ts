@@ -5,25 +5,23 @@
  * mirrors `horvatti-champ/apps/backend/src/container.ts`.
  */
 import { env } from "@/config/env";
-import { makeMemoryCache } from "@/core/infra/memory-cache";
 import { makeJsonlIdStore } from "@/core/infra/jsonl-id-store";
-
+import { makeMemoryCache } from "@/core/infra/memory-cache";
+import {
+  makeGetChapterPages,
+  makeGetMangaDetail,
+  makeListGenres,
+  makeListLangs,
+  makeListPopular,
+  makeSearchManga,
+  makeSuggestManga,
+} from "@/modules/catalog/application";
 import {
   makeCuratedSourceRegistry,
   makeMangayomiMangaCatalog,
 } from "@/modules/catalog/infrastructure";
-import {
-  makeListPopular,
-  makeSearchManga,
-  makeSuggestManga,
-  makeGetMangaDetail,
-  makeGetChapterPages,
-  makeListLangs,
-  makeListGenres,
-} from "@/modules/catalog/application";
-
-import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
+import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
 
 import { makeGetHealth } from "@/modules/system/application";
 

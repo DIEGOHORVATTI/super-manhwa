@@ -1,8 +1,8 @@
 "use client";
+import type { Chapter } from "@packages/contracts";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { Chapter } from "@packages/contracts";
 
 /**
  * Sticky reader toolbar. Server fetches the manga detail once, hands us the full

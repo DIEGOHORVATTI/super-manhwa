@@ -11,26 +11,27 @@
  * This handles unlimited sequential/parallel fetches and stays in-process (no
  * workers, no subprocesses) — keeping the backend lightweight (ADR-0007).
  */
+
+// Singlefile variant: the WASM is embedded as base64, so there is no separate
+// .wasm file to trace/bundle — reliable on Vercel serverless (ADR-0007).
+import variant from "@jitl/quickjs-singlefile-cjs-release-sync";
 import {
   newQuickJSWASMModuleFromVariant,
   type QuickJSContext,
   type QuickJSHandle,
   type QuickJSWASMModule,
 } from "quickjs-emscripten-core";
-// Singlefile variant: the WASM is embedded as base64, so there is no separate
-// .wasm file to trace/bundle — reliable on Vercel serverless (ADR-0007).
-import variant from "@jitl/quickjs-singlefile-cjs-release-sync";
-import { PRELUDE } from "./prelude";
 import {
+  aesDecryptCryptoJS,
+  aesEncryptCryptoJS,
+  cryptoHandler,
   DomStore,
+  type HostRequest,
   hostFetch,
   hostPrefGet,
-  aesEncryptCryptoJS,
-  aesDecryptCryptoJS,
-  cryptoHandler,
   unpackJs,
-  type HostRequest,
 } from "./host";
+import { PRELUDE } from "./prelude";
 
 // Load the WASM module once and reuse across runs.
 let modulePromise: Promise<QuickJSWASMModule> | undefined;

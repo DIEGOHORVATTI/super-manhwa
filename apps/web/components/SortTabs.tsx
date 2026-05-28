@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { MangaSort } from "@packages/contracts";
+import Link from "next/link";
 
 const TABS: Array<{ key: MangaSort; label: string }> = [
   { key: "popular", label: "Em alta" },

@@ -1,13 +1,11 @@
 import { describe, expect, it } from "bun:test";
 
 import { runExtension } from "@packages/extension-runtime";
-
-import { httpFetch, httpFetchText } from "@/shared/http-fetch";
-
-import { makeCuratedSourceRegistry } from "@/modules/catalog/infrastructure/curated-source-registry";
-import type { MangayomiIndex } from "@/modules/catalog/infrastructure/mangayomi-index";
 import type { RawDetail, RawListPage } from "@/modules/catalog/domain/manga-catalog";
 import type { Source } from "@/modules/catalog/domain/source";
+import { makeCuratedSourceRegistry } from "@/modules/catalog/infrastructure/curated-source-registry";
+import type { MangayomiIndex } from "@/modules/catalog/infrastructure/mangayomi-index";
+import { httpFetch, httpFetchText } from "@/shared/http-fetch";
 
 /**
  * Mirror validation suite — exercises each curated source DIRECTLY through the

@@ -1,7 +1,6 @@
 import type { IdStore } from "@/core/domain/id-store";
-
-import type { ImageFetcher } from "../domain/image-fetcher";
 import type { SourceRegistry } from "@/modules/catalog/domain/source";
+import type { ImageFetcher } from "../domain/image-fetcher";
 
 /**
  * Decode an opaque image token, look up the source's Referer base URL, and

@@ -1,5 +1,3 @@
-import { auth } from "@/context";
-
 import {
   getChapterPages,
   getMangaDetail,
@@ -9,6 +7,7 @@ import {
   searchManga,
   suggestManga,
 } from "@/container";
+import { auth } from "@/context";
 
 /**
  * Wire-level handlers. All routes are `auth`-protected by the shared

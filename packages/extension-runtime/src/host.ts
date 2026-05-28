@@ -6,9 +6,9 @@
  * browser service (ADR-0005) — omitted in the MVP/spike.
  */
 
-import { load, type CheerioAPI } from "cheerio";
-import type { AnyNode } from "domhandler";
+import { type CheerioAPI, load } from "cheerio";
 import CryptoJS from "crypto-js";
+import type { AnyNode } from "domhandler";
 
 /** Minimal CSS identifier escape for id/class lookups. */
 function cssEscape(s: string): string {

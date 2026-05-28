@@ -1,5 +1,5 @@
-import Link from "next/link";
 import type { MangaSummary } from "@packages/contracts";
+import Link from "next/link";
 
 import { StatusBadge } from "./StatusBadge";
 

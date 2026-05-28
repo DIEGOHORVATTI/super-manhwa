@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import type { MangaSummary } from "@packages/contracts";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Search combobox. Debounced fetch → spinner inline while loading → dropdown of
