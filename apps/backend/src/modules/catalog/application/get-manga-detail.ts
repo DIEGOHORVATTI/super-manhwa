@@ -1,6 +1,6 @@
-import { badRequest, notFound } from "@/core/api-errors";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
+import { badRequest, notFound } from "@/shared/errors";
 
 import type { MangaDetail } from "../domain/manga";
 import type { MangaCatalog, RawDetail } from "../domain/manga-catalog";
@@ -70,12 +70,12 @@ export const makeGetMangaDetail = (
   name?: string;
 }): Promise<{ detail: MangaDetail; lang: string }> => {
   const ref = idStore.decode(id);
-  if (!ref) throw badRequest("invalid manga id");
+  if (!ref) badRequest("invalid manga id");
 
   const cached = fallbackMap.get(id);
   const primary = cached ?? { source: ref.source, url: ref.url };
   const src = await registry.resolve(primary.source);
-  if (!src) throw notFound("unknown source");
+  if (!src) notFound("unknown source");
 
   let shaped: MangaDetail | null = null;
   let primaryErr: Error | null = null;

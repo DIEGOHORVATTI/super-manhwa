@@ -1,6 +1,6 @@
-import { badRequest, notFound } from "@/core/api-errors";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
+import { badRequest, notFound } from "@/shared/errors";
 
 import type { MangaCatalog } from "../domain/manga-catalog";
 import type { SourceRegistry } from "../domain/source";
@@ -18,9 +18,9 @@ export const makeGetChapterPages = (
   cache: Cache,
 ) => async ({ id }: { id: string }): Promise<{ pages: string[] }> => {
   const ref = idStore.decode(id);
-  if (!ref) throw badRequest("invalid chapter id");
+  if (!ref) badRequest("invalid chapter id");
   const src = await registry.resolve(ref.source);
-  if (!src) throw notFound("unknown source");
+  if (!src) notFound("unknown source");
 
   const key = `pages:${src.id}:${ref.url}`;
   return cache.remember(key, PAGES_TTL, async () => {

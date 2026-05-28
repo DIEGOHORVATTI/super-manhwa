@@ -2,8 +2,9 @@
  * Manual dependency-injection root. Every concrete adapter (id store, cache,
  * source registry, manga catalog, image fetcher) is instantiated once here and
  * wired into use cases. Routes import the use cases directly from this file —
- * see `horvatti-champ/apps/backend/src/container.ts` for the pattern.
+ * mirrors `horvatti-champ/apps/backend/src/container.ts`.
  */
+import { env } from "@/config/env";
 import { makeMemoryCache } from "@/core/infra/memory-cache";
 import { makeJsonlIdStore } from "@/core/infra/jsonl-id-store";
 
@@ -20,11 +21,13 @@ import {
 import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
 
+import { makeGetHealth } from "@/modules/system/application";
+
 // Infrastructure (singletons)
 const cache = makeMemoryCache();
 const idStore = makeJsonlIdStore({
-  secret: process.env.IMAGE_TOKEN_SECRET ?? "dev-only-secret-change-in-prod",
-  file: process.env.ID_STORE_PATH ?? "/app/data/ids.jsonl",
+  secret: env.IMAGE_TOKEN_SECRET,
+  file: env.ID_STORE_PATH,
 });
 const sourceRegistry = makeCuratedSourceRegistry();
 const mangaCatalog = makeMangayomiMangaCatalog();
@@ -41,3 +44,7 @@ export const listGenres = makeListGenres(listPopular);
 
 // Media application
 export const proxyImage = makeProxyImage(idStore, sourceRegistry, imageFetcher);
+
+// System application — `startedAt` captured at module load time so uptime is
+// monotonically increasing for the life of the process.
+export const getHealth = makeGetHealth(Date.now());

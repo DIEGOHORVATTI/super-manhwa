@@ -19,6 +19,9 @@ services:
       # tokens. Loaded from .env — never bake into the image. Rotate to invalidate
       # every outstanding URL at once.
       IMAGE_TOKEN_SECRET: "${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set in .env}"
+      # Shared secret the frontend sends as X-API-KEY. Never exposed to the
+      # browser — only the Next server (RSC + same-origin proxy) holds it.
+      API_KEY: "${API_KEY:?API_KEY must be set in .env}"
       # Persistent short-id lookup. Lives on a host-mounted volume so URLs survive
       # container restarts; if this file is lost, every existing /manga/<id> URL
       # becomes invalid (same effect as rotating IMAGE_TOKEN_SECRET).
