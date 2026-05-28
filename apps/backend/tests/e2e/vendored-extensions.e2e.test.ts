@@ -12,6 +12,8 @@ import { CONNECTORS, loadMangaExtension, VENDORED_VERSION } from "@packages/exte
 const VENDORED_PATHS = [
   "all/mangadex.js",
   "all/webtoons.js",
+  "all/comick.js",
+  "all/mangafire.js",
   "en/weebcentral.js",
   "en/manhwaz.js",
   "en/asurascans.js",
@@ -39,16 +41,24 @@ describe("vendored extensions / package files", () => {
     );
   });
 
-  it("every Mangayomi-backed (non-CF) curated connector uses an `internal:` source — i.e. reads from this dir", () => {
-    // Side-channel check: connectors built via `createMangayomiConnector` with
-    // a vendored source pin their code to a file in `MANGA_ROOT`. We can't
-    // introspect the closure, but we can observe that calling `getPopular()`
-    // doesn't go to the network beyond the source it scrapes — covered by
-    // the other suites — and that the curated list has exactly the connector
-    // count we expect.
-    const mangayomiBacked = CONNECTORS.filter(
-      (c) => !c.id.includes("tsuki") && !c.id.includes("livre") && !c.id.includes("yabu"),
-    );
-    expect(mangayomiBacked.length).toBe(7); // 6 unique JS files + mangadex-ptbr reuses mangadex.js
+  it("every expected Mangayomi-backed connector is registered (each maps to a vendored JS file)", () => {
+    // These connectors are all built via `createMangayomiConnector` with a
+    // vendored source path — they read JS from this directory at first call.
+    // mangadex-ptbr reuses all/mangadex.js; comick/mangafire-ptbr add their own.
+    const EXPECTED_MANGAYOMI_IDS = [
+      "mangadex",
+      "webtoons",
+      "weebcentral",
+      "mangaworld",
+      "manhwaz",
+      "asurascans",
+      "mangadex-ptbr",
+      "comick-ptbr",
+      "mangafire-ptbr",
+    ];
+    const ids = new Set(CONNECTORS.map((c) => c.id));
+    for (const id of EXPECTED_MANGAYOMI_IDS) {
+      expect(ids.has(id)).toBe(true);
+    }
   });
 });

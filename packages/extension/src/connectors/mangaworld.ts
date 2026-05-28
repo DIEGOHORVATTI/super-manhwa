@@ -1,4 +1,4 @@
-import { createMangayomiConnector } from "./mangayomi-factory";
+import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const mangaworld = createMangayomiConnector({
   id: "mangaworld",

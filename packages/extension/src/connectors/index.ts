@@ -1,17 +1,19 @@
 // Native pt-br connectors. They're currently `hasCloudflare: true` because
 // the upstream sites use WAFs / SPAs that need real-browser execution (see
-// `../native/README.md` for the per-site situation). Registered as typed
-// values so the wire is ready when a Puppeteer layer lands; until then
-// they're excluded from the popular aggregation pool and act only as
-// fallback targets via opaque ids.
-import { mangaLivre } from "../native/manga-livre";
-import { mangasYabu } from "../native/mangas-yabu";
-import { tsukiMangas } from "../native/tsuki-mangas";
+// `./README.md` for the per-site situation). Registered as typed values so
+// the wire is ready when a Puppeteer layer lands; until then they're excluded
+// from the popular aggregation pool and act only as fallback targets via
+// opaque ids.
 import type { MangaConnector } from "../types";
 import { asurascans } from "./asurascans";
+import { comickPtBr } from "./comick";
+import { mangaLivre } from "./manga-livre";
 import { mangadex, mangadexPtBr } from "./mangadex";
+import { mangafirePtBr } from "./mangafire";
+import { mangasYabu } from "./mangas-yabu";
 import { mangaworld } from "./mangaworld";
 import { manhwaz } from "./manhwaz";
+import { tsukiMangas } from "./tsuki-mangas";
 import { webtoons } from "./webtoons";
 import { weebcentral } from "./weebcentral";
 
@@ -38,6 +40,11 @@ export const CONNECTORS: readonly MangaConnector[] = [
   manhwaz,
   asurascans,
   mangadexPtBr,
+  // Mangayomi-backed pt-br aggregators — CF-flagged (out of the popular pool)
+  // until validated in a network that reaches their hosts / a vrf that runs
+  // under QuickJS. See each connector module for the per-source blocker.
+  comickPtBr,
+  mangafirePtBr,
   // Native TypeScript (pt-br) — CF-flagged until full-browser bypass lands
   tsukiMangas,
   mangaLivre,
@@ -49,5 +56,5 @@ const byId = new Map<string, MangaConnector>(CONNECTORS.map((c) => [c.id, c]));
 
 export const getCuratedConnector = (id: string): MangaConnector | undefined => byId.get(id);
 
-export { loadMangaExtension, VENDORED_VERSION } from "./load-extension";
-export { createMangayomiConnector } from "./mangayomi-factory";
+export { loadMangaExtension, VENDORED_VERSION } from "../shared/load-extension";
+export { createMangayomiConnector } from "../shared/mangayomi-factory";

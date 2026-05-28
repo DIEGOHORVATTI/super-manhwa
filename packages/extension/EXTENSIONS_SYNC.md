@@ -94,6 +94,27 @@ write ourselves):
   has 5 entries total and no pt-br; we'll revisit if/when we ship a novel
   reader.
 
+## Vendor patches (don't lose these on re-sync!)
+
+Re-syncing a vendored file from upstream **overwrites our fixes**. After any
+re-sync, re-apply (or diff against) these patches:
+
+| File | Patch | Why |
+|---|---|---|
+| `all/mangafire.js` | `viewType ... \|\| "chapter"` in `getDetail` | runtime has no prefs UI; `getPreference` returns undefined |
+| `all/mangafire.js` | `filters && filters.length > 0` (was `\|\|`) in `search` | empty `[]` is truthy → crashed on `filters[0].state` |
+| `all/comick.js` | `apiUrl: "https://comick.dev"` (was `api.comick.fun`) | `api.comick.fun` is dead; `api.comick.io` 301s to `comick.dev` |
+
+### Host-migration watch
+
+Comick (and others) rotate API hosts for DMCA reasons. If a connector suddenly
+returns "connection refused", find the live host: `curl -sI
+https://api.comick.io/v1.0/search?q=test` and follow the redirect, or open the
+site with the browser Network tab and read the XHR host. Last check: the live
+Comick API is **comick.dev**, behind Cloudflare → routes through FlareSolverr;
+the runtime auto-unwraps the solver's `<pre>{json}</pre>` (see
+`unwrapSolvedBody` in `runtime/host.ts`).
+
 ## Goal: Brazilian first launch
 
 Mangayomi has **never** carried connectors for the major Brazilian sites

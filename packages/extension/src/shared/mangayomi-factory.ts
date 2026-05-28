@@ -28,7 +28,12 @@ export interface MangayomiConnectorInit extends ConnectorMeta {
   };
 }
 
-const DEFAULT_TIMEOUTS = { popular: 15_000, search: 15_000, detail: 25_000, pages: 25_000 };
+const DEFAULT_TIMEOUTS = {
+  popular: 15_000,
+  search: 15_000,
+  detail: 25_000,
+  pages: 25_000,
+};
 
 const resolveSource = async (source: MangayomiConnectorInit["source"]): Promise<string> => {
   const key = source.kind === "vendored" ? `v:${source.path}` : `r:${source.url}`;

@@ -1,5 +1,5 @@
 import { getCuratedConnector } from "./connectors/index";
-import { createMangayomiConnector } from "./connectors/mangayomi-factory";
+import { createMangayomiConnector } from "./shared/mangayomi-factory";
 import type { MangaConnector } from "./types";
 
 /**

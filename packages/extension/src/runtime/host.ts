@@ -109,13 +109,39 @@ async function solveWithFlareSolverr(solverUrl: string, target: string): Promise
     throw new Error(`FlareSolverr failed: ${data.message ?? "unknown"}`);
   }
   return {
-    body: data.solution.response,
+    body: unwrapSolvedBody(data.solution.response),
     statusCode: data.solution.status,
     headers: {},
     isRedirect: false,
     reasonPhrase: "OK",
     request: { method: "GET", url: target },
   };
+}
+
+/**
+ * FlareSolverr runs a real Chromium, so when it solves a URL that returns pure
+ * JSON, the browser wraps it in `<html><head>…</head><body><pre>{json}</pre>…`.
+ * Extensions hitting JSON APIs (Comick, etc.) then choke on `JSON.parse`. If the
+ * solved body is exactly that JSON-in-<pre> shape, unwrap it to the raw JSON;
+ * otherwise return the HTML untouched (the common scrape-the-page case).
+ */
+function unwrapSolvedBody(body: string): string {
+  const m = body.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+  if (!m) return body;
+  const inner = decodeHtmlEntities(m[1]).trim();
+  if (inner.startsWith("{") || inner.startsWith("[")) return inner;
+  return body;
+}
+
+function decodeHtmlEntities(s: string): string {
+  return s
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&");
 }
 
 /** Preference lookup. MVP returns undefined so extensions fall back to defaults. */
