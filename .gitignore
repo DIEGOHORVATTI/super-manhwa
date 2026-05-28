@@ -4,4 +4,9 @@ dist/
 .DS_Store
 .env
 .env.*
+
+# build artifacts (no leading slash → match at any depth, incl. apps/*/)
+.next
+.output
 .vercel
+.wrangler

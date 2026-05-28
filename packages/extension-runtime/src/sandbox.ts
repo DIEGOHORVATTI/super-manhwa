@@ -20,12 +20,12 @@ import {
 // Singlefile variant: the WASM is embedded as base64, so there is no separate
 // .wasm file to trace/bundle — reliable on Vercel serverless (ADR-0007).
 import variant from "@jitl/quickjs-singlefile-cjs-release-sync";
-import { PRELUDE } from "./prelude.js";
+import { PRELUDE } from "./prelude";
 import {
   DomStore, hostFetch, hostPrefGet,
   aesEncryptCryptoJS, aesDecryptCryptoJS, cryptoHandler, unpackJs,
   type HostRequest,
-} from "./host.js";
+} from "./host";
 
 // Load the WASM module once and reuse across runs.
 let modulePromise: Promise<QuickJSWASMModule> | undefined;

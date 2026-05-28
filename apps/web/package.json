@@ -1,0 +1,26 @@
+{
+  "name": "@apps/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev -p 3000",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@orpc/client": "^1.14.3",
+    "@orpc/contract": "^1.14.3",
+    "@orpc/openapi-client": "^1.14.3",
+    "@packages/contracts": "workspace:*",
+    "next": "latest",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.5.3"
+  }
+}

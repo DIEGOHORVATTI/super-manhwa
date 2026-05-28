@@ -1,3 +1,3 @@
-export { runExtension, type RunOptions } from "./sandbox.js";
-export { hostFetch, hostPrefGet, type HostRequest, type HostResponse } from "./host.js";
-export { PRELUDE } from "./prelude.js";
+export { runExtension, type RunOptions } from "./sandbox";
+export { hostFetch, hostPrefGet, type HostRequest, type HostResponse } from "./host";
+export { PRELUDE } from "./prelude";

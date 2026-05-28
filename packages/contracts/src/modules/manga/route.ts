@@ -1,6 +1,6 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
-import { detailResultSchema, mangasPageSchema, pagesResultSchema } from "./schema.js";
+import { detailResultSchema, mangasPageSchema, pagesResultSchema } from "./schema";
 
 const tag = oc.route({ tags: ["Manga"] });
 const sourceInput = z.object({ source: z.string() });

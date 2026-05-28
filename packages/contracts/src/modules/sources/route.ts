@@ -1,6 +1,6 @@
 import { oc } from "@orpc/contract";
 import { z } from "zod";
-import { sourcesListSchema } from "./schema.js";
+import { sourcesListSchema } from "./schema";
 
 const tag = oc.route({ tags: ["Sources"] });
 
