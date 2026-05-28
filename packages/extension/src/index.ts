@@ -12,7 +12,12 @@
  *     don't need this; you want a `MangaConnector` instead.
  */
 
-export { CONNECTORS, getCuratedConnector, VENDORED_VERSION } from "./connectors/index";
+export {
+  CONNECTORS,
+  getCuratedConnector,
+  loadMangaExtension,
+  VENDORED_VERSION,
+} from "./connectors/index";
 export { resolveConnector } from "./dynamic";
 export { runExtension } from "./runtime/sandbox";
 export * from "./types";
