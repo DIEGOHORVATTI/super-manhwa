@@ -1,17 +1,39 @@
+import { OpenAPIHandler } from "@orpc/openapi/fetch";
+import { CORSPlugin } from "@orpc/server/plugins";
+import { ZodSmartCoercionPlugin } from "@orpc/zod";
+
+import { imageProxyRoute } from "@/modules/media/presentation/routes/image-routes";
+import { router } from "@/router";
+
 /**
- * The composable request handler (Web Request → Response), shared by the Bun
- * server (server/index.ts) and the Vercel fallback (api/[...path].ts).
- * Routes /api/img to the raw image proxy; everything else goes to the oRPC handler
- * (with the /api prefix stripped, since the contract paths are root-relative).
+ * Composable Web Request → Response handler.
+ *
+ *  - `/api/img/<token>`  → raw binary stream from the media module
+ *  - everything else     → oRPC OpenAPIHandler (the `/api` prefix is stripped
+ *                          before dispatch because the contracts paths are
+ *                          root-relative)
  */
-import { apiHandler } from "./orpc.js";
-import { imageProxy } from "./img.js";
+const apiHandler = new OpenAPIHandler(router, {
+  plugins: [
+    new CORSPlugin({ origin: "*", allowMethods: ["GET", "OPTIONS"] }),
+    new ZodSmartCoercionPlugin(),
+  ],
+  interceptors: [
+    async (options) => {
+      try { return await options.next(); }
+      catch (error) {
+        console.error(`✗ [${options.request.method}] ${options.request.url}`, error);
+        throw error;
+      }
+    },
+  ],
+});
 
 export async function handle(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const path = url.pathname.replace(/^\/api/, "") || "/";
 
-  if (path === "/img") return imageProxy(req);
+  if (path.startsWith("/img/")) return imageProxyRoute(path.slice(5));
 
   const orpcReq = new Request(new URL(path + url.search, url.origin), req);
   const { matched, response } = await apiHandler.handle(orpcReq);

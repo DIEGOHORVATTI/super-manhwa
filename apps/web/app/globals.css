@@ -55,3 +55,120 @@ a { color: var(--accent); text-decoration: none; } a:hover { color: var(--accent
   border: 1px solid var(--border); border-radius: var(--radius); padding: 8px; margin-bottom: 12px; }
 .pages { display: flex; flex-direction: column; align-items: center; background: #000; border-radius: var(--radius); overflow: hidden; }
 .page-img { display: block; width: 100%; max-width: var(--maxw); height: auto; }
+
+/* Autocomplete combobox */
+.toolbar { display: flex; gap: 8px; align-items: center; margin: 12px 0; flex-wrap: wrap; }
+.combobox { position: relative; flex: 1; min-width: 240px; }
+.combobox-list {
+  position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 20;
+  max-height: 60vh; overflow: auto; margin: 0; padding: 4px; list-style: none;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,.4);
+}
+.combobox-item {
+  display: flex; align-items: center; gap: 10px; padding: 8px 10px;
+  border-radius: 6px; cursor: pointer;
+}
+.combobox-item.is-active { background: var(--surface-2); }
+.combobox-thumb { width: 32px; height: 44px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+.combobox-name { flex: 1; font-size: 14px; }
+.combobox-lang {
+  font-size: 10px; color: var(--muted); text-transform: uppercase;
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 6px;
+}
+.combobox-empty { padding: 10px; color: var(--muted); font-size: 13px; }
+
+/* Reader nav (sticky toolbar with prev/next + chapter picker) */
+.reader-nav {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+  padding: 10px 12px; margin: 0 -16px 16px;
+  background: rgba(14,16,22,.92); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--border);
+}
+.reader-nav-spacer { flex: 1; }
+.reader-nav .btn { font-size: 13px; padding: 7px 11px; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-disabled { opacity: .35; cursor: not-allowed; }
+.reader-chap-picker { width: 220px; min-width: 200px; }
+.reader-chap-picker .field { font-size: 13px; padding: 7px 10px; }
+.combobox-item.is-current { background: rgba(124,92,255,.15); border: 1px solid rgba(124,92,255,.35); }
+
+/* Autocomplete v2 — input com ícone, spinner, skeleton, hover suave */
+.combobox-input {
+  position: relative;
+  display: flex; align-items: center;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 0 10px;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.combobox-input:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124,92,255,.18);
+}
+.combobox-icon { color: var(--muted); margin-right: 8px; flex-shrink: 0; }
+.combobox-input:focus-within .combobox-icon { color: var(--accent); }
+.combobox-field {
+  flex: 1; background: transparent; border: 0; outline: none;
+  color: var(--text); padding: 12px 0; font: inherit; font-size: 15px;
+}
+.combobox-field::placeholder { color: var(--muted); }
+.combobox-clear {
+  background: transparent; border: 0; color: var(--muted); cursor: pointer;
+  font-size: 20px; line-height: 1; padding: 4px 6px; border-radius: 4px;
+}
+.combobox-clear:hover { color: var(--text); background: var(--surface-2); }
+
+.spinner {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 2px solid var(--surface-2); border-top-color: var(--accent);
+  animation: spin .7s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.combobox.is-open .combobox-list { animation: dropIn .14s ease-out; }
+@keyframes dropIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.combobox-list { padding: 6px; }
+.combobox-item {
+  transition: background-color .12s ease;
+  padding: 8px;
+}
+.combobox-item.is-active { background: var(--surface-2); }
+.combobox-thumb-empty { background: var(--surface-2); }
+
+/* Loading skeleton */
+.skeleton { background: linear-gradient(90deg, var(--surface-2) 0%, var(--border) 50%, var(--surface-2) 100%); background-size: 200% 100%; animation: shimmer 1.2s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.skeleton-text { display: inline-block; height: 14px; flex: 1; border-radius: 4px; }
+.is-skeleton { cursor: default; }
+.is-skeleton .combobox-thumb { width: 32px; height: 44px; border-radius: 4px; }
+
+/* Sort tabs */
+.sort-tabs { display: flex; gap: 4px; margin-top: 14px; border-bottom: 1px solid var(--border); }
+.sort-tab {
+  padding: 9px 14px; font-size: 14px; color: var(--muted); text-decoration: none;
+  border-bottom: 2px solid transparent; transition: color .12s, border-color .12s;
+}
+.sort-tab:hover { color: var(--text); }
+.sort-tab.is-active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+/* Status badges */
+.status-badge {
+  display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: .02em;
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid currentColor; background: rgba(0,0,0,.45);
+  text-transform: uppercase;
+}
+.status-md { font-size: 12px; padding: 4px 10px; }
+.status-ongoing { color: #4ade80; }
+.status-completed { color: #60a5fa; }
+.status-hiatus { color: #fbbf24; }
+.status-cancelled { color: #f87171; }
+.status-publishing-finished { color: #a78bfa; }
+.status-unknown { color: var(--muted); }
+.poster-status { position: absolute; right: 6px; top: 6px; }
+
+/* Detail meta line + clickable genre tag */
+.detail-meta { display: flex; gap: 10px; align-items: center; margin: 6px 0 10px; }
+.tag-link { transition: background-color .12s, border-color .12s; text-decoration: none; }
+.tag-link:hover { background: rgba(124,92,255,.18); border-color: rgba(124,92,255,.55); color: var(--accent); }

@@ -1,64 +1,55 @@
-import Link from "next/link";
 import { api } from "@/lib/orpc.server";
-import { imageSrc } from "@/lib/image";
-import { SearchControls } from "@/components/SearchControls";
+import { Autocomplete } from "@/components/Autocomplete";
+import { LangFilter } from "@/components/LangFilter";
+import { PosterGrid } from "@/components/PosterGrid";
+import { SortTabs } from "@/components/SortTabs";
+import type { MangaSort } from "@packages/contracts";
 
 export const dynamic = "force-dynamic";
 
+const VALID_SORTS: ReadonlyArray<MangaSort> = ["popular", "newest", "completed"];
+
+/**
+ * Aggregated home — trending across every integration, deduped and source-less.
+ * Sort/genre filters trigger backend enrichment (parallel detail fan-out); the
+ * default sort is the raw, fast aggregation.
+ */
 export default async function Home({
   searchParams,
 }: {
-  searchParams: Promise<{ source?: string; q?: string }>;
+  searchParams: Promise<{ lang?: string; sort?: string }>;
 }) {
   const sp = await searchParams;
-  const { sources } = await api.sources.list({});
-  const source = sp.source || sources[0]?.id || "";
-  const q = (sp.q ?? "").trim();
+  const lang = sp.lang ?? "";
+  const sort: MangaSort = VALID_SORTS.includes(sp.sort as MangaSort)
+    ? (sp.sort as MangaSort)
+    : "popular";
 
-  let result: Awaited<ReturnType<typeof api.manga.popular>> | undefined;
-  let error: string | null = null;
-  try {
-    result = q
-      ? await api.manga.search({ source, q, page: 1 })
-      : await api.manga.popular({ source, page: 1 });
-  } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-  }
+  const [{ langs }, popular] = await Promise.all([
+    api.manga.langs({}).catch(() => ({ langs: [] as string[] })),
+    api.manga.popular({ lang: lang || undefined, sort, page: 1 }).catch((e) => ({
+      list: [] as Awaited<ReturnType<typeof api.manga.popular>>["list"],
+      hasNextPage: false,
+      _error: e instanceof Error ? e.message : String(e),
+    })),
+  ]);
+  const error = "_error" in popular ? popular._error : null;
 
   return (
     <>
-      <SearchControls sources={sources} source={source} q={q} />
+      <div className="toolbar">
+        <Autocomplete lang={lang} />
+        <LangFilter langs={langs} lang={lang} />
+      </div>
 
-      {result && (
-        <p className="muted">
-          {q ? `Resultados de “${q}” · ` : "Populares · "}
-          <span className="src-pill">fonte: {result.source.name}</span>
-        </p>
-      )}
+      <SortTabs active={sort} lang={lang} />
+
+      <p className="muted" style={{ marginTop: 12 }}>
+        {sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos"} · {popular.list.length} obras
+      </p>
       {error && <p className="notice">{error}</p>}
 
-      {result && (
-        <div className="poster-grid">
-          {result.list.map((m, i) => (
-            <Link
-              key={m.link + i}
-              className="poster"
-              href={`/manga?source=${source}&url=${encodeURIComponent(m.link)}&title=${encodeURIComponent(m.name)}`}
-            >
-              <div className="poster-cover">
-                {m.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img loading="lazy" src={imageSrc(source, m.imageUrl)} alt={m.name} />
-                ) : (
-                  <div className="poster-noimg">sem capa</div>
-                )}
-                <span className="poster-src">{result.source.name}</span>
-              </div>
-              <div className="poster-name">{m.name}</div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <PosterGrid items={popular.list} />
     </>
   );
 }

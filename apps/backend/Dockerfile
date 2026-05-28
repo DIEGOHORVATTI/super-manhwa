@@ -8,7 +8,7 @@ WORKDIR /app
 # Workspace manifests first for layer caching (must satisfy the workspaces globs).
 COPY package.json bun.lock ./
 COPY apps/backend/package.json ./apps/backend/
-COPY apps/frontend/package.json ./apps/frontend/
+COPY apps/web/package.json ./apps/web/
 COPY packages/core/package.json ./packages/core/
 COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/extension-runtime/package.json ./packages/extension-runtime/

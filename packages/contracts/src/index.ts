@@ -1,8 +1,14 @@
-import { manga } from "./modules/manga/route";
-import { sources } from "./modules/sources/route";
+export * from "./schemas";
 
-/** The single source of truth — implemented by the backend, consumed by the frontend. */
-export const contracts = { sources, manga };
+import * as routes from "./routes";
 
-export * from "./modules/sources/schema";
-export * from "./modules/manga/schema";
+/**
+ * Single source of truth for the wire. The backend `implement(contracts)`s this;
+ * the frontend `createORPCClient<typeof contracts>()`s. There is no `sources`
+ * route by design — the frontend is source-agnostic.
+ *
+ * @see https://orpc.dev/docs/quick-start
+ */
+export const contracts = routes;
+
+export type AppRouter = typeof contracts;

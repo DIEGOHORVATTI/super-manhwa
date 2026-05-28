@@ -15,6 +15,16 @@ services:
       PORT: "8787"
       # The app routes hasCloudflare sources through this sidecar.
       FLARESOLVERR_URL: "http://flaresolverr:8191/v1"
+      # AES-256-GCM key (sha256-derived) used to mint opaque manga/chapter/image
+      # tokens. Loaded from .env — never bake into the image. Rotate to invalidate
+      # every outstanding URL at once.
+      IMAGE_TOKEN_SECRET: "${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set in .env}"
+      # Persistent short-id lookup. Lives on a host-mounted volume so URLs survive
+      # container restarts; if this file is lost, every existing /manga/<id> URL
+      # becomes invalid (same effect as rotating IMAGE_TOKEN_SECRET).
+      ID_STORE_PATH: "/app/data/ids.jsonl"
+    volumes:
+      - ./data:/app/data
     restart: unless-stopped
     depends_on:
       - flaresolverr

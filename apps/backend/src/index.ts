@@ -2,7 +2,7 @@
  * Delivery service entrypoint (ADR-0008). Persistent Bun HTTP server running the
  * oRPC-backed handler. Runs locally (`bun dev`) and in the Docker container.
  */
-import { handle } from "./app.js";
+import { handle } from "@/app";
 
 const port = Number(process.env.PORT ?? 8787);
 

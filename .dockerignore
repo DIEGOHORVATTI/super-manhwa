@@ -1,15 +1,18 @@
 node_modules
+**/.next
+**/.output
+**/.vercel
+**/.wrangler
 **/dist
 .git
 .github
-.vercel
 .claude
-# Frontend & Vercel-only bits (the Dockerfile only copies apps/backend + packages,
-# but apps/frontend/package.json must stay in context for the workspace glob).
-apps/frontend/src
-apps/frontend/index.html
-apps/frontend/vite.config.ts
-apps/frontend/tsconfig.json
-api
-vercel.json
+# Frontend bits (the Dockerfile only copies apps/backend + packages; apps/web/package.json
+# stays in context for the bun workspaces glob).
+apps/web/app
+apps/web/components
+apps/web/lib
+apps/web/next.config.ts
+apps/web/tsconfig.json
+apps/web/next-env.d.ts
 *.log
