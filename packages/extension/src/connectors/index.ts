@@ -13,7 +13,6 @@ import { mangafirePtBr } from "./mangafire";
 import { mangasYabu } from "./mangas-yabu";
 import { mangaworld } from "./mangaworld";
 import { manhwaz } from "./manhwaz";
-import { tsukiMangas } from "./tsuki-mangas";
 import { webtoons } from "./webtoons";
 import { weebcentral } from "./weebcentral";
 
@@ -46,7 +45,6 @@ export const CONNECTORS: readonly MangaConnector[] = [
   comickPtBr,
   mangafirePtBr,
   // Native TypeScript (pt-br) — CF-flagged until full-browser bypass lands
-  tsukiMangas,
   mangaLivre,
   mangasYabu,
 ] as const;

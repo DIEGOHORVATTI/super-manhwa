@@ -18,6 +18,8 @@ import {
 import { makeConnectorRegistry } from "@/modules/catalog/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
 import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
+import { makeGetMangaMeta } from "@/modules/metadata/application";
+import { makeAniListProvider } from "@/modules/metadata/infrastructure";
 import { makeGetHealth } from "@/modules/system/application";
 
 // Infrastructure (singletons)
@@ -28,6 +30,7 @@ const idStore = makeJsonlIdStore({
 });
 const connectorRegistry = makeConnectorRegistry();
 const imageFetcher = makeHttpImageFetcher();
+const metadataProvider = makeAniListProvider();
 
 // Catalog application
 export const listPopular = makeListPopular(connectorRegistry, idStore, cache);
@@ -37,6 +40,9 @@ export const getMangaDetail = makeGetMangaDetail(connectorRegistry, idStore, cac
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(listPopular);
+
+// Metadata application (AniList enrichment)
+export const getMangaMeta = makeGetMangaMeta(metadataProvider, idStore, cache);
 
 // Media application
 export const proxyImage = makeProxyImage(idStore, connectorRegistry, imageFetcher);

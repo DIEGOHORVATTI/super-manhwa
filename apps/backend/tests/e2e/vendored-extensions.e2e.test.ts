@@ -12,7 +12,6 @@ import { CONNECTORS, loadMangaExtension, VENDORED_VERSION } from "@packages/exte
 const VENDORED_PATHS = [
   "all/mangadex.js",
   "all/webtoons.js",
-  "all/comick.js",
   "all/mangafire.js",
   "en/weebcentral.js",
   "en/manhwaz.js",
@@ -44,7 +43,8 @@ describe("vendored extensions / package files", () => {
   it("every expected Mangayomi-backed connector is registered (each maps to a vendored JS file)", () => {
     // These connectors are all built via `createMangayomiConnector` with a
     // vendored source path — they read JS from this directory at first call.
-    // mangadex-ptbr reuses all/mangadex.js; comick/mangafire-ptbr add their own.
+    // mangadex-ptbr reuses all/mangadex.js. (comick + mangafire are now NATIVE
+    // connectors — mangafire.js stays vendored only to supply its `vrf` crypto.)
     const EXPECTED_MANGAYOMI_IDS = [
       "mangadex",
       "webtoons",
@@ -53,8 +53,6 @@ describe("vendored extensions / package files", () => {
       "manhwaz",
       "asurascans",
       "mangadex-ptbr",
-      "comick-ptbr",
-      "mangafire-ptbr",
     ];
     const ids = new Set(CONNECTORS.map((c) => c.id));
     for (const id of EXPECTED_MANGAYOMI_IDS) {

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { CharacterGrid } from "@/components/CharacterGrid";
+import { DetailTabs } from "@/components/DetailTabs";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
@@ -72,38 +74,15 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const title = detail.title ?? n ?? "Mangá";
   const chapters = detail.chapters ?? [];
 
-  return (
+  // Rich metadata (AniList) — best-effort, never blocks the page.
+  const { meta } = await api.manga.meta({ name: title }).catch(() => ({
+    meta: { tags: [], characters: [], relations: [] } as Awaited<
+      ReturnType<typeof api.manga.meta>
+    >["meta"],
+  }));
+
+  const chaptersTab = (
     <>
-      <Link className="back" href="/">
-        ← voltar
-      </Link>
-
-      <div className="detail-head">
-        {detail.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="detail-cover" src={detail.imageUrl} alt={title} />
-        )}
-        <div>
-          <h1 className="detail-title">{title}</h1>
-          <div className="detail-meta">
-            <StatusBadge status={detail.status} size="md" />
-            <span className="muted">{chapters.length} capítulos</span>
-          </div>
-          {detail.genre && detail.genre.length > 0 && (
-            <div className="genres">
-              {detail.genre.slice(0, 16).map((g) => (
-                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
-                  {g}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {detail.description && <MarkdownDescription text={detail.description} />}
-
-      <h2 className="section">Capítulos</h2>
       {chapters.length === 0 && <p className="muted">Nenhum capítulo disponível.</p>}
       <ul className="chapters-grid">
         {chapters.map((c) => (
@@ -117,6 +96,121 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
           </li>
         ))}
       </ul>
+    </>
+  );
+
+  const aboutTab = (
+    <div className="about">
+      {detail.description ? (
+        <MarkdownDescription text={detail.description} />
+      ) : meta.description ? (
+        <MarkdownDescription text={meta.description} />
+      ) : (
+        <p className="muted">Sem sinopse disponível.</p>
+      )}
+
+      {(detail.author || meta.score !== undefined) && (
+        <dl className="about-facts">
+          {detail.author && (
+            <div>
+              <dt>Autor</dt>
+              <dd>{detail.author}</dd>
+            </div>
+          )}
+          {detail.artist && (
+            <div>
+              <dt>Arte</dt>
+              <dd>{detail.artist}</dd>
+            </div>
+          )}
+          {meta.score !== undefined && (
+            <div>
+              <dt>Nota</dt>
+              <dd>{meta.score}/100</dd>
+            </div>
+          )}
+        </dl>
+      )}
+
+      {meta.tags.length > 0 && (
+        <>
+          <h3 className="section">Tags</h3>
+          <div className="genres">
+            {meta.tags.map((t) => (
+              <span key={t} className="tag">
+                {t}
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+
+      {meta.relations.length > 0 && (
+        <>
+          <h3 className="section">Relacionados</h3>
+          <ul className="relations">
+            {meta.relations.map((r) => (
+              <li key={`${r.relation}-${r.title}`}>
+                <span className="relation-kind">{r.relation}</span> {r.title}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+
+  // Build the tab set — characters only when AniList had data.
+  const tabs = [
+    { key: "chapters", label: `Capítulos (${chapters.length})`, content: chaptersTab },
+    ...(meta.characters.length > 0
+      ? [
+          {
+            key: "characters",
+            label: "Personagens",
+            content: <CharacterGrid characters={meta.characters} />,
+          },
+        ]
+      : []),
+    { key: "about", label: "Sobre", content: aboutTab },
+  ];
+
+  return (
+    <>
+      <Link className="back" href="/">
+        ← voltar
+      </Link>
+
+      {meta.bannerImage && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img className="detail-banner" src={meta.bannerImage} alt="" loading="lazy" />
+      )}
+
+      <div className="detail-head">
+        {detail.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img className="detail-cover" src={detail.imageUrl} alt={title} />
+        )}
+        <div>
+          <h1 className="detail-title">{title}</h1>
+          <div className="detail-meta">
+            <StatusBadge status={detail.status} size="md" />
+            <span className="muted">{chapters.length} capítulos</span>
+            {meta.score !== undefined && <span className="score-pill">★ {meta.score}</span>}
+          </div>
+          {detail.genre && detail.genre.length > 0 && (
+            <div className="genres">
+              {detail.genre.slice(0, 16).map((g) => (
+                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
+                  {g}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <DetailTabs tabs={tabs} />
     </>
   );
 }

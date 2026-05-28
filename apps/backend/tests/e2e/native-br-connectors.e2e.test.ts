@@ -21,13 +21,7 @@ import { CONNECTORS, type MangaConnector } from "@packages/extension";
  * pt-br aggregators (Comick/Mangafire) which are blocked on host reachability /
  * anti-bot vrf respectively. They share the same contract guarantees.
  */
-const NATIVE_BR_IDS = [
-  "tsuki-mangas",
-  "manga-livre",
-  "mangas-yabu",
-  "comick-ptbr",
-  "mangafire-ptbr",
-] as const;
+const NATIVE_BR_IDS = ["manga-livre", "mangas-yabu", "comick-ptbr", "mangafire-ptbr"] as const;
 
 describe("native BR connectors / registration", () => {
   it.each(NATIVE_BR_IDS)("'%s' is in CONNECTORS", (id) => {

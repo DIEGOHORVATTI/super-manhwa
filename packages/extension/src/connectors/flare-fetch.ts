@@ -84,3 +84,38 @@ export const flareFetch = async (
     viaSolver: true,
   };
 };
+
+/**
+ * FlareSolverr renders a real Chromium, so a JSON API endpoint comes back
+ * wrapped in `<html>…<pre>{json}</pre>…</html>`. Strip back to the raw JSON
+ * when that's the shape; otherwise return the body untouched (plain-fetch
+ * returns raw JSON already, and real HTML pages pass through).
+ */
+const unwrapPreJson = (body: string): string => {
+  const m = body.match(/<pre[^>]*>([\s\S]*?)<\/pre>/i);
+  if (!m) return body;
+  const inner = m[1]
+    .replace(/&quot;/g, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .trim();
+  return inner.startsWith("{") || inner.startsWith("[") ? inner : body;
+};
+
+/**
+ * Fetch a JSON API endpoint through the same WAF bypass and parse it. Handles
+ * the FlareSolverr `<pre>`-wrapping transparently. Throws on non-2xx or parse
+ * failure — connectors let it propagate to the aggregator's fallback.
+ */
+export const flareFetchJson = async <T>(url: string, opts: FlareFetchOptions = {}): Promise<T> => {
+  const res = await flareFetch(url, {
+    ...opts,
+    headers: { Accept: "application/json", ...opts.headers },
+  });
+  if (res.status >= 400) throw new Error(`${url} → HTTP ${res.status}`);
+  return JSON.parse(unwrapPreJson(res.body)) as T;
+};

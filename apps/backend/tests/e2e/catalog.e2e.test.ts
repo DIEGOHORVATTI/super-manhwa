@@ -18,7 +18,7 @@ describe("catalog / aggregation", () => {
     // No duplicate names (case-insensitive).
     const names = new Set(r.list.map((m) => m.name.trim().toLowerCase()));
     expect(names.size).toBe(r.list.length);
-  });
+  }, 30_000); // cold cross-source aggregation can take ~6s
 
   it("popular with sort=newest triggers enrichment (status + genres populated)", async () => {
     const r = await apiClient.manga.popular({ sort: "newest" });

@@ -8,6 +8,7 @@ import {
   langsResultSchema,
   mangaListSchema,
   mangaSortSchema,
+  metaResultSchema,
   pagesResultSchema,
   suggestResultSchema,
 } from "../schemas/manga";
@@ -71,4 +72,13 @@ export const manga = oc.prefix("/manga").router({
     .route({ method: "GET", path: "/genres", summary: "Genres seen in the enriched trending pool" })
     .input(langFilterSchema)
     .output(genresResultSchema),
+
+  meta: prefix
+    .route({
+      method: "GET",
+      path: "/meta",
+      summary: "Rich metadata (characters, tags, score) by title",
+    })
+    .input(z.object({ name: z.string() }))
+    .output(metaResultSchema),
 });

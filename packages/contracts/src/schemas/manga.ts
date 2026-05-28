@@ -67,3 +67,35 @@ export const genresResultSchema = z.object({ genres: z.array(z.string()) });
  *  trigger enrichment (parallel detail calls) and are bounded to top-N items. */
 export const mangaSortSchema = z.enum(["popular", "newest", "completed"]);
 export type MangaSort = z.infer<typeof mangaSortSchema>;
+
+/* ----- Rich metadata (AniList) — powers the detail page's extra tabs ----- */
+/* Discovery/metadata layer, NOT a reading source: no opaque source id (the
+ * provider is internal), image URLs proxied like covers/pages. */
+
+export const mangaCharacterSchema = z.object({
+  name: z.string(),
+  /** MAIN | SUPPORTING | BACKGROUND (AniList role). */
+  role: z.string().optional(),
+  imageUrl: z.string().optional(),
+});
+export type MangaCharacter = z.infer<typeof mangaCharacterSchema>;
+
+export const mangaRelationSchema = z.object({
+  /** e.g. SEQUEL, PREQUEL, SIDE_STORY, ADAPTATION. */
+  relation: z.string(),
+  title: z.string(),
+});
+export type MangaRelation = z.infer<typeof mangaRelationSchema>;
+
+export const mangaMetaSchema = z.object({
+  /** 0–100 average score, when known. */
+  score: z.number().optional(),
+  bannerImage: z.string().optional(),
+  tags: z.array(z.string()).default([]),
+  characters: z.array(mangaCharacterSchema).default([]),
+  relations: z.array(mangaRelationSchema).default([]),
+  description: z.string().optional(),
+});
+export type MangaMeta = z.infer<typeof mangaMetaSchema>;
+
+export const metaResultSchema = z.object({ meta: mangaMetaSchema });
