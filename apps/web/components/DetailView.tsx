@@ -167,6 +167,7 @@ export function DetailView({
                 <Link
                   className={`chip${read.has(c.id) ? " is-read" : ""}`}
                   href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
+                  title={read.has(c.id) ? "Lido" : undefined}
                 >
                   <Flag
                     lang={c.lang ?? lang}
@@ -175,6 +176,11 @@ export function DetailView({
                     className="chip-flag"
                   />
                   <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
+                  {read.has(c.id) && (
+                    <span className="chip-read" aria-label="Lido">
+                      <Icon name="circle-check-big" size={12} />
+                    </span>
+                  )}
                 </Link>
               </li>
             ))}

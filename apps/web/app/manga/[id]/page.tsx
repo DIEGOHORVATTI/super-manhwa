@@ -272,7 +272,14 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
             {langBreakdown.length > 0 && (
               <span className="lang-flags" aria-label="Idiomas disponíveis">
                 {langBreakdown.map((b) => (
-                  <Flag key={b.code} lang={b.code} size={20} title={langLabel(b.code)} />
+                  <span
+                    key={b.code}
+                    className="lang-flag-pct"
+                    title={`${langLabel(b.code)} · ${b.pct}% dos capítulos`}
+                  >
+                    <Flag lang={b.code} size={18} />
+                    {langBreakdown.length > 1 && <span className="lang-flag-pctnum">{b.pct}%</span>}
+                  </span>
                 ))}
               </span>
             )}
