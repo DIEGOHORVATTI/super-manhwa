@@ -82,8 +82,8 @@ export function Footer() {
           <Link href="/?sort=completed">Completos</Link>
         </nav>
 
-        <nav className="footer-col" aria-label="Empresa">
-          <h3>Empresa</h3>
+        <nav className="footer-col" aria-label="Comunidade">
+          <h3>Comunidade</h3>
           <Link href="/about">Sobre nós</Link>
           <Link href="/contact">Contato</Link>
           <a href="https://github.com" target="_blank" rel="noopener noreferrer">

@@ -66,10 +66,6 @@ export default async function ExplorarPage({ searchParams }: { searchParams: SP 
 
   return (
     <>
-      <h1 className="home-title" style={{ marginBottom: 12 }}>
-        Explorar
-      </h1>
-
       <ExploreFilters
         genres={genresRes.genres}
         q={q}

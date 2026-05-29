@@ -1299,12 +1299,27 @@ a:hover {
   margin-top: 20px;
 }
 
-/* Disqus comments section (work + chapter) */
+/* Disqus comments section (work + chapter). The thread itself lives in a
+   cross-origin iframe we can't style — we only frame it in a card; the internal
+   look (colour scheme, reactions) is controlled in the Disqus admin. */
 .comments {
   margin: 26px 0 8px;
 }
+.comments .section {
+  margin-bottom: 12px;
+}
 .disqus-thread {
   min-height: 120px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+@media (max-width: 620px) {
+  .disqus-thread {
+    padding: 10px 12px;
+    border-radius: 14px;
+  }
 }
 
 /* AniList connect card (library) — styled like a third-party sign-in. */

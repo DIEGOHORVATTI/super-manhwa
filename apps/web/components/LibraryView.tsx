@@ -24,10 +24,6 @@ export function LibraryView() {
 
   return (
     <>
-      <h1 className="home-title" style={{ marginBottom: 12 }}>
-        Biblioteca
-      </h1>
-
       <AniListSync />
 
       <ContinueReading />
