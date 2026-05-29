@@ -69,9 +69,10 @@ export const suggestResultSchema = z.object({ list: z.array(mangaSummarySchema) 
 export const langsResultSchema = z.object({ langs: z.array(z.string()) });
 export const genresResultSchema = z.object({ genres: z.array(z.string()) });
 
-/** Sort modes for the listing. `popular` is the raw, fast default. The others
- *  trigger enrichment (parallel detail calls) and are bounded to top-N items. */
-export const mangaSortSchema = z.enum(["popular", "newest", "completed"]);
+/** Sort modes for the listing. `popular` is the all-time default; `trending`
+ *  surfaces what's active right now (AniList TRENDING). `newest`/`completed`
+ *  filter the catalog by recency / finished status. */
+export const mangaSortSchema = z.enum(["popular", "trending", "newest", "completed"]);
 export type MangaSort = z.infer<typeof mangaSortSchema>;
 
 /* ----- Rich metadata (AniList) — powers the detail page's extra tabs ----- */

@@ -21,7 +21,9 @@ export const makeSuggestManga =
 
     const key = `suggest:${trimmed.toLowerCase()}`;
     return cache.remember(key, SUGGEST_TTL, async () => {
-      const items = (await catalog.search(trimmed, 1)).slice(0, SUGGEST_LIMIT);
-      return { list: items.map((it) => MangaMapper.catalogSummary(idStore, it)) };
+      const { items } = await catalog.search(trimmed, 1);
+      return {
+        list: items.slice(0, SUGGEST_LIMIT).map((it) => MangaMapper.catalogSummary(idStore, it)),
+      };
     });
   };

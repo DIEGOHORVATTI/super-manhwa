@@ -31,10 +31,10 @@ export const makeListPopular =
     const catalogSort = toCatalogSort(sort);
     const key = `catalog:${catalogSort}:${genre ?? "*"}:${page}`;
     return cache.remember(key, POPULAR_TTL, async () => {
-      const items = await catalog.list({ sort: catalogSort, genre, page });
+      const { items, hasNextPage } = await catalog.list({ sort: catalogSort, genre, page });
       return {
         list: items.map((it) => MangaMapper.catalogSummary(idStore, it)),
-        hasNextPage: items.length >= 20,
+        hasNextPage,
       };
     });
   };

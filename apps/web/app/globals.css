@@ -1115,6 +1115,190 @@ a:hover {
   letter-spacing: -0.02em;
 }
 
+/* Home: paginated main grid + ranking rail. The rail drops below the grid on
+   narrow viewports (single column). */
+.home-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 22px;
+  margin-top: 14px;
+}
+@media (min-width: 980px) {
+  .home-layout {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: start;
+  }
+}
+.home-main {
+  min-width: 0;
+}
+
+/* Ranking rail — Asura-style numbered "what's hot" list. */
+.rank {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 14px 6px;
+}
+@media (min-width: 980px) {
+  /* Sticks just below the fixed header while the grid scrolls. */
+  .rank {
+    position: sticky;
+    top: calc(var(--header-h) + 18px);
+  }
+}
+.rank-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.rank-head svg {
+  color: var(--accent);
+}
+.rank-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.rank-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 8px 6px;
+  border-radius: 10px;
+  color: inherit;
+  transition: background-color 0.12s;
+}
+.rank-link:hover {
+  background: var(--surface-2);
+}
+.rank-item + .rank-item {
+  border-top: 1px solid var(--border);
+}
+.rank-no {
+  flex: 0 0 22px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.rank-no.is-top {
+  color: var(--accent);
+}
+.rank-thumb {
+  flex: 0 0 38px;
+  width: 38px;
+  height: 52px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.rank-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.rank-noimg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.rank-meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.rank-name {
+  font-size: 13px;
+  line-height: 1.3;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.rank-genre {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pager — prev/next + windowed page numbers. */
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 26px 0 8px;
+}
+.pager-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color 0.12s,
+    background-color 0.12s;
+}
+.pager-btn:hover {
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+.pager-btn.is-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.pager-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.pager-num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition:
+    color 0.12s,
+    background-color 0.12s;
+}
+.pager-num:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.pager-num.is-active {
+  color: #fff;
+  background: var(--accent);
+}
+.pager-ellipsis {
+  color: var(--muted);
+  padding: 0 2px;
+}
+
 /* Status badges */
 .status-badge {
   display: inline-block;

@@ -42,8 +42,8 @@ const registryOf = (connectors: MangaConnector[]): ConnectorRegistry => ({
 });
 
 const catalogOf = (work: CatalogWork | null): CatalogSource => ({
-  search: async () => [],
-  list: async () => [],
+  search: async () => ({ items: [], hasNextPage: false }),
+  list: async () => ({ items: [], hasNextPage: false }),
   genres: async () => [],
   byId: async () => work,
 });

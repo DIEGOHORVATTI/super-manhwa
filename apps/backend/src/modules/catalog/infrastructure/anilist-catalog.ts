@@ -3,6 +3,7 @@ import { httpFetch } from "@/shared/http-fetch";
 
 import type {
   CatalogItem,
+  CatalogPage,
   CatalogSort,
   CatalogSource,
   CatalogWork,
@@ -49,7 +50,12 @@ interface MediaNode {
 }
 
 interface PageResponse {
-  data?: { Page?: { media?: MediaNode[] | null } | null };
+  data?: {
+    Page?: {
+      pageInfo?: { hasNextPage?: boolean | null } | null;
+      media?: MediaNode[] | null;
+    } | null;
+  };
 }
 interface MediaResponse {
   data?: { Media?: MediaNode | null };
@@ -90,6 +96,7 @@ const SORT_BY: Record<CatalogSort, string> = {
 
 const SEARCH_QUERY = `query ($search: String, $page: Int, $perPage: Int) {
   Page(page: $page, perPage: $perPage) {
+    pageInfo { hasNextPage }
     media(type: MANGA, search: $search, sort: SEARCH_MATCH) { ${MEDIA_FIELDS} }
   }
 }`;
@@ -109,6 +116,7 @@ const buildListQuery = (
   }
   const query = `query (${decls.join(", ")}) {
     Page(page: $page, perPage: $perPage) {
+      pageInfo { hasNextPage }
       media(type: MANGA, ${filters.join(", ")}) { ${MEDIA_FIELDS} }
     }
   }`;
@@ -127,9 +135,13 @@ const DETAIL_QUERY = `query ($id: Int) {
 const listFrom = async (
   query: string,
   variables: Record<string, unknown>,
-): Promise<CatalogItem[]> => {
+): Promise<CatalogPage> => {
   const res = await post<PageResponse>(query, variables);
-  return (res?.data?.Page?.media ?? []).map(toItem);
+  const page = res?.data?.Page;
+  return {
+    items: (page?.media ?? []).map(toItem),
+    hasNextPage: page?.pageInfo?.hasNextPage ?? false,
+  };
 };
 
 /**

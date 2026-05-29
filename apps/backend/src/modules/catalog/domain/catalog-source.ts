@@ -32,11 +32,17 @@ export type CatalogWork = CatalogItem & {
 /** Listing modes: `trending` (home default), all-time `popular`, `newest`, `completed`. */
 export type CatalogSort = "trending" | "popular" | "newest" | "completed";
 
+/** A page of catalog items plus whether the source has a further page. */
+export type CatalogPage = {
+  items: CatalogItem[];
+  hasNextPage: boolean;
+};
+
 export type CatalogSource = {
   /** Free-text search, paginated. */
-  search(query: string, page: number): Promise<CatalogItem[]>;
+  search(query: string, page: number): Promise<CatalogPage>;
   /** Browse listing by sort, optionally constrained to a genre. */
-  list(opts: { sort: CatalogSort; genre?: string; page: number }): Promise<CatalogItem[]>;
+  list(opts: { sort: CatalogSort; genre?: string; page: number }): Promise<CatalogPage>;
   /** Full record by canonical id, or null if unknown. */
   byId(id: string): Promise<CatalogWork | null>;
   /** The catalog's genre vocabulary. */

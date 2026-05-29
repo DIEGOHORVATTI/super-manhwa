@@ -26,10 +26,10 @@ export const makeSearchManga =
 
     const key = `search:${trimmed.toLowerCase()}:${page}`;
     return cache.remember(key, SEARCH_TTL, async () => {
-      const items = await catalog.search(trimmed, page);
+      const { items, hasNextPage } = await catalog.search(trimmed, page);
       return {
         list: items.map((it) => MangaMapper.catalogSummary(idStore, it)),
-        hasNextPage: items.length >= 20,
+        hasNextPage,
       };
     });
   };
