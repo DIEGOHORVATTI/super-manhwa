@@ -1299,6 +1299,58 @@ a:hover {
   margin-top: 20px;
 }
 
+/* Horizontal discovery shelf (Explorar carousels) */
+.shelf {
+  margin: 0 0 22px;
+}
+.shelf-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 0 0 10px;
+}
+.shelf-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+}
+.shelf-title svg {
+  color: var(--accent);
+}
+.shelf-more {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.shelf-row {
+  list-style: none;
+  margin: 0;
+  padding: 2px 0 8px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scroll-snap-type: x proximity;
+}
+.shelf-card {
+  flex: 0 0 140px;
+  width: 140px;
+  scroll-snap-align: start;
+}
+@media (max-width: 620px) {
+  .shelf-card {
+    flex-basis: 120px;
+    width: 120px;
+  }
+}
+
 /* Explorar filter bar */
 .explore-filters {
   display: flex;
