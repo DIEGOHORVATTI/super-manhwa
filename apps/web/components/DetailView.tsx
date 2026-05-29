@@ -81,7 +81,7 @@ export function DetailView({
           {cover}
           <div className="detail-info">
             <h1 className="detail-title">{title}</h1>
-            <div className="detail-meta">{meta}</div>
+            {meta}
             {genres}
             {descPreview && (
               <p className="detail-desc-preview">

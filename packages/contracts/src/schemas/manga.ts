@@ -74,9 +74,17 @@ export type MangaSort = z.infer<typeof mangaSortSchema>;
 
 export const mangaCharacterSchema = z.object({
   name: z.string(),
+  /** Native-language name (e.g. Japanese), when known. */
+  nativeName: z.string().optional(),
   /** MAIN | SUPPORTING | BACKGROUND (AniList role). */
   role: z.string().optional(),
   imageUrl: z.string().optional(),
+  /** Free-text bio (AniList markdown-ish). */
+  description: z.string().optional(),
+  gender: z.string().optional(),
+  age: z.string().optional(),
+  /** AniList favourites count. */
+  favourites: z.number().optional(),
 });
 export type MangaCharacter = z.infer<typeof mangaCharacterSchema>;
 

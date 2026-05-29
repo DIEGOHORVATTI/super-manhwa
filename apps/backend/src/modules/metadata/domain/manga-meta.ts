@@ -6,8 +6,13 @@
 
 export type MetaCharacter = {
   name: string;
+  nativeName?: string;
   role?: string;
   imageUrl?: string;
+  description?: string;
+  gender?: string;
+  age?: string;
+  favourites?: number;
 };
 
 export type MetaRelation = {

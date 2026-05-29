@@ -173,11 +173,11 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         ) : null
       }
       meta={
-        <>
+        <div className="detail-meta">
           <StatusBadge status={detail.status} size="md" />
           <span className="muted">{chapters.length} capítulos</span>
           {meta.score !== undefined && <span className="score-pill">★ {meta.score}</span>}
-        </>
+        </div>
       }
       genres={
         detail.genre && detail.genre.length > 0 ? (

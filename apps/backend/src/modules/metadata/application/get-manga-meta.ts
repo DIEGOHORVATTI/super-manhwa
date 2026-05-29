@@ -35,8 +35,13 @@ export const makeGetMangaMeta =
           tags: m.tags,
           characters: m.characters.map((c) => ({
             name: c.name,
+            nativeName: c.nativeName,
             role: c.role,
             imageUrl: proxy(idStore, c.imageUrl),
+            description: c.description,
+            gender: c.gender,
+            age: c.age,
+            favourites: c.favourites,
           })),
           relations: m.relations,
         },

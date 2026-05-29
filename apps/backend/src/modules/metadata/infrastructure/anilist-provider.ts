@@ -11,7 +11,17 @@ const QUERY = `query ($s: String) {
     description(asHtml: false)
     tags { name rank }
     characters(sort: ROLE, perPage: 12) {
-      edges { role node { name { full } image { large } } }
+      edges {
+        role
+        node {
+          name { full native }
+          image { large }
+          description(asHtml: false)
+          gender
+          age
+          favourites
+        }
+      }
     }
     relations {
       edges { relationType node { type title { english romaji } } }
@@ -29,7 +39,14 @@ interface AniListResponse {
       characters?: {
         edges?: Array<{
           role?: string;
-          node?: { name?: { full?: string }; image?: { large?: string } };
+          node?: {
+            name?: { full?: string; native?: string | null };
+            image?: { large?: string };
+            description?: string | null;
+            gender?: string | null;
+            age?: string | null;
+            favourites?: number | null;
+          };
         }>;
       };
       relations?: {
@@ -71,8 +88,13 @@ export const makeAniListProvider = (): MetadataProvider => ({
         .filter((e) => e.node?.name?.full)
         .map((e) => ({
           name: e.node!.name!.full!,
+          nativeName: e.node?.name?.native ?? undefined,
           role: e.role,
           imageUrl: e.node?.image?.large ?? undefined,
+          description: e.node?.description ?? undefined,
+          gender: e.node?.gender ?? undefined,
+          age: e.node?.age ?? undefined,
+          favourites: e.node?.favourites ?? undefined,
         })),
       relations: (m.relations?.edges ?? [])
         .filter(
