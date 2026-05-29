@@ -1,16 +1,11 @@
-// Native pt-br connectors. They're currently `hasCloudflare: true` because
-// the upstream sites use WAFs / SPAs that need real-browser execution (see
-// `./README.md` for the per-site situation). Registered as typed values so
-// the wire is ready when a Puppeteer layer lands; until then they're excluded
-// from the popular aggregation pool and act only as fallback targets via
-// opaque ids.
+// pt-br native connectors (Comick, Mangafire) are `hasCloudflare: true`: kept
+// out of the popular pool so the home feed stays clean, but fully functional as
+// detail/fallback targets by opaque id (Comick → 365 ch, Mangafire → 201 ch).
 import type { MangaConnector } from "../types";
 import { asurascans } from "./asurascans";
 import { comickPtBr } from "./comick";
-import { mangaLivre } from "./manga-livre";
 import { mangadex, mangadexPtBr } from "./mangadex";
 import { mangafirePtBr } from "./mangafire";
-import { mangasYabu } from "./mangas-yabu";
 import { mangaworld } from "./mangaworld";
 import { manhwaz } from "./manhwaz";
 import { webtoons } from "./webtoons";
@@ -44,9 +39,6 @@ export const CONNECTORS: readonly MangaConnector[] = [
   // under QuickJS. See each connector module for the per-source blocker.
   comickPtBr,
   mangafirePtBr,
-  // Native TypeScript (pt-br) — CF-flagged until full-browser bypass lands
-  mangaLivre,
-  mangasYabu,
 ] as const;
 
 /** Build-time map for O(1) lookup by id. */

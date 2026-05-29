@@ -20,13 +20,11 @@ export default function PrivacidadePage() {
           anônima, para melhorar o serviço.
         </li>
         <li>
-          <strong>Dados técnicos:</strong> tipo de navegador e logs de acesso, usados para
-          segurança e diagnóstico.
+          <strong>Dados técnicos:</strong> tipo de navegador e logs de acesso, usados para segurança
+          e diagnóstico.
         </li>
       </ul>
-      <p>
-        Não exigimos cadastro nem coletamos nome, e-mail ou dados sensíveis para navegar e ler.
-      </p>
+      <p>Não exigimos cadastro nem coletamos nome, e-mail ou dados sensíveis para navegar e ler.</p>
       <h2>Cookies</h2>
       <p>
         Usamos cookies essenciais para o funcionamento do site. Detalhes na{" "}

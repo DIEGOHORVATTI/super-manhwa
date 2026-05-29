@@ -27,7 +27,10 @@ export default function DmcaPage() {
           Uma declaração de boa-fé de que o uso não foi autorizado pelo titular, seu agente ou pela
           lei.
         </li>
-        <li>Uma declaração de que as informações são verdadeiras e de que você é o titular ou seu representante.</li>
+        <li>
+          Uma declaração de que as informações são verdadeiras e de que você é o titular ou seu
+          representante.
+        </li>
       </ul>
       <p>
         Envie para <a href="mailto:dmca@supermanhwa.app">dmca@supermanhwa.app</a>. Avaliaremos e,

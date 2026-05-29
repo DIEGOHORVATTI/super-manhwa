@@ -10,9 +10,9 @@ export default function SobrePage() {
   return (
     <StaticPage title="Sobre nós">
       <p>
-        O <strong>Super Manhwa</strong> é um leitor e catálogo web de mangás, manhwas e webtoons
-        que agrega obras de várias fontes públicas em um só lugar, com busca rápida e uma
-        experiência de leitura limpa.
+        O <strong>Super Manhwa</strong> é um leitor e catálogo web de mangás, manhwas e webtoons que
+        agrega obras de várias fontes públicas em um só lugar, com busca rápida e uma experiência de
+        leitura limpa.
       </p>
       <p>
         O projeto é gratuito e tem propósito educacional e de demonstração técnica. Não hospedamos

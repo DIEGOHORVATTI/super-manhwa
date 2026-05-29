@@ -21,8 +21,8 @@ export default function TermosPage() {
       <h2>2. Conteúdo</h2>
       <p>
         Não hospedamos arquivos. Todo o conteúdo exibido pertence aos seus respectivos autores e
-        editoras e é obtido de fontes públicas de terceiros. Não nos responsabilizamos pelo
-        conteúdo dessas fontes.
+        editoras e é obtido de fontes públicas de terceiros. Não nos responsabilizamos pelo conteúdo
+        dessas fontes.
       </p>
       <h2>3. Conduta</h2>
       <p>
