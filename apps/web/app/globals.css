@@ -1453,6 +1453,9 @@ a:hover {
   font-weight: 600;
   white-space: nowrap;
 }
+.shelf-scroller {
+  position: relative;
+}
 .shelf-row {
   list-style: none;
   margin: 0;
@@ -1462,6 +1465,53 @@ a:hover {
   overflow-x: auto;
   scrollbar-width: thin;
   scroll-snap-type: x proximity;
+  cursor: grab;
+  user-select: none;
+  /* don't let a horizontal drag start a vertical page-scroll fight */
+  touch-action: pan-x;
+}
+.shelf-row:active {
+  cursor: grabbing;
+}
+/* kill the native image-drag ghost so dragging scrolls instead */
+.shelf-row img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+/* Side navigation arrows — mouse users only (touch swipes). */
+.shelf-arrow {
+  position: absolute;
+  top: 0;
+  bottom: 30px; /* sit centred over the cover, above the title row */
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  background: rgba(14, 16, 22, 0.72);
+  backdrop-filter: blur(2px);
+  border-radius: var(--radius);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.shelf-scroller:hover .shelf-arrow {
+  opacity: 1;
+}
+.shelf-arrow:hover {
+  background: rgba(14, 16, 22, 0.9);
+}
+.shelf-arrow-left {
+  left: -6px;
+}
+.shelf-arrow-right {
+  right: -6px;
+}
+@media (hover: none) {
+  .shelf-arrow {
+    display: none;
+  }
 }
 .shelf-card {
   flex: 0 0 140px;

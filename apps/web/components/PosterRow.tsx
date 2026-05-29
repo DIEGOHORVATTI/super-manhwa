@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
+import { ShelfScroller } from "./ShelfScroller";
 import { StatusBadge } from "./StatusBadge";
 
 /**
@@ -35,7 +36,7 @@ export function PosterRow({
           </Link>
         )}
       </div>
-      <ul className="shelf-row">
+      <ShelfScroller>
         {items.map((m) => (
           <li key={m.id} className="shelf-card">
             <Link className="poster" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
@@ -51,7 +52,7 @@ export function PosterRow({
             </Link>
           </li>
         ))}
-      </ul>
+      </ShelfScroller>
     </section>
   );
 }
