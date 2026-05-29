@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { completeAuthFromHash, consumeReturnPath } from "@/lib/anilist";
 
 /**
- * AniList implicit-grant callback. The access token arrives in the URL fragment
- * (never sent to the server), so we parse it here on the client, store the
- * session, and bounce back to wherever the user started.
+ * Final hop of the AniList login: the server callback redirected here with the
+ * access token in the fragment. We persist it (localStorage) and bounce back to
+ * wherever the user started.
  */
-export default function AniListCallback() {
+export default function AniListDone() {
   const router = useRouter();
   const [failed, setFailed] = useState(false);
 
@@ -30,7 +30,7 @@ export default function AniListCallback() {
       <h1 className="state-title">{failed ? "Falha ao conectar" : "Conectando ao AniList…"}</h1>
       <p className="muted">
         {failed
-          ? "Não recebemos o token de acesso. Tente novamente pela Biblioteca."
+          ? "Não foi possível concluir o login. Tente novamente pela Biblioteca."
           : "Só um instante."}
       </p>
     </div>

@@ -4,10 +4,12 @@ import { useSyncExternalStore } from "react";
 import type { LibEntry } from "./library";
 
 /**
- * Optional AniList account sync (favourites only). OAuth2 **implicit grant**:
- * the browser redirects to AniList, comes back with an access token in the URL
- * fragment, and then talks to `graphql.anilist.co` directly with that bearer
- * token — no backend, no client secret, no DB. The token lives in localStorage.
+ * Optional AniList account sync (favourites only). OAuth2 **authorization code
+ * grant** (AniList doesn't support implicit grant): the browser redirects to
+ * AniList → comes back to `/auth/anilist?code=…` → a server route exchanges the
+ * code for a token using the client secret (server-only) → hands the token to
+ * the client via fragment, which stores it in localStorage. From there the
+ * browser talks to `graphql.anilist.co` directly with the bearer token.
  *
  * The whole feature is gated on `NEXT_PUBLIC_ANILIST_CLIENT_ID`: unset → the UI
  * hides every AniList affordance and the app stays 100% local/anonymous.
@@ -94,7 +96,7 @@ function login(): void {
   const redirect = `${window.location.origin}/auth/anilist`;
   const url = `https://anilist.co/api/v2/oauth/authorize?client_id=${encodeURIComponent(
     CLIENT_ID,
-  )}&redirect_uri=${encodeURIComponent(redirect)}&response_type=token`;
+  )}&redirect_uri=${encodeURIComponent(redirect)}&response_type=code`;
   window.location.href = url;
 }
 

@@ -242,10 +242,14 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Deprecat
 - **Context:** Local favourites are per-device (ADR-0011). Users wanted to log in
   and have favourites persist/sync to their AniList account. Crucially, our
   catalog ids **are** AniList media ids, so a favourite maps 1:1 (`Number(id)`).
-- **Decision:** Optional, additive, **client-side** sync — no backend, no DB, no
-  change to the privacy stance (anonymous stays the default). OAuth2 **implicit
-  grant**: the browser redirects to AniList and returns an access token in the URL
-  fragment (`/auth/anilist` callback), stored in localStorage; the client calls
+- **Decision:** Optional, additive sync — no DB, no change to the privacy stance
+  (anonymous stays the default). OAuth2 **authorization code grant** (AniList does
+  NOT support implicit grant — `response_type=token` is rejected, and its token
+  endpoint has no CORS, so the exchange can't run in the browser). Flow: client
+  redirects with `response_type=code` → AniList returns to the `/auth/anilist`
+  **route handler** (server) → it exchanges the code for a token using the
+  server-only `ANILIST_CLIENT_SECRET` → redirects to `/auth/anilist/done#token`
+  where the client stores it in localStorage. From there the browser calls
   `graphql.anilist.co` directly (CORS-allowed) with the bearer token. We map our
   library to AniList **Favourites** (`ToggleFavourite` + `User.favourites.manga`)
   — a binary toggle, 1:1 with our button — *not* the status-based MediaList, and
@@ -255,10 +259,12 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Deprecat
   action runs a toggle-safe two-way merge (`planFavouritesSync`: pull remote-only,
   push local-only — never re-toggle shared ids). The whole feature is gated on
   `NEXT_PUBLIC_ANILIST_CLIENT_ID`; unset → every AniList affordance is hidden.
-- **Consequences:** (+) Real cross-device favourites for those who opt in; zero
-  backend/secret/DB; trivial id mapping. (+) Off by default — privacy stance
-  intact. (−) Token in localStorage is XSS-exposed (acceptable for a favourites-
-  only scope; an auth-code + httpOnly-cookie flow is the upgrade path if write
+- **Consequences:** (+) Real cross-device favourites for those who opt in; no DB;
+  trivial id mapping; the client secret stays server-side. (+) Off by default —
+  privacy stance intact. (−) Needs a tiny server route for the code exchange (the
+  secret + a `/auth/anilist` handler) — not purely client-side. (−) Token still
+  lands in localStorage (XSS-exposed; acceptable for a favourites-only scope —
+  storing it in an httpOnly cookie + proxying GraphQL is the upgrade path if write
   scope widens). (−) Only Favourites, not reading status/progress. (−) AniList
   covers imported this way are served from AniList's CDN (added to
   `images.remotePatterns`) rather than our signed proxy.
