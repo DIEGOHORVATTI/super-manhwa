@@ -120,20 +120,25 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const isHome = pathname === "/";
+  // The reader has its own sticky toolbar (ReaderNav) to follow the chapter —
+  // a second floating bar reads badly, so here the global header stays static at
+  // the top and scrolls away with the page.
+  const isReader = pathname.startsWith("/read");
 
   // Past the threshold the bar detaches from the top into a floating, rounded
   // "island" (width/top/radius/border animate via CSS transition on the class).
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
+    if (isReader) return;
     const onScroll = () => setScrolled(window.scrollY > 60);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isReader]);
 
   return (
     <>
-      <header className={`app-header${scrolled ? " is-scrolled" : ""}`}>
+      <header className={`app-header${isReader ? " is-static" : scrolled ? " is-scrolled" : ""}`}>
         <div className="app-header-inner">
           {!isHome && (
             <button

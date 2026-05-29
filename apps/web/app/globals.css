@@ -87,6 +87,25 @@ a:hover {
     0 14px 40px rgba(0, 0, 0, 0.5),
     0 2px 8px rgba(0, 0, 0, 0.35);
 }
+/* Reader route: no floating island. The global header sits at the top in normal
+   flow and scrolls away — the in-page ReaderNav is the sticky toolbar, so we
+   avoid two stacked bars. The reserved top padding is dropped and ReaderNav
+   sticks to the very top instead of below a (now absent) fixed header. */
+.app-header.is-static {
+  position: static;
+  transform: none;
+  width: 100%;
+  max-width: 100%;
+  border-radius: 0;
+  border-color: transparent;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+.app-header.is-static ~ .app {
+  padding-top: 24px;
+}
+.app-header.is-static ~ .app .reader-nav {
+  top: 0;
+}
 .app-header-inner {
   max-width: var(--maxw);
   margin: 0 auto;
