@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CharacterGrid } from "@/components/CharacterGrid";
 import { DetailView } from "@/components/DetailView";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -92,24 +91,6 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     >["meta"],
   }));
 
-  const chaptersTab = (
-    <>
-      {chapters.length === 0 && <p className="muted">Nenhum capítulo disponível.</p>}
-      <ul className="chapters-grid">
-        {chapters.map((c) => (
-          <li key={c.id}>
-            <Link
-              className="chip"
-              href={`/read/${c.id}?m=${id}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
-            >
-              {c.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-
   const aboutTab = (
     <div className="about">
       {detail.description ? (
@@ -171,21 +152,6 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     </div>
   );
 
-  // Build the tab set — characters only when AniList had data.
-  const tabs = [
-    { key: "chapters", label: `Capítulos (${chapters.length})`, content: chaptersTab },
-    ...(meta.characters.length > 0
-      ? [
-          {
-            key: "characters",
-            label: "Personagens",
-            content: <CharacterGrid characters={meta.characters} />,
-          },
-        ]
-      : []),
-    { key: "about", label: "Sobre", content: aboutTab },
-  ];
-
   // Header sinopse teaser — falls back to AniList's description when the source
   // connector didn't carry one. Plain text, since the full markdown lives in "Sobre".
   const rawDesc = detail.description || meta.description || "";
@@ -194,8 +160,10 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   return (
     <DetailView
       title={title}
-      aboutKey="about"
-      tabs={tabs}
+      mangaId={id}
+      chapters={chapters}
+      characters={meta.characters}
+      about={aboutTab}
       descPreview={descPreview}
       backdrop={meta.bannerImage ?? detail.imageUrl ?? undefined}
       cover={

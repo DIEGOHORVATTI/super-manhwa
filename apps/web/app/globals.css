@@ -807,9 +807,50 @@ a:hover {
 .detail-tabs {
   display: flex;
   gap: 4px;
+  align-items: center;
   margin: 18px 0 14px;
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
+}
+/* Contextual filter on the far right of the tab bar — searches the active tab
+   (chapters by name/number, characters by name), disabled on "Sobre". */
+.tab-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 0 6px auto;
+  min-width: 0;
+  flex: 0 1 280px;
+}
+.tab-search-icon {
+  position: absolute;
+  left: 10px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.tab-search-field {
+  width: 100%;
+  padding: 7px 12px 7px 32px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  outline: none;
+  transition:
+    border-color 0.12s,
+    opacity 0.12s;
+}
+.tab-search-field:focus {
+  border-color: var(--accent);
+}
+.tab-search-field::placeholder {
+  color: var(--muted);
+}
+.tab-search-field:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .detail-tab {
   background: transparent;
