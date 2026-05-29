@@ -18,7 +18,7 @@ await startBunServer({
     title: APP_INFO.title,
     version: APP_INFO.version,
     description: APP_INFO.description,
-    contact: { ...APP_INFO.contact },
+    contact: APP_INFO.contact,
   },
   docsPath: "/docs",
   exposeDocs: env.EXPOSE_DOCS,
