@@ -68,4 +68,10 @@ export interface MangaConnector extends ConnectorMeta {
   search(query: string, page: number): Promise<RawListPage>;
   getDetail(link: string): Promise<RawDetail>;
   getPageList(chapterUrl: string): Promise<RawPage[]>;
+  /**
+   * Optional fast chapter-count probe for annotating listings without a full
+   * `getDetail` (e.g. MangaDex `/aggregate`). Sources that can't answer cheaply
+   * omit it — callers must feature-detect.
+   */
+  getChapterCount?(link: string): Promise<number>;
 }

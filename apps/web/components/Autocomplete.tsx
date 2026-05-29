@@ -2,6 +2,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Icon } from "@/components/Icon";
 
 /** Frontend is pt-br locked, so suggest always filters to pt-br titles. */
 const LANG = "pt-br";
@@ -85,21 +86,7 @@ export function Autocomplete() {
   return (
     <div className={`combobox${open ? " is-open" : ""}`} ref={boxRef}>
       <div className="combobox-input">
-        <svg
-          className="combobox-icon"
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <circle cx="11" cy="11" r="7" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+        <Icon className="combobox-icon" name="search" size={16} />
         <input
           className="combobox-field"
           value={q}
@@ -121,7 +108,7 @@ export function Autocomplete() {
             }}
             aria-label="limpar"
           >
-            ×
+            <Icon name="x" size={16} />
           </button>
         )}
       </div>
@@ -158,7 +145,12 @@ export function Autocomplete() {
                 <span className="combobox-thumb combobox-thumb-empty" />
               )}
               <span className="combobox-name">{m.name}</span>
-              <span className="combobox-lang">{m.lang}</span>
+              <span className="combobox-tags">
+                {m.chapters !== undefined && (
+                  <span className="combobox-chapters">{m.chapters} caps</span>
+                )}
+                <span className="combobox-lang">{m.lang}</span>
+              </span>
             </li>
           ))}
         </ul>

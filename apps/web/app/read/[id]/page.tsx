@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
+import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
 import { api } from "@/lib/orpc.server";
 
@@ -35,19 +37,23 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       ? (detailRes.value.detail.chapters ?? [])
       : [];
 
+  const hasContext = chapters.length > 0 && !!m && !!mn;
+
   return (
     <>
-      {chapters.length > 0 && m && mn ? (
+      {hasContext ? (
         <ReaderNav chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
-          <Link className="btn" href="/">
-            ← início
+          <Link className="reader-btn reader-btn-series" href="/">
+            <Icon name="house" size={16} />
+            <span className="reader-series-name">Início</span>
           </Link>
-          <span className="muted" style={{ flex: 1 }}>
+          <div className="reader-nav-spacer" />
+          <span className="reader-count">
             {n ? `${n} · ` : ""}
-            {pages.length} páginas
+            {pages.length} págs
           </span>
         </div>
       )}
@@ -60,6 +66,10 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       </div>
 
       {pages.length === 0 && <p className="muted">Nenhuma página retornada.</p>}
+
+      {hasContext && (
+        <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
+      )}
     </>
   );
 }

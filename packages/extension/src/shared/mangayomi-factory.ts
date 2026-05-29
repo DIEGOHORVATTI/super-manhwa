@@ -25,7 +25,14 @@ export interface MangayomiConnectorInit extends ConnectorMeta {
     search?: number;
     detail?: number;
     pages?: number;
+    count?: number;
   };
+
+  /**
+   * Expose the optional `getChapterCount` capability — set only for bundles
+   * whose JS actually implements the method (e.g. MangaDex via `/aggregate`).
+   */
+  hasChapterCount?: boolean;
 }
 
 const DEFAULT_TIMEOUTS = {
@@ -33,6 +40,7 @@ const DEFAULT_TIMEOUTS = {
   search: 15_000,
   detail: 25_000,
   pages: 25_000,
+  count: 8_000,
 };
 
 const resolveSource = async (source: MangayomiConnectorInit["source"]): Promise<string> => {
@@ -88,5 +96,11 @@ export const createMangayomiConnector = (init: MangayomiConnectorInit): MangaCon
     search: (query, page) => run<RawListPage>("search", [query, page, []], timeouts.search!),
     getDetail: (link) => run<RawDetail>("getDetail", [link], timeouts.detail!),
     getPageList: (chapterUrl) => run<RawPage[]>("getPageList", [chapterUrl], timeouts.pages!),
+    ...(init.hasChapterCount
+      ? {
+          getChapterCount: (link: string) =>
+            run<number>("getChapterCount", [link], timeouts.count!),
+        }
+      : {}),
   };
 };

@@ -36,9 +36,22 @@ export const makeSuggestManga =
       if (!connector) return { list: [] };
       try {
         const r = await connector.search(trimmed, 1);
-        const list = (r.list ?? [])
-          .slice(0, SUGGEST_LIMIT)
-          .map((raw) => MangaMapper.toSummary(idStore, connector, raw));
+        const raws = (r.list ?? []).slice(0, SUGGEST_LIMIT);
+
+        // Best-effort chapter counts for the badge. Runs in parallel and never
+        // blocks the suggestion — a slow/failed probe just yields no count.
+        const counts = await Promise.all(
+          raws.map(
+            (raw) =>
+              connector.getChapterCount?.(raw.link).catch(() => undefined) ??
+              Promise.resolve(undefined),
+          ),
+        );
+
+        const list = raws.map((raw, i) => ({
+          ...MangaMapper.toSummary(idStore, connector, raw),
+          chapters: counts[i],
+        }));
         return { list };
       } catch {
         return { list: [] };

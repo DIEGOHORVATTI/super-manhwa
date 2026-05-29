@@ -232,6 +232,21 @@ class DefaultExtension extends MProvider {
     manga.chapters = chapterData;
     return manga;
   }
+  // Cheap chapter-count probe for listings: /aggregate returns the full
+  // volume→chapter map in a single (non-paginated) call, far lighter than
+  // getDetail's feed pagination. Counts unique chapter numbers in the
+  // requested language.
+  async getChapterCount(url) {
+    const mangaId = url.split("/").pop();
+    const aggUrl = `${this.source.apiUrl}/manga/${mangaId}/aggregate?translatedLanguage[]=${this.source.lang}`;
+    const res = await this.client.get(aggUrl, this.getHeaders());
+    const volumes = JSON.parse(res.body).volumes ?? {};
+    let count = 0;
+    for (const key of Object.keys(volumes)) {
+      count += Object.keys(volumes[key]?.chapters ?? {}).length;
+    }
+    return count;
+  }
   async fetchPaginatedChapters(mangaId, lang) {
     const chapters = [];
     let offset = 0;

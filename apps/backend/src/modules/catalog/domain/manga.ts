@@ -14,6 +14,8 @@ export type MangaSummary = {
   /** Enrichment fields — populated only when the use case ran in enriched mode. */
   status?: MangaStatus;
   genres?: string[];
+  /** Chapter count, when the source exposes a cheap probe (suggest route only). */
+  chapters?: number;
 };
 
 export type Chapter = {

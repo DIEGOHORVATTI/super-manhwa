@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 
 /**
  * Shared shell for the static/legal pages linked from the footer (sobre,
@@ -13,7 +14,7 @@ export function StaticPage({
   return (
     <article className="static-page">
       <Link href="/" className="back">
-        ← Voltar
+        <Icon name="arrow-left" size={16} /> Voltar
       </Link>
       <h1 className="static-title">{title}</h1>
       {updated && <p className="muted">Última atualização: {updated}</p>}

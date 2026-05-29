@@ -28,6 +28,9 @@ export const mangaSummarySchema = z.object({
   lang: z.string(),
   status: mangaStatusSchema.optional(),
   genres: z.array(z.string()).optional(),
+  /** Chapter count, when a source can answer cheaply (e.g. MangaDex /aggregate).
+   *  Populated only by the suggest route; undefined elsewhere. */
+  chapters: z.number().optional(),
 });
 export type MangaSummary = z.infer<typeof mangaSummarySchema>;
 

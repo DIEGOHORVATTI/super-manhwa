@@ -1,6 +1,7 @@
 "use client";
 import type { MangaCharacter } from "@packages/contracts";
 import { useEffect, useState } from "react";
+import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -84,7 +85,7 @@ export function CharacterGrid({ characters }: { characters: MangaCharacter[] }) 
               onClick={() => setSelected(null)}
               aria-label="Fechar"
             >
-              ✕
+              <Icon name="x" size={16} />
             </button>
 
             <div className="char-modal-head">
@@ -108,7 +109,10 @@ export function CharacterGrid({ characters }: { characters: MangaCharacter[] }) 
                   )}
                   {selected.age && <span className="tag">{selected.age} anos</span>}
                   {selected.favourites !== undefined && (
-                    <span className="tag">♥ {selected.favourites.toLocaleString("pt-BR")}</span>
+                    <span className="tag tag-icon">
+                      <Icon name="heart" size={12} />
+                      {selected.favourites.toLocaleString("pt-BR")}
+                    </span>
                   )}
                 </div>
               </div>

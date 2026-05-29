@@ -9,6 +9,7 @@ export const mangadex = createMangayomiConnector({
   hasCloudflare: false,
   isNsfw: false,
   featured: true,
+  hasChapterCount: true,
   source: { kind: "vendored", path: "all/mangadex.js" },
 });
 
@@ -26,5 +27,6 @@ export const mangadexPtBr = createMangayomiConnector({
   hasCloudflare: false,
   isNsfw: false,
   featured: true,
+  hasChapterCount: true,
   source: { kind: "vendored", path: "all/mangadex.js" },
 });

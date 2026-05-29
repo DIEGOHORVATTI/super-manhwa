@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DetailView } from "@/components/DetailView";
+import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
@@ -65,7 +66,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     return (
       <>
         <Link className="back" href="/">
-          ← voltar
+          <Icon name="arrow-left" size={16} /> voltar
         </Link>
         <p className="notice">
           Não foi possível carregar esta obra em nenhuma das integrações disponíveis. A fonte
@@ -169,14 +170,18 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
       cover={
         detail.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img className="detail-cover" src={detail.imageUrl} alt={title} />
+          <img key="cover" className="detail-cover" src={detail.imageUrl} alt={title} />
         ) : null
       }
       meta={
         <div className="detail-meta">
           <StatusBadge status={detail.status} size="md" />
           <span className="muted">{chapters.length} capítulos</span>
-          {meta.score !== undefined && <span className="score-pill">★ {meta.score}</span>}
+          {meta.score !== undefined && (
+            <span className="score-pill">
+              <Icon name="star" size={12} /> {meta.score}
+            </span>
+          )}
         </div>
       }
       genres={

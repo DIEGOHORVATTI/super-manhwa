@@ -3,6 +3,7 @@ import type { MangaCharacter } from "@packages/contracts";
 import Link from "next/link";
 import { type ReactNode, useMemo, useState } from "react";
 import { CharacterGrid } from "@/components/CharacterGrid";
+import { Icon } from "@/components/Icon";
 
 type Chapter = { id: string; name: string };
 
@@ -109,21 +110,7 @@ export function DetailView({
         ))}
 
         <div className="tab-search">
-          <svg
-            className="tab-search-icon"
-            width="15"
-            height="15"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="7" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
+          <Icon className="tab-search-icon" name="search" size={15} />
           <input
             className="tab-search-field"
             value={searchDisabled ? "" : query}

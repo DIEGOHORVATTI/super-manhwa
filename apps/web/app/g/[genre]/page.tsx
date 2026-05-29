@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Icon } from "@/components/Icon";
 import { PosterGrid } from "@/components/PosterGrid";
 import { api } from "@/lib/orpc.server";
 
@@ -36,7 +37,7 @@ export default async function GenrePage({ params }: { params: P }) {
   return (
     <>
       <Link className="back" href="/">
-        ← voltar
+        <Icon name="arrow-left" size={16} /> voltar
       </Link>
       <h1 className="detail-title" style={{ marginBottom: 4 }}>
         {label}
