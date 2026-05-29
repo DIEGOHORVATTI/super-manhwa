@@ -102,10 +102,10 @@ function login(): void {
 
 /** Where to send the user back to after a successful callback. */
 export function consumeReturnPath(): string {
-  if (!isClient) return "/biblioteca";
+  if (!isClient) return "/library";
   const p = window.sessionStorage.getItem(RETURN_KEY);
   window.sessionStorage.removeItem(RETURN_KEY);
-  return p || "/biblioteca";
+  return p || "/library";
 }
 
 /**

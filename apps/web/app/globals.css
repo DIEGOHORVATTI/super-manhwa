@@ -1299,27 +1299,78 @@ a:hover {
   margin-top: 20px;
 }
 
-/* AniList sync bar (Biblioteca) */
-.anilist-bar {
+/* AniList connect card (library) — styled like a third-party sign-in. */
+.anilist-card {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   flex-wrap: wrap;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 14px;
+  padding: 16px 18px;
   margin: 0 0 18px;
   border: 1px solid var(--border);
-  border-radius: 14px;
-  background: var(--surface);
+  border-radius: 16px;
+  /* faint AniList-blue wash so the card reads as "branded" without shouting */
+  background:
+    radial-gradient(140% 140% at 0% 0%, rgba(2, 169, 255, 0.1), transparent 55%), var(--surface);
 }
-.anilist-status {
+.anilist-card-info {
+  min-width: 0;
+}
+.anilist-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.anilist-title svg {
+  color: #02a9ff;
+  flex: none;
+}
+.anilist-sub {
+  margin: 3px 0 0;
+  font-size: 13px;
+}
+.anilist-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+/* The branded button: white surface + coloured mark + dark label, à la
+   "Sign in with …". */
+.anilist-login {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #15151f;
+  font-size: 14px;
   font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  transition:
+    transform 0.12s,
+    box-shadow 0.12s;
 }
-.anilist-status svg {
-  color: var(--accent);
+.anilist-login svg {
+  color: #02a9ff;
+  flex: none;
+}
+.anilist-login:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.anilist-login:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
 }
 .anilist-link {
   border: none;
@@ -1331,10 +1382,6 @@ a:hover {
 }
 .anilist-link:hover {
   color: var(--text);
-}
-.anilist-msg {
-  flex-basis: 100%;
-  font-size: 12.5px;
 }
 
 /* Horizontal discovery shelf (Explorar carousels) */

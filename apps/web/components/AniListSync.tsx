@@ -1,15 +1,16 @@
 "use client";
 import { useState } from "react";
+import { AniListLogo } from "@/components/AniListLogo";
 import { Icon } from "@/components/Icon";
 import { fetchFavourites, toggleFavourite, useAniList } from "@/lib/anilist";
 import { planFavouritesSync } from "@/lib/anilist-sync";
 import { addFavorite, useFavorites } from "@/lib/library";
 
 /**
- * Optional "Sync with AniList" bar on the Biblioteca page. Hidden entirely when
- * the integration isn't configured. Login is implicit-grant (redirect); the
- * sync is a two-way merge: pull remote favourites into the local library and
- * push local-only ones to AniList (see planFavouritesSync — toggle-safe).
+ * Optional "Connect AniList" card on the library page. Hidden when the
+ * integration isn't configured. Styled like a third-party sign-in (branded
+ * button + provider mark). Login is the OAuth code grant (server-exchanged); the
+ * sync is a toggle-safe two-way merge of favourites (see planFavouritesSync).
  */
 export function AniListSync() {
   const { configured, isLoggedIn, session, login, logout } = useAniList();
@@ -30,9 +31,7 @@ export function AniListSync() {
         if (e) addFavorite(e);
       }
       for (const id of plan.toAddRemote) await toggleFavourite(id);
-      setMsg(
-        `Sincronizado: ${plan.toAddLocally.length} importado(s), ${plan.toAddRemote.length} enviado(s).`,
-      );
+      setMsg(`${plan.toAddLocally.length} importado(s) · ${plan.toAddRemote.length} enviado(s).`);
     } catch (e) {
       setMsg(e instanceof Error ? e.message : "Falha ao sincronizar.");
     } finally {
@@ -41,31 +40,37 @@ export function AniListSync() {
   };
 
   return (
-    <div className="anilist-bar">
+    <div className="anilist-card">
+      <div className="anilist-card-info">
+        <p className="anilist-title">
+          <AniListLogo size={18} />
+          {isLoggedIn
+            ? `Conectado ao AniList${session?.name ? ` · ${session.name}` : ""}`
+            : "Sincronize com o AniList"}
+        </p>
+        <p className="anilist-sub muted">
+          {isLoggedIn
+            ? (msg ?? "Seus favoritos ficam salvos na sua conta AniList.")
+            : "Entre para salvar e acessar seus favoritos na sua conta AniList."}
+        </p>
+      </div>
+
       {isLoggedIn ? (
-        <>
-          <span className="anilist-status">
-            <Icon name="circle-check-big" size={15} /> AniList
-            {session?.name ? ` · ${session.name}` : ""}
-          </span>
-          <button type="button" className="pager-btn" disabled={busy} onClick={sync}>
-            <Icon name="sparkles" size={15} /> {busy ? "Sincronizando…" : "Sincronizar favoritos"}
+        <div className="anilist-actions">
+          <button type="button" className="anilist-login" disabled={busy} onClick={sync}>
+            <Icon name="sparkles" size={16} />
+            {busy ? "Sincronizando…" : "Sincronizar favoritos"}
           </button>
           <button type="button" className="anilist-link" onClick={logout}>
             Sair
           </button>
-        </>
+        </div>
       ) : (
-        <>
-          <span className="anilist-status muted">
-            Sincronize seus favoritos com sua conta AniList
-          </span>
-          <button type="button" className="pager-btn" onClick={login}>
-            <Icon name="heart" size={15} /> Entrar com AniList
-          </button>
-        </>
+        <button type="button" className="anilist-login" onClick={login}>
+          <AniListLogo size={20} />
+          Entrar com AniList
+        </button>
       )}
-      {msg && <span className="anilist-msg muted">{msg}</span>}
     </div>
   );
 }

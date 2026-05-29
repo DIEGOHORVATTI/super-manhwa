@@ -19,7 +19,7 @@ import { Icon, type IconName } from "@/components/Icon";
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
   { href: "/", label: "Início", icon: "house", sort: null },
   { href: "/explorar", label: "Explorar", icon: "list", sort: null },
-  { href: "/biblioteca", label: "Biblioteca", icon: "heart", sort: null },
+  { href: "/library", label: "Biblioteca", icon: "heart", sort: null },
 ];
 
 /** A NAV entry is a home catalog filter (`/`, `/?sort=`) or a standalone page. */
