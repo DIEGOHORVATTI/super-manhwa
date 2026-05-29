@@ -269,6 +269,26 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Deprecat
   covers imported this way are served from AniList's CDN (added to
   `images.remotePatterns`) rather than our signed proxy.
 
+## ADR-0014 — Comments via Disqus (per work + per chapter)
+
+- **Status:** Accepted (2026-05-29)
+- **Context:** We wanted discussion on each work and each chapter. AniList has no
+  chat and nothing per-chapter (only work-level activity/forum/reviews), so it
+  couldn't back this. A first-party comment system would mean a database +
+  moderation + anti-spam — a hard break from the stateless/no-DB stance
+  (ADR-0006/0008).
+- **Decision:** Embed **Disqus**, scoped by a stable identifier per thread:
+  `manga-<id>` on the work page (a "Comentários" tab) and `chapter-<id>` on the
+  reader. Gated on `NEXT_PUBLIC_DISQUS_SHORTNAME` (unset → hidden). The embed is
+  **lazy** (loads only when scrolled near, via IntersectionObserver) and resets
+  the thread on client navigation (`DISQUS.reset`) rather than re-injecting.
+- **Consequences:** (+) Per-work and per-chapter comments with built-in
+  moderation/auth and zero backend/DB on our side; keeps the stateless stance.
+  (−) Third-party dependency (Disqus account, its own login, ads on the free
+  tier, external privacy/data). (−) Limited theming (Disqus controls its iframe
+  styling). An eventual first-party system (DB + AniList login as identity) is
+  the upgrade path if the external dependency becomes a problem.
+
 ---
 
 ### Bridge reference (for ADR-0004 implementation)

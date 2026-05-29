@@ -1299,6 +1299,14 @@ a:hover {
   margin-top: 20px;
 }
 
+/* Disqus comments section (work + chapter) */
+.comments {
+  margin: 26px 0 8px;
+}
+.disqus-thread {
+  min-height: 120px;
+}
+
 /* AniList connect card (library) — styled like a third-party sign-in. */
 .anilist-card {
   display: flex;

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { DetailView } from "@/components/DetailView";
+import { DisqusComments } from "@/components/DisqusComments";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Flag, langLabel } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
@@ -240,6 +241,9 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         chapters={chapters}
         characters={meta.characters}
         about={aboutTab}
+        comments={
+          <DisqusComments identifier={`manga-${id}`} title={title} url={`${base}/manga/${id}`} />
+        }
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? detail.imageUrl ?? undefined}
         cover={

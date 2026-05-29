@@ -32,6 +32,7 @@ export function DetailView({
   chapters,
   characters,
   about,
+  comments,
 }: {
   backdrop?: string;
   cover: ReactNode;
@@ -44,9 +45,12 @@ export function DetailView({
   chapters: Chapter[];
   characters: MangaCharacter[];
   about: ReactNode;
+  comments?: ReactNode;
 }) {
   const hasChars = characters.length > 0;
-  const [active, setActive] = useState<"chapters" | "characters" | "about">("chapters");
+  const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
+    "chapters",
+  );
   const [query, setQuery] = useState("");
   const read = useReadChapters(mangaId);
 
@@ -79,7 +83,7 @@ export function DetailView({
     setQuery("");
   };
 
-  const searchDisabled = active === "about";
+  const searchDisabled = active === "about" || active === "comments";
   const placeholder =
     active === "characters" ? "Buscar personagem…" : "Buscar capítulo por nome ou número…";
 
@@ -87,6 +91,7 @@ export function DetailView({
     { key: "chapters", label: `Capítulos (${chapters.length})` },
     ...(hasChars ? [{ key: "characters" as const, label: "Personagens" }] : []),
     { key: "about", label: "Sobre" },
+    ...(comments ? [{ key: "comments" as const, label: "Comentários" }] : []),
   ];
 
   return (
@@ -190,6 +195,11 @@ export function DetailView({
 
       {/* Sobre */}
       <div hidden={active !== "about"}>{about}</div>
+
+      {/* Comentários — mounted only when open so Disqus doesn't load otherwise. */}
+      {comments && (
+        <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
+      )}
     </>
   );
 }

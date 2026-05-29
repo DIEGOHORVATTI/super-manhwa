@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DisqusComments } from "@/components/DisqusComments";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
@@ -56,6 +57,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
     detailRes.status === "fulfilled" && detailRes.value
       ? detailRes.value.detail.imageUrl
       : undefined;
+  const base = process.env.SITE_URL ?? "http://localhost:3000";
 
   return (
     <>
@@ -91,6 +93,12 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       {hasContext && (
         <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       )}
+
+      <DisqusComments
+        identifier={`chapter-${id}`}
+        title={mn ? `${mn} — ${n ?? "capítulo"}` : (n ?? "Capítulo")}
+        url={`${base}/read/${id}`}
+      />
     </>
   );
 }
