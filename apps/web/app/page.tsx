@@ -1,6 +1,5 @@
 import type { MangaSort } from "@packages/contracts";
 import { PosterGrid } from "@/components/PosterGrid";
-import { SortTabs } from "@/components/SortTabs";
 import { api } from "@/lib/orpc.server";
 
 export const dynamic = "force-dynamic";
@@ -19,15 +18,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     : "popular";
 
   const popular = await api.manga.popular({ lang: "pt-br", sort, page: 1 });
+  const label = sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos";
 
   return (
     <>
-      <SortTabs active={sort} />
-
-      <p className="muted" style={{ marginTop: 12 }}>
-        {sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos"} ·{" "}
-        {popular.list.length} obras
-      </p>
+      <header className="home-head">
+        <h1 className="home-title">{label}</h1>
+        <span className="muted">{popular.list.length} obras</span>
+      </header>
 
       <PosterGrid items={popular.list} />
     </>

@@ -10,7 +10,8 @@
   --accent-hover: #9079ff;
   --danger: #ff6b6b;
   --radius: 10px;
-  --maxw: 980px;
+  --maxw: 1280px;
+  --header-h: 60px;
 }
 * {
   box-sizing: border-box;
@@ -41,17 +42,50 @@ a:hover {
 .app {
   max-width: var(--maxw);
   margin: 0 auto;
-  padding: 20px 16px 64px;
+  /* Top padding reserves space for the fixed header. */
+  padding: calc(var(--header-h) + 24px) 16px 64px;
 }
 /* ── Global sticky app header ────────────────────────────────────────────── */
+/* Floating "island" header. Flush full-width bar at the top of the page; once
+   scrolled past the threshold (JS toggles .is-scrolled) it detaches from the top,
+   narrows, rounds, and gains a border + shadow — all animated via this transition.
+   position:fixed (not sticky) so it can pull away from the edge cleanly; .app
+   reserves the space with padding-top. */
 .app-header {
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 100%;
   z-index: 50;
-  background: rgba(12, 14, 20, 0.7);
+  border: 1px solid transparent;
+  border-radius: 0;
+  /* Mostly opaque on purpose — backdrop-filter blur isn't reliable here, so the
+     bar reads as solid glass via opacity, not blur. */
+  background: rgba(14, 16, 22, 0.94);
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition:
+    max-width 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+    width 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+    top 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+    border-radius 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+    border-color 0.3s ease,
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+.app-header.is-scrolled {
+  top: 14px;
+  width: calc(100% - 28px);
+  max-width: var(--maxw);
+  border-radius: 18px;
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(18, 21, 30, 0.98);
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.35);
 }
 .app-header-inner {
   max-width: var(--maxw);
@@ -60,6 +94,18 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 10px;
+  transition: padding 0.4s cubic-bezier(0.32, 0.72, 0, 1);
+}
+/* Compact mode: tighter padding + smaller brand once scrolled. */
+.app-header.is-scrolled .app-header-inner {
+  padding: 5px 12px;
+}
+.app-header.is-scrolled .brand-logo {
+  width: 30px;
+  height: 30px;
+}
+.app-header.is-scrolled .brand-name {
+  font-size: 18px;
 }
 .header-back {
   display: inline-flex;
@@ -99,6 +145,9 @@ a:hover {
   height: 36px;
   object-fit: contain;
   flex-shrink: 0;
+  transition:
+    width 0.4s cubic-bezier(0.32, 0.72, 0, 1),
+    height 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .brand-name {
   font-size: 20px;
@@ -108,40 +157,63 @@ a:hover {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  transition: font-size 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .brand .dot {
   color: var(--accent);
   -webkit-text-fill-color: var(--accent);
 }
-/* Primary nav — catalog shortcuts. Icon + label pills; labels collapse first,
-   then the whole nav hides on phones (search + the home tabs cover it there). */
+/* Primary tab nav — a mobile-style segmented control. The catalog shortcuts
+   double as the home filter; a single accent pill slides under the active tab.
+   The pill's left/width are measured in JS (relative to the nav) and animated
+   here, so it glides between tabs on navigation. Labels collapse to icons first,
+   then the whole nav hides on phones. */
 .header-nav {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-left: 6px;
+  margin-left: 10px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  /* inset hairline instead of a border so it doesn't shift the pill's offset math */
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
-.header-nav-link {
+.header-tab-pill {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 2px 10px rgba(124, 92, 255, 0.45);
+  pointer-events: none;
+  z-index: 0;
+  transition:
+    transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+    width 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.2s ease;
+}
+.header-tab {
+  position: relative;
+  z-index: 1;
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 7px 11px;
+  padding: 8px 14px;
   border-radius: 999px;
   font-size: 14px;
   font-weight: 500;
   color: var(--muted);
   white-space: nowrap;
-  transition:
-    color 0.12s,
-    background-color 0.12s;
+  transition: color 0.2s ease;
 }
-.header-nav-link:hover {
+.header-tab:hover {
   color: var(--text);
-  background: rgba(255, 255, 255, 0.06);
 }
-.header-nav-link.is-active {
-  color: var(--accent);
-  background: rgba(124, 92, 255, 0.12);
+.header-tab.is-active {
+  color: #fff;
 }
 /* Search lives in the header, pushed to the right and capped so it doesn't
    stretch edge-to-edge on wide screens. Override the combobox flex min-width so
@@ -155,11 +227,11 @@ a:hover {
   min-width: 0;
 }
 @media (max-width: 880px) {
-  .header-nav-link span {
+  .header-tab span {
     display: none;
   }
-  .header-nav-link {
-    padding: 8px;
+  .header-tab {
+    padding: 8px 10px;
   }
 }
 @media (max-width: 620px) {
@@ -547,7 +619,7 @@ a:hover {
 /* Sticky toolbar: series link · spacer · counter · prev · chapter picker · next */
 .reader-nav {
   position: sticky;
-  top: 0;
+  top: calc(var(--header-h) + 14px);
   z-index: 30;
   display: flex;
   gap: 8px;
@@ -823,9 +895,9 @@ a:hover {
   border: 0;
   outline: none;
   color: var(--text);
-  padding: 12px 0;
+  padding: 8px 0;
   font: inherit;
-  font-size: 15px;
+  font-size: 14px;
 }
 .combobox-field::placeholder {
   color: var(--muted);
@@ -919,30 +991,19 @@ a:hover {
   border-radius: 4px;
 }
 
-/* Sort tabs */
-.sort-tabs {
+/* Home heading — the catalog filter moved to the header tabs, so the home just
+   labels the active listing + count. */
+.home-head {
   display: flex;
-  gap: 4px;
-  margin-top: 14px;
-  border-bottom: 1px solid var(--border);
+  align-items: baseline;
+  gap: 10px;
+  margin: 4px 0 2px;
 }
-.sort-tab {
-  padding: 9px 14px;
-  font-size: 14px;
-  color: var(--muted);
-  text-decoration: none;
-  border-bottom: 2px solid transparent;
-  transition:
-    color 0.12s,
-    border-color 0.12s;
-}
-.sort-tab:hover {
-  color: var(--text);
-}
-.sort-tab.is-active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
+.home-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
 /* Status badges */
