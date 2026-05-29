@@ -2,6 +2,7 @@ import type { MangaStatus } from "@packages/contracts";
 import type { ConnectorMeta, RawChapter, RawDetail, RawListItem } from "@packages/extension";
 import type { IdStore } from "@/core/domain/id-store";
 
+import type { CatalogItem } from "../domain/catalog-source";
 import type { Chapter, MangaDetail, MangaSummary } from "../domain/manga";
 
 /**
@@ -29,6 +30,23 @@ const imagePath = (idStore: IdStore, source: string, url?: string): string | und
   url ? `/api/img/${idStore.encode({ source, url })}` : undefined;
 
 export const MangaMapper = {
+  /**
+   * Catalog (AniList) item → listing summary. The opaque `id` IS the AniList id
+   * (no connector behind it); covers are proxied under the synthetic "anilist"
+   * source. `lang` is empty — discovery is language-agnostic now.
+   */
+  catalogSummary(idStore: IdStore, item: CatalogItem): MangaSummary {
+    return {
+      id: item.id,
+      name: item.title,
+      imageUrl: imagePath(idStore, "anilist", item.imageUrl),
+      lang: "",
+      status: item.status,
+      genres: item.genres,
+      chapters: item.chapters,
+    };
+  },
+
   toSummary(idStore: IdStore, meta: ConnectorMeta, raw: RawListItem): MangaSummary {
     return {
       id: idStore.encode({ source: meta.id, url: raw.link }),
@@ -44,6 +62,7 @@ export const MangaMapper = {
       name: raw.name,
       scanlator: raw.scanlator,
       dateUpload: raw.dateUpload,
+      lang: meta.lang,
     };
   },
 

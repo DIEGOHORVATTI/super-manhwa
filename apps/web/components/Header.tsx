@@ -83,6 +83,39 @@ function HeaderTabsWithSort() {
   return <HeaderTabs sort={sort} />;
 }
 
+/**
+ * Mobile-only bottom tab bar (CSS hides it on desktop). Same catalog shortcuts +
+ * active logic as the header tabs, laid out app-style with icon over label.
+ */
+function BottomNav({ sort }: { sort: string | null }) {
+  const pathname = usePathname();
+  const isHome = pathname === "/";
+
+  return (
+    <nav className="bottom-nav" aria-label="Navegação">
+      {NAV.map((item) => {
+        const active = isHome && item.sort === sort;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`bottom-nav-item${active ? " is-active" : ""}`}
+            aria-current={active ? "page" : undefined}
+          >
+            <Icon name={item.icon} size={20} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+function BottomNavWithSort() {
+  const sort = useSearchParams().get("sort");
+  return <BottomNav sort={sort} />;
+}
+
 export function Header() {
   const router = useRouter();
   const pathname = usePathname();
@@ -99,37 +132,44 @@ export function Header() {
   }, []);
 
   return (
-    <header className={`app-header${scrolled ? " is-scrolled" : ""}`}>
-      <div className="app-header-inner">
-        {!isHome && (
-          <button
-            type="button"
-            className="header-back"
-            onClick={() => router.back()}
-            aria-label="Voltar"
-          >
-            <Icon name="arrow-left" size={18} />
-          </button>
-        )}
+    <>
+      <header className={`app-header${scrolled ? " is-scrolled" : ""}`}>
+        <div className="app-header-inner">
+          {!isHome && (
+            <button
+              type="button"
+              className="header-back"
+              onClick={() => router.back()}
+              aria-label="Voltar"
+            >
+              <Icon name="arrow-left" size={18} />
+            </button>
+          )}
 
-        <Link href="/" className="brand">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
-          <span className="brand-name">
-            Super Manhwa<span className="dot">.</span>
-          </span>
-        </Link>
+          <Link href="/" className="brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
+            <span className="brand-name">
+              Super Manhwa<span className="dot">.</span>
+            </span>
+          </Link>
 
-        {/* useSearchParams must live under a Suspense boundary so static pages
-            (about, terms, …) don't deopt to client rendering at build time. */}
-        <Suspense fallback={<HeaderTabs sort={null} />}>
-          <HeaderTabsWithSort />
-        </Suspense>
+          {/* useSearchParams must live under a Suspense boundary so static pages
+              (about, terms, …) don't deopt to client rendering at build time. */}
+          <Suspense fallback={<HeaderTabs sort={null} />}>
+            <HeaderTabsWithSort />
+          </Suspense>
 
-        <div className="header-search">
-          <Autocomplete />
+          <div className="header-search">
+            <Autocomplete />
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Mobile-only bottom tab bar (hidden on desktop via CSS). */}
+      <Suspense fallback={<BottomNav sort={null} />}>
+        <BottomNavWithSort />
+      </Suspense>
+    </>
   );
 }

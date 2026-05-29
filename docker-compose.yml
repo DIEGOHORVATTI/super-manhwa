@@ -15,19 +15,13 @@ services:
       PORT: "8787"
       # The app routes hasCloudflare sources through this sidecar.
       FLARESOLVERR_URL: "http://flaresolverr:8191/v1"
-      # AES-256-GCM key (sha256-derived) used to mint opaque manga/chapter/image
-      # tokens. Loaded from .env — never bake into the image. Rotate to invalidate
-      # every outstanding URL at once.
+      # AES-256-GCM key (sha256-derived) used to encrypt the stateless opaque
+      # chapter/image tokens (manga ids are AniList ids). Loaded from .env — never
+      # bake into the image. Rotate to invalidate every outstanding token at once.
       IMAGE_TOKEN_SECRET: "${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set in .env}"
       # Shared secret the frontend sends as X-API-KEY. Never exposed to the
       # browser — only the Next server (RSC + same-origin proxy) holds it.
       API_KEY: "${API_KEY:?API_KEY must be set in .env}"
-      # Persistent short-id lookup. Lives on a host-mounted volume so URLs survive
-      # container restarts; if this file is lost, every existing /manga/<id> URL
-      # becomes invalid (same effect as rotating IMAGE_TOKEN_SECRET).
-      ID_STORE_PATH: "/app/data/ids.jsonl"
-    volumes:
-      - ./data:/app/data
     restart: unless-stopped
     depends_on:
       - flaresolverr
@@ -36,5 +30,8 @@ services:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     environment:
       LOG_LEVEL: info
-    # Not exposed publicly; only the app talks to it over the internal network.
+    # Published to the host so a locally-run backend (bun dev:api) can reach it
+    # at http://localhost:8191/v1. The dockerized app uses the internal DNS name.
+    ports:
+      - "8191:8191"
     restart: unless-stopped

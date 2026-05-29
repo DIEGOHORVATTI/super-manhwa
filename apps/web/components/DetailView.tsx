@@ -5,10 +5,33 @@ import { type ReactNode, useMemo, useState } from "react";
 import { CharacterGrid } from "@/components/CharacterGrid";
 import { Icon } from "@/components/Icon";
 
-type Chapter = { id: string; name: string };
+type Chapter = { id: string; name: string; lang?: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/**
+ * Source language → flag emoji for the per-chapter badge. MangaDex's "en" maps
+ * to 🇺🇸 by convention; unknown langs fall back to a neutral flag.
+ */
+const LANG_FLAG: Record<string, string> = {
+  "pt-br": "🇧🇷",
+  pt: "🇧🇷",
+  en: "🇺🇸",
+  "en-us": "🇺🇸",
+  es: "🇪🇸",
+  "es-la": "🇲🇽",
+  ja: "🇯🇵",
+  ko: "🇰🇷",
+  zh: "🇨🇳",
+  "zh-hk": "🇭🇰",
+  fr: "🇫🇷",
+  it: "🇮🇹",
+  de: "🇩🇪",
+  ru: "🇷🇺",
+  id: "🇮🇩",
+};
+const flagFor = (lang: string) => LANG_FLAG[lang.toLowerCase()] ?? "🏳️";
 
 /**
  * Owns the active-tab + filter state for the whole detail page. The header's
@@ -25,6 +48,7 @@ export function DetailView({
   genres,
   descPreview,
   mangaId,
+  lang,
   chapters,
   characters,
   about,
@@ -36,6 +60,7 @@ export function DetailView({
   genres: ReactNode;
   descPreview?: string;
   mangaId: string;
+  lang: string;
   chapters: Chapter[];
   characters: MangaCharacter[];
   about: ReactNode;
@@ -44,10 +69,24 @@ export function DetailView({
   const [active, setActive] = useState<"chapters" | "characters" | "about">("chapters");
   const [query, setQuery] = useState("");
 
+  // Chapter names have no consistent format across sources, so we don't show
+  // them. Number each chapter by its position instead — sources return chapters
+  // newest-first, so the top of the list gets the highest number.
+  const chapterNo = useMemo(() => {
+    const m = new Map<string, number>();
+    chapters.forEach((c, i) => m.set(c.id, chapters.length - i));
+    return m;
+  }, [chapters]);
+
   const q = norm(query.trim());
   const shownChapters = useMemo(
-    () => (q ? chapters.filter((c) => norm(c.name).includes(q)) : chapters),
-    [q, chapters],
+    () =>
+      q
+        ? chapters.filter(
+            (c) => norm(c.name).includes(q) || String(chapterNo.get(c.id) ?? "").includes(q),
+          )
+        : chapters,
+    [q, chapters, chapterNo],
   );
   const shownChars = useMemo(
     () => (q ? characters.filter((c) => norm(c.name).includes(q)) : characters),
@@ -136,7 +175,10 @@ export function DetailView({
                   className="chip"
                   href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
                 >
-                  {c.name}
+                  <span className="chip-flag" aria-label={c.lang ?? lang} title={c.lang ?? lang}>
+                    {flagFor(c.lang ?? lang)}
+                  </span>
+                  <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
                 </Link>
               </li>
             ))}

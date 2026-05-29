@@ -24,6 +24,8 @@ export type Chapter = {
   scanlator?: string;
   /** Unix ms as string (Mangayomi convention). */
   dateUpload?: string;
+  /** Source language this chapter was fetched from (set on merged details). */
+  lang?: string;
 };
 
 export type MangaDetail = {

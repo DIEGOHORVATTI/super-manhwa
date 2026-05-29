@@ -79,7 +79,7 @@ a:hover {
 .app-header.is-scrolled {
   top: 14px;
   width: calc(100% - 28px);
-  max-width: var(--maxw);
+  max-width: 1100px;
   border-radius: 18px;
   border-color: rgba(255, 255, 255, 0.12);
   background: rgba(18, 21, 30, 0.98);
@@ -234,18 +234,97 @@ a:hover {
     padding: 8px 10px;
   }
 }
+/* On phones the floating-island idea doesn't earn its keep. The header stays a
+   plain full-width top bar (logo + search), and the catalog tabs move to a fixed
+   bottom navigation bar (see .bottom-nav). So here we just flatten the header
+   (no island, no scroll compaction) and reserve space for the bottom bar. */
 @media (max-width: 620px) {
   .header-nav {
     display: none;
   }
+  .app-header,
+  .app-header.is-scrolled {
+    top: 0;
+    bottom: auto;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+    border-color: transparent;
+    background: rgba(14, 16, 22, 0.96);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  /* Cancel the desktop scroll compaction so the top bar stays put. */
+  .app-header.is-scrolled .app-header-inner {
+    padding: 10px 16px;
+  }
+  .app-header.is-scrolled .brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+  .app-header.is-scrolled .brand-name {
+    font-size: 20px;
+  }
   .header-search {
     flex: 1 1 auto;
+  }
+  /* Reserve space for the top header AND the bottom nav bar. */
+  .app {
+    padding-bottom: calc(var(--header-h) + 28px);
+  }
+  /* Keep the scroll-to-top button above the bottom nav bar. */
+  .reader-top {
+    bottom: calc(var(--header-h) + 26px);
   }
 }
 @media (max-width: 560px) {
   .brand-name {
     display: none;
   }
+}
+
+/* ── Mobile bottom navigation ────────────────────────────────────────────── */
+/* App-style tab bar fixed to the bottom on phones; hidden on desktop (the header
+   tabs cover it there). Same catalog shortcuts + active logic as the header. */
+.bottom-nav {
+  display: none;
+}
+@media (max-width: 620px) {
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 50;
+    display: flex;
+    justify-content: space-around;
+    gap: 2px;
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+    background: rgba(14, 16, 22, 0.98);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
+  }
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  border-radius: 12px;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+.bottom-nav-item:hover {
+  color: var(--text);
+}
+.bottom-nav-item.is-active {
+  color: var(--accent);
+  background: rgba(124, 92, 255, 0.12);
 }
 .subtitle {
   color: var(--muted);
@@ -507,7 +586,9 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
 .chip {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -517,6 +598,15 @@ a:hover {
 .chip:hover {
   border-color: var(--accent);
   background: var(--surface-2);
+}
+.chip-flag {
+  font-size: 15px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.chip-no {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
 }
 .pages {
   display: flex;

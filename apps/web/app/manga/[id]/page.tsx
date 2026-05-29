@@ -84,6 +84,9 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const { detail } = data;
   const title = detail.title ?? n ?? "Mangá";
   const chapters = detail.chapters ?? [];
+  // Source language the chapters were actually fetched from — drives the
+  // per-chapter flag in the list.
+  const lang = data.lang;
 
   // Rich metadata (AniList) — best-effort, never blocks the page.
   const { meta } = await api.manga.meta({ name: title }).catch(() => ({
@@ -162,6 +165,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     <DetailView
       title={title}
       mangaId={id}
+      lang={lang}
       chapters={chapters}
       characters={meta.characters}
       about={aboutTab}

@@ -45,6 +45,9 @@ export const chapterSchema = z.object({
   name: z.string(),
   scanlator: z.string().optional(),
   dateUpload: z.string().optional(),
+  /** Source language this chapter was fetched from. Set when a detail merges
+   *  chapters across connectors so the UI can flag each row's origin. */
+  lang: z.string().optional(),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 

@@ -149,7 +149,7 @@ export function Autocomplete() {
                 {m.chapters !== undefined && (
                   <span className="combobox-chapters">{m.chapters} caps</span>
                 )}
-                <span className="combobox-lang">{m.lang}</span>
+                {m.lang && <span className="combobox-lang">{m.lang}</span>}
               </span>
             </li>
           ))}

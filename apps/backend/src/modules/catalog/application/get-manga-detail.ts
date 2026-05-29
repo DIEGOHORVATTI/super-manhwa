@@ -1,77 +1,61 @@
-import type { MangaConnector, RawDetail } from "@packages/extension";
+import type { MangaConnector } from "@packages/extension";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
-import { badRequest, notFound } from "@/shared/errors";
+import { notFound } from "@/shared/errors";
 
-import type { MangaDetail } from "../domain/manga";
+import type { CatalogSource } from "../domain/catalog-source";
+import type { Chapter, MangaDetail } from "../domain/manga";
 import type { ConnectorRegistry } from "../infrastructure/connector-registry";
 import { MangaMapper } from "../infrastructure/manga-mapper";
+import {
+  type ChapterSource,
+  mergeChapters,
+  orderCompletenessPool,
+  priorityOf,
+  titleMatches,
+} from "./completeness";
 
 const DETAIL_TTL = 10 * 60 * 1000;
-const FALLBACK_PRIORITY = ["manhwaz", "mangaworld", "weebcentral", "webtoons"];
-
-const normName = (s: string) =>
-  s
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, " ")
-    .trim();
-
+const SEARCH_TTL = 10 * 60 * 1000;
+const MERGED_TTL = 10 * 60 * 1000;
+/** Preferred reading language — chapters in this language win on duplicates. */
+const PREFERRED_LANG = "pt-br";
+/** Max connectors we fan out to per detail load — bounds latency. */
+const MAX_POOL = 6;
+/** Max title variants (catalog title + aliases) we search each connector by. */
+const MAX_QUERIES = 2;
 /**
- * Memoised mapping `id → working alternate {source, url}`. Populated when we
- * resolve a DMCA-blocked or extension-broken primary to an alt — subsequent
- * loads of the same id skip the cross-source search entirely.
+ * Soft deadline for the whole fan-out. Connectors that miss it keep running in
+ * the background (warming the per-connector search/detail caches), so the next
+ * load — even before the merged cache expires elsewhere — is fast and more
+ * complete. A first cold load returns within this bound rather than hanging.
  */
-const fallbackMap = new Map<string, { source: string; url: string }>();
+const FANOUT_DEADLINE_MS = 40_000;
 
-const findAlternate = async (
-  registry: ConnectorRegistry,
-  name: string,
-  excludeConnectorId: string,
-): Promise<{ connector: MangaConnector; link: string; raw: RawDetail } | null> => {
-  const target = normName(name);
-  const pool = registry
-    .listCurated()
-    .filter((c) => c.id !== excludeConnectorId && !c.hasCloudflare)
-    .sort((a, b) => {
-      const ai = FALLBACK_PRIORITY.indexOf(a.id);
-      const bi = FALLBACK_PRIORITY.indexOf(b.id);
-      return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
-    });
-
-  const searches = await Promise.allSettled(
-    pool.map((connector) =>
-      connector.search(name, 1).then((r) => {
-        // STRICT exact-name match only. Falling back to the first hit causes
-        // wrong-manga substitutions — e.g. searching "Solo Leveling" on
-        // Manhwaz returns "Solo Leveling: Ragnarok" (the sequel) as the top
-        // result, and we'd silently serve the wrong title's chapters.
-        const hit = (r.list ?? []).find((m) => normName(m.name) === target);
-        return { connector, hit };
-      }),
-    ),
-  );
-
-  for (const res of searches) {
-    if (res.status !== "fulfilled" || !res.value.hit) continue;
-    const { connector, hit } = res.value;
-    try {
-      const raw = await connector.getDetail(hit.link);
-      if (raw?.chapters && raw.chapters.length > 0) return { connector, link: hit.link, raw };
-    } catch {
-      /* try next */
-    }
+const uniqStrings = (xs: Array<string | undefined>): string[] => {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const x of xs) {
+    const v = x?.trim();
+    if (!v) continue;
+    const k = v.toLowerCase();
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(v);
   }
-  return null;
+  return out;
 };
 
 /**
- * Fetch a manga's details. If the primary connector returns zero chapters
- * (DMCA) or throws (stale selectors), and we have a name hint, fan out to
- * other curated connectors and transparently return the first alternate
- * that yields chapters.
+ * Resolve a work's detail. Identity comes from the AniList catalog (the `id` is
+ * an AniList id): we take its title + aliases, then fan out across the reading
+ * connectors — matching the same work by (now English-aligned) title — and union
+ * every source's chapters, deduped by number, preferring {@link PREFERRED_LANG}.
+ * Non-chapter content (title/cover/genres/description) comes from AniList, so the
+ * page renders even when no reading source carries the work.
  */
 export const makeGetMangaDetail =
-  (registry: ConnectorRegistry, idStore: IdStore, cache: Cache) =>
+  (catalog: CatalogSource, registry: ConnectorRegistry, idStore: IdStore, cache: Cache) =>
   async ({
     id,
     name,
@@ -79,37 +63,81 @@ export const makeGetMangaDetail =
     id: string;
     name?: string;
   }): Promise<{ detail: MangaDetail; lang: string }> => {
-    const ref = idStore.decode(id);
-    if (!ref) throw badRequest("invalid manga id");
+    const anilistImg = (url?: string): string | undefined =>
+      url ? `/api/img/${idStore.encode({ source: "anilist", url })}` : undefined;
 
-    const cached = fallbackMap.get(id);
-    const primary = cached ?? { source: ref.source, url: ref.url };
-    const connector = await registry.resolve(primary.source);
-    if (!connector) throw notFound("unknown source");
-
-    let shaped: MangaDetail | null = null;
-    let primaryErr: Error | null = null;
-    try {
-      const key = `detail:${connector.id}:${primary.url}`;
-      const raw = await cache.remember(key, DETAIL_TTL, () => connector.getDetail(primary.url));
-      shaped = MangaMapper.toDetail(idStore, connector, raw ?? {});
-      if (shaped.chapters && shaped.chapters.length > 0) {
-        return { detail: shaped, lang: connector.lang };
+    /** Search a candidate connector for this work and return its shaped detail. */
+    const resolveAlt = async (
+      connector: MangaConnector,
+      queries: string[],
+      targets: string[],
+    ): Promise<{ priority: number; shaped: MangaDetail } | null> => {
+      for (const q of queries) {
+        try {
+          const r = await cache.remember(
+            `search:${connector.id}:${q.toLowerCase()}`,
+            SEARCH_TTL,
+            () => connector.search(q, 1),
+          );
+          const hit = (r.list ?? []).find((m) => titleMatches(m.name, targets));
+          if (!hit) continue;
+          const raw = await cache.remember(`detail:${connector.id}:${hit.link}`, DETAIL_TTL, () =>
+            connector.getDetail(hit.link),
+          );
+          const shaped = MangaMapper.toDetail(idStore, connector, raw ?? {});
+          if (shaped.chapters && shaped.chapters.length > 0) {
+            return { priority: priorityOf(connector.id), shaped };
+          }
+        } catch {
+          /* try the next query / connector */
+        }
       }
-    } catch (e) {
-      primaryErr = e instanceof Error ? e : new Error(String(e));
-    }
+      return null;
+    };
 
-    const hint = name ?? shaped?.title;
-    if (hint) {
-      const alt = await findAlternate(registry, hint, primary.source);
-      if (alt) {
-        fallbackMap.set(id, { source: alt.connector.id, url: alt.link });
-        const altShaped = MangaMapper.toDetail(idStore, alt.connector, alt.raw);
-        return { detail: altShaped, lang: alt.connector.lang };
+    return cache.remember(`detail-merged:${id}`, MERGED_TTL, async () => {
+      const work = await catalog.byId(id).catch(() => null);
+      if (!work && !name) throw notFound("unknown work");
+
+      // Title variants to find the same work across reading sources.
+      const targets = uniqStrings([work?.title, name, ...(work?.aliases ?? [])]);
+      const queries = targets.slice(0, MAX_QUERIES);
+
+      // Bound the whole fan-out: connectors that miss the deadline keep running
+      // (warming caches) but don't hold up the response.
+      let alts: Array<{ priority: number; shaped: MangaDetail }> = [];
+      if (targets.length > 0) {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const deadline = new Promise<null>((resolve) => {
+          timer = setTimeout(() => resolve(null), FANOUT_DEADLINE_MS);
+        });
+        const pool = orderCompletenessPool(registry.listCurated(), PREFERRED_LANG, "").slice(
+          0,
+          MAX_POOL,
+        );
+        const settled = await Promise.all(
+          pool.map((c) => Promise.race([resolveAlt(c, queries, targets), deadline])),
+        );
+        clearTimeout(timer);
+        alts = settled.filter((a): a is { priority: number; shaped: MangaDetail } => a != null);
       }
-    }
 
-    if (primaryErr) throw primaryErr;
-    return { detail: shaped!, lang: connector.lang };
+      const sources: ChapterSource[] = alts.map((a) => ({
+        lang: a.shaped.lang,
+        priority: a.priority,
+        chapters: a.shaped.chapters ?? [],
+      }));
+      const chapters: Chapter[] = mergeChapters(sources, PREFERRED_LANG);
+
+      const detail: MangaDetail = {
+        title: work?.title ?? name,
+        description: work?.description,
+        genre: work?.genres,
+        status: work?.status,
+        imageUrl: anilistImg(work?.imageUrl),
+        chapters,
+        lang: PREFERRED_LANG,
+      };
+      return { detail, lang: PREFERRED_LANG };
+    });
   };

@@ -31,12 +31,10 @@ export const DEFAULT_ENV = {
   PORT: 8787,
   VERSION: packageJson.version,
   CORS_ORIGIN: "*",
-  /** AES-derived key seed; minted ids and image tokens are HMAC'd with it. */
+  /** AES-256-GCM key seed; chapter/image tokens are encrypted with it. */
   IMAGE_TOKEN_SECRET: "dev-only-secret-change-in-prod",
   /** Shared secret the frontend sends as `X-API-KEY` to access this backend. */
   API_KEY: "dev-api-key-change-in-prod",
-  /** Host path for the persistent short-id store (Docker volume mount). */
-  ID_STORE_PATH: "/app/data/ids.jsonl",
   /** FlareSolverr sidecar for Cloudflare-protected sources (used by the extension runtime). */
   FLARESOLVERR_URL: "http://flaresolverr:8191/v1",
   /** Whether the OpenAPI reference page is served. */
@@ -51,7 +49,6 @@ export const EnvSchema = z
     CORS_ORIGIN: z.string().default(DEFAULT_ENV.CORS_ORIGIN),
     IMAGE_TOKEN_SECRET: z.string().default(DEFAULT_ENV.IMAGE_TOKEN_SECRET),
     API_KEY: z.string().default(DEFAULT_ENV.API_KEY),
-    ID_STORE_PATH: z.string().default(DEFAULT_ENV.ID_STORE_PATH),
     FLARESOLVERR_URL: z.string().default(DEFAULT_ENV.FLARESOLVERR_URL),
     EXPOSE_DOCS: boolFromString.default(DEFAULT_ENV.EXPOSE_DOCS),
   })

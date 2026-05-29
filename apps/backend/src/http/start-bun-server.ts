@@ -37,6 +37,13 @@ export type StartBunServerOptions<TContext> = {
   /** Run after auth but before oRPC dispatch (e.g. binary streams). */
   customHandlers?: FetchHandler[];
   notFoundBody?: unknown;
+  /**
+   * Seconds Bun keeps an idle connection open before resetting it (max 255).
+   * The detail route fans out across several reading connectors (some via
+   * FlareSolverr) on a cold cache, which can exceed Bun's 10s default and drop
+   * the connection mid-request — so we raise it well above that.
+   */
+  idleTimeout?: number;
   initialize?: () => Promise<void> | void;
   onListen?: () => Promise<void> | void;
 };
@@ -64,6 +71,7 @@ export const startBunServer = async <TContext>({
   beforeHandlers = [],
   customHandlers = [],
   notFoundBody = DEFAULT_NOT_FOUND,
+  idleTimeout = 120,
   initialize,
   onListen,
 }: StartBunServerOptions<TContext>): Promise<ReturnType<typeof serve>> => {
@@ -89,6 +97,7 @@ export const startBunServer = async <TContext>({
   const server = serve({
     port,
     hostname,
+    idleTimeout,
     async fetch(req: Request): Promise<Response> {
       for (const handler of beforeHandlers) {
         const response = await handler(req);

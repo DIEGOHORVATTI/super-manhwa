@@ -29,6 +29,23 @@ const QUERY = `query ($s: String) {
   }
 }`;
 
+/** Lightweight query — just the title variants, for cross-source name matching. */
+const ALIAS_QUERY = `query ($s: String) {
+  Media(search: $s, type: MANGA, sort: POPULARITY_DESC) {
+    title { romaji english native }
+    synonyms
+  }
+}`;
+
+interface AliasResponse {
+  data?: {
+    Media?: {
+      title?: { romaji?: string | null; english?: string | null; native?: string | null };
+      synonyms?: Array<string | null>;
+    } | null;
+  };
+}
+
 interface AniListResponse {
   data?: {
     Media?: {
@@ -106,5 +123,23 @@ export const makeAniListProvider = (): MetadataProvider => ({
         })),
     };
     return meta;
+  },
+
+  async aliasesByTitle(title) {
+    const result = await httpFetch<AliasResponse>(ENDPOINT, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ query: ALIAS_QUERY, variables: { s: title } }),
+    });
+    if (result.error) return [];
+    const m = result.value.data?.Media;
+    if (!m) return [];
+    const variants = [
+      m.title?.romaji,
+      m.title?.english,
+      m.title?.native,
+      ...(m.synonyms ?? []),
+    ].filter((s): s is string => typeof s === "string" && s.trim().length > 0);
+    return Array.from(new Set(variants));
   },
 });

@@ -4,7 +4,7 @@
  * use cases. Routes import the use cases directly from this file.
  */
 import { env } from "@/config/env";
-import { makeJsonlIdStore } from "@/core/infra/jsonl-id-store";
+import { makeAesIdStore } from "@/core/infra/aes-id-store";
 import { makeMemoryCache } from "@/core/infra/memory-cache";
 import {
   makeGetChapterPages,
@@ -15,7 +15,7 @@ import {
   makeSearchManga,
   makeSuggestManga,
 } from "@/modules/catalog/application";
-import { makeConnectorRegistry } from "@/modules/catalog/infrastructure";
+import { makeAniListCatalog, makeConnectorRegistry } from "@/modules/catalog/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
 import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
 import { makeGetMangaMeta } from "@/modules/metadata/application";
@@ -24,22 +24,23 @@ import { makeGetHealth } from "@/modules/system/application";
 
 // Infrastructure (singletons)
 const cache = makeMemoryCache();
-const idStore = makeJsonlIdStore({
-  secret: env.IMAGE_TOKEN_SECRET,
-  file: env.ID_STORE_PATH,
-});
+// Stateless: chapter/image tokens are self-describing (AES-GCM), so there's no
+// lookup file to persist — manga ids are AniList ids, not minted here.
+const idStore = makeAesIdStore({ secret: env.IMAGE_TOKEN_SECRET });
 const connectorRegistry = makeConnectorRegistry();
 const imageFetcher = makeHttpImageFetcher();
 const metadataProvider = makeAniListProvider();
+// AniList drives discovery + work identity; connectors only resolve chapters.
+const catalog = makeAniListCatalog();
 
 // Catalog application
-export const listPopular = makeListPopular(connectorRegistry, idStore, cache);
-export const searchManga = makeSearchManga(connectorRegistry, idStore, cache);
-export const suggestManga = makeSuggestManga(connectorRegistry, idStore, cache);
-export const getMangaDetail = makeGetMangaDetail(connectorRegistry, idStore, cache);
+export const listPopular = makeListPopular(catalog, idStore, cache);
+export const searchManga = makeSearchManga(catalog, idStore, cache);
+export const suggestManga = makeSuggestManga(catalog, idStore, cache);
+export const getMangaDetail = makeGetMangaDetail(catalog, connectorRegistry, idStore, cache);
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);
-export const listGenres = makeListGenres(listPopular);
+export const listGenres = makeListGenres(catalog, cache);
 
 // Metadata application (AniList enrichment)
 export const getMangaMeta = makeGetMangaMeta(metadataProvider, idStore, cache);

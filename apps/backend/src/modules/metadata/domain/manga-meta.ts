@@ -33,4 +33,10 @@ export type MangaMeta = {
 export type MetadataProvider = {
   /** Returns null when the title isn't found (caller renders the page without it). */
   byTitle(title: string): Promise<MangaMeta | null>;
+  /**
+   * All known title variants (romaji / english / native / synonyms) for the
+   * best match of `title`. Used to bridge languages when matching the same work
+   * across reading sources. Empty array on miss/error.
+   */
+  aliasesByTitle(title: string): Promise<string[]>;
 };
