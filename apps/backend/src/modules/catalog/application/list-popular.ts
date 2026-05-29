@@ -1,4 +1,4 @@
-import type { MangaSort } from "@packages/contracts";
+import type { MangaSort, MangaStatus } from "@packages/contracts";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
 
@@ -21,17 +21,19 @@ export const makeListPopular =
   async ({
     page = 1,
     genre,
+    status,
     sort,
   }: {
     lang?: string;
     page?: number;
     genre?: string;
+    status?: MangaStatus;
     sort?: MangaSort;
   }): Promise<Paginated<MangaSummary>> => {
     const catalogSort = toCatalogSort(sort);
-    const key = `catalog:${catalogSort}:${genre ?? "*"}:${page}`;
+    const key = `catalog:${catalogSort}:${genre ?? "*"}:${status ?? "*"}:${page}`;
     return cache.remember(key, POPULAR_TTL, async () => {
-      const { items, hasNextPage } = await catalog.list({ sort: catalogSort, genre, page });
+      const { items, hasNextPage } = await catalog.list({ sort: catalogSort, genre, status, page });
       return {
         list: items.map((it) => MangaMapper.catalogSummary(idStore, it)),
         hasNextPage,

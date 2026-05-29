@@ -3,9 +3,14 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
+import { ReaderPages } from "@/components/ReaderPages";
+import { signPagePath } from "@/lib/image-sign";
 import { api } from "@/lib/orpc.server";
+import { getSessionId } from "@/lib/session";
 
-export const dynamic = "force-dynamic";
+// Not force-dynamic: reading the session cookie already opts this route into
+// dynamic rendering (signed page URLs must never be cached cross-user), while
+// the page-list fetch underneath still benefits from the Data Cache.
 
 type P = Promise<{ id: string }>;
 type SP = Promise<{ n?: string; m?: string; mn?: string }>;
@@ -31,13 +36,26 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       pagesRes.reason instanceof Error ? pagesRes.reason.message : String(pagesRes.reason);
     return <p className="notice">{err}</p>;
   }
-  const { pages } = pagesRes.value;
+  // Bind each page image to this visitor's session so a copied URL can't be
+  // opened in another browser / incognito (see lib/image-sign).
+  const sid = await getSessionId();
+  const nowS = Math.floor(Date.now() / 1000);
+  const pages = pagesRes.value.pages.map((p) => signPagePath(p, sid, nowS));
   const chapters =
     detailRes.status === "fulfilled" && detailRes.value
       ? (detailRes.value.detail.chapters ?? [])
       : [];
 
   const hasContext = chapters.length > 0 && !!m && !!mn;
+
+  // Chapter number (sources return newest-first) + cover, for the
+  // continue-reading history entry the reader records on the client.
+  const idx = chapters.findIndex((c) => c.id === id);
+  const chapterNo = idx >= 0 ? chapters.length - idx : undefined;
+  const cover =
+    detailRes.status === "fulfilled" && detailRes.value
+      ? detailRes.value.detail.imageUrl
+      : undefined;
 
   return (
     <>
@@ -58,12 +76,15 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
         </div>
       )}
 
-      <div className="pages">
-        {pages.map((p, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={i} className="page-img" loading="lazy" src={p} alt={`página ${i + 1}`} />
-        ))}
-      </div>
+      <ReaderPages
+        pages={pages}
+        mangaId={m}
+        mangaName={mn}
+        chapterId={id}
+        chapterName={n}
+        chapterNo={chapterNo}
+        cover={cover}
+      />
 
       {pages.length === 0 && <p className="muted">Nenhuma página retornada.</p>}
 

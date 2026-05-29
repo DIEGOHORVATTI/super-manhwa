@@ -154,6 +154,86 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Deprecat
   over baking Playwright into the Bun image — Playwright-under-Bun is fragile, and the
   sidecar is a maintained headless-Chromium service our hook already targets.
 
+## ADR-0009 — Session-bound chapter images; public-signed covers (image protection)
+
+- **Status:** Accepted (2026-05-29)
+- **Context:** Cover/page images are proxied through `/api/img/<token>` (opaque,
+  AES-encrypted token → upstream URL). Anyone with the URL could open/share it.
+  The goal is the WhatsApp model: a copied chapter-page link should not render in
+  another browser / incognito. True DRM is impossible (the browser decodes the
+  pixels), so the target is "casual link-sharing fails", not "extraction is
+  impossible". `next/image` optimization *requires* the optimizer to fetch the
+  source server-side, which conflicts with per-session images.
+- **Decision:** Split images by sensitivity, and make the **Next `/api/img`
+  proxy the protection boundary** (the browser can't reach the Docker backend
+  directly — it lacks `X-API-KEY`):
+  - **Covers** (not sensitive): the backend appends a permanent HMAC tag
+    `?k=HMAC(IMAGE_SIGN_SECRET, "pub:"+token)`. The proxy verifies it and serves
+    `public, max-age=1y, immutable` → CDN-cacheable and feedable to `next/image`.
+  - **Chapter pages** (sensitive): emitted *without* `k`. The reader RSC signs
+    each as `?e=<exp>&s=HMAC(..., "prv:"+token+":"+exp+":"+sid)`, bound to an
+    anonymous session id (`mr_sid` cookie, minted by `proxy.ts`). The proxy
+    verifies expiry + session and serves `private`. A copied URL dies instantly
+    in another browser (different/absent `sid`); expiry is a secondary bound.
+  - Signing secret is shared by both layers (`IMAGE_SIGN_SECRET`); the algorithm
+    is duplicated in `apps/backend/src/shared/image-sign.ts` and
+    `apps/web/lib/image-sign-core.ts`, locked together by a canonical-vector test
+    on both sides.
+- **Consequences:** (+) Casual sharing broken without real login; covers stay
+  fast/cacheable; `next/image` used only where it's safe. (+) No DB — session is
+  a random cookie, no PII. (−) Page bytes aren't CDN-shareable cross-user
+  (mitigated by browser `private` cache + the upstream CDN; a shared byte cache
+  in Blob/Redis is a future option). (−) Two implementations of one HMAC must
+  stay in sync (guarded by tests). (−) The cover algorithm couples backend↔web.
+
+## ADR-0010 — Caching: drop `force-dynamic`, cache the data layer, not the routes
+
+- **Status:** Accepted (2026-05-29)
+- **Context:** Every page was `force-dynamic`, so each navigation did full SSR +
+  backend round-trips with no caching — the main scaling bottleneck. Filter pages
+  (`/explorar`) and text search explode the cache-key space, so full-route ISR is
+  a poor fit; the catalog itself changes slowly (backend caches 5 min–6 h).
+- **Decision:** Cache at the **data layer**, keep rendering dynamic. The RSC oRPC
+  client wraps `fetch` with `next: { revalidate: 300 }`, so backend calls land in
+  Next's Data Cache. `force-dynamic` is removed from home/genre/detail/reader
+  (they stay dynamic via `searchParams`/`cookies`, but their fetches are now
+  cached/deduped). Reader page URLs are signed *after* the (cacheable) page-list
+  fetch, so caching the list is safe. The sitemap revalidates daily (bounded by
+  the 5-min fetch cache). Never full-route-cache `/explorar` or search.
+- **Consequences:** (+) Backend load drops sharply; TTFB improves; works with the
+  session-image model (cookie stays isolated to `/api/img`, never varies HTML).
+  (−) Up to 5-min staleness on new chapters (acceptable; tighten later with
+  `revalidateTag`). (−) Not full PPR yet — a future step once Cache Components
+  stabilizes.
+
+## ADR-0011 — Login-free local persistence (library, continue-reading, read state)
+
+- **Status:** Accepted (2026-05-29)
+- **Context:** The app was fully stateless — no favorites, history or read
+  markers — yet the privacy stance forbids accounts/PII.
+- **Decision:** Persist in **localStorage** only, via `apps/web/lib/library.ts`
+  (`useSyncExternalStore` + cross-tab sync). Favorites power `/biblioteca`;
+  history powers the home "Continuar lendo" rail; read markers grey out chapters
+  and are set when the reader reaches the last page. All consumers are client
+  islands, so cached/ISR server pages aren't opted out.
+- **Consequences:** (+) Real library UX, zero backend/PII, no cache impact.
+  (−) Per-device, no sync (acceptable; a future opt-in account could layer on).
+
+## ADR-0012 — Unified `/explorar` page replaces the "Completos" tab
+
+- **Status:** Accepted (2026-05-29)
+- **Context:** Discovery was limited to single-genre pages + home sort tabs; the
+  `/manga/search` endpoint existed but was unused (only the header autocomplete).
+  "Completos" was just one status, occupying a top-nav slot.
+- **Decision:** One discovery page at `/explorar`: text query (→ search) or
+  browse (→ popular/trending/newest), refined by genre + status, paginated, with
+  all state in the URL. Added a `status` filter through the stack
+  (contract → use case → AniList `MediaStatus`). "Completos" becomes a status
+  option; the freed nav slot now holds **Explorar** (and **Biblioteca**).
+- **Consequences:** (+) Full search + filter UX; `status` reusable elsewhere.
+  (−) Status only maps the four AniList-backed states (ongoing/completed/hiatus/
+  cancelled).
+
 ---
 
 ### Bridge reference (for ADR-0004 implementation)

@@ -1,10 +1,9 @@
 import type { MangaSort } from "@packages/contracts";
+import { ContinueReading } from "@/components/ContinueReading";
 import { Pagination } from "@/components/Pagination";
 import { PosterGrid } from "@/components/PosterGrid";
 import { RankingList } from "@/components/RankingList";
 import { api } from "@/lib/orpc.server";
-
-export const dynamic = "force-dynamic";
 
 const VALID_SORTS: ReadonlyArray<MangaSort> = ["popular", "trending", "newest", "completed"];
 
@@ -44,13 +43,15 @@ export default async function Home({
 
   return (
     <>
+      <ContinueReading />
+
       <div className="home-layout">
         <div className="home-main">
           <PosterGrid items={listing.list} />
           <Pagination page={page} hasNextPage={listing.hasNextPage} buildHref={buildHref} />
         </div>
 
-        <RankingList items={ranking.list.slice(0, 10)} title="Em tendência" />
+        <RankingList items={ranking.list.slice(0, 10)} title="Em tendência" icon="flame" />
       </div>
     </>
   );

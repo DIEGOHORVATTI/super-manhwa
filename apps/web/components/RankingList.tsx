@@ -1,6 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
 
 /**
@@ -32,12 +33,7 @@ export function RankingList({
             <Link className="rank-link" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
               <span className={`rank-no${i < 3 ? " is-top" : ""}`}>{i + 1}</span>
               <span className="rank-thumb">
-                {m.imageUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img loading="lazy" src={m.imageUrl} alt="" />
-                ) : (
-                  <span className="rank-noimg" />
-                )}
+                <Cover src={m.imageUrl} alt="" sizes="38px" />
               </span>
               <span className="rank-meta">
                 <span className="rank-name">{m.name}</span>

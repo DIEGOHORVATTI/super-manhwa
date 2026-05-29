@@ -38,11 +38,14 @@ export type CatalogPage = {
   hasNextPage: boolean;
 };
 
+/** Optional refinements shared by browse + search. */
+export type CatalogFilters = { genre?: string; status?: MangaStatus };
+
 export type CatalogSource = {
-  /** Free-text search, paginated. */
-  search(query: string, page: number): Promise<CatalogPage>;
-  /** Browse listing by sort, optionally constrained to a genre. */
-  list(opts: { sort: CatalogSort; genre?: string; page: number }): Promise<CatalogPage>;
+  /** Free-text search, paginated, optionally constrained by genre/status. */
+  search(query: string, page: number, filters?: CatalogFilters): Promise<CatalogPage>;
+  /** Browse listing by sort, optionally constrained by genre/status. */
+  list(opts: { sort: CatalogSort; page: number } & CatalogFilters): Promise<CatalogPage>;
   /** Full record by canonical id, or null if unknown. */
   byId(id: string): Promise<CatalogWork | null>;
   /** The catalog's genre vocabulary. */

@@ -8,6 +8,7 @@ import {
   langsResultSchema,
   mangaListSchema,
   mangaSortSchema,
+  mangaStatusSchema,
   metaResultSchema,
   pagesResultSchema,
   suggestResultSchema,
@@ -26,6 +27,7 @@ export const manga = oc.prefix("/manga").router({
     .input(
       langFilterSchema.merge(paginationSchema).extend({
         genre: z.string().optional(),
+        status: mangaStatusSchema.optional(),
         sort: mangaSortSchema.default("popular"),
       }),
     )
@@ -37,6 +39,7 @@ export const manga = oc.prefix("/manga").router({
       langFilterSchema.merge(paginationSchema).extend({
         q: z.string(),
         genre: z.string().optional(),
+        status: mangaStatusSchema.optional(),
       }),
     )
     .output(mangaListSchema),

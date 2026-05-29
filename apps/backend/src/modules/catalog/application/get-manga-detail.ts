@@ -2,6 +2,7 @@ import type { MangaConnector } from "@packages/extension";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
 import { notFound } from "@/shared/errors";
+import { signCoverPath } from "@/shared/image-sign";
 
 import type { CatalogSource } from "../domain/catalog-source";
 import type { Chapter, MangaDetail } from "../domain/manga";
@@ -64,7 +65,7 @@ export const makeGetMangaDetail =
     name?: string;
   }): Promise<{ detail: MangaDetail; lang: string }> => {
     const anilistImg = (url?: string): string | undefined =>
-      url ? `/api/img/${idStore.encode({ source: "anilist", url })}` : undefined;
+      url ? signCoverPath(`/api/img/${idStore.encode({ source: "anilist", url })}`) : undefined;
 
     /** Search a candidate connector for this work and return its shaped detail. */
     const resolveAlt = async (

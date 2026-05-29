@@ -5,8 +5,6 @@ import { Pagination } from "@/components/Pagination";
 import { PosterGrid } from "@/components/PosterGrid";
 import { api } from "@/lib/orpc.server";
 
-export const dynamic = "force-dynamic";
-
 type P = Promise<{ genre: string }>;
 type SP = Promise<{ page?: string }>;
 

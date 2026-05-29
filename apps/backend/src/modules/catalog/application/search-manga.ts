@@ -1,3 +1,4 @@
+import type { MangaStatus } from "@packages/contracts";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
 
@@ -16,17 +17,21 @@ export const makeSearchManga =
   async ({
     q,
     page = 1,
+    genre,
+    status,
   }: {
     q: string;
     lang?: string;
     page?: number;
+    genre?: string;
+    status?: MangaStatus;
   }): Promise<Paginated<MangaSummary>> => {
     const trimmed = q.trim();
     if (!trimmed) return { list: [], hasNextPage: false };
 
-    const key = `search:${trimmed.toLowerCase()}:${page}`;
+    const key = `search:${trimmed.toLowerCase()}:${genre ?? "*"}:${status ?? "*"}:${page}`;
     return cache.remember(key, SEARCH_TTL, async () => {
-      const { items, hasNextPage } = await catalog.search(trimmed, page);
+      const { items, hasNextPage } = await catalog.search(trimmed, page, { genre, status });
       return {
         list: items.map((it) => MangaMapper.catalogSummary(idStore, it)),
         hasNextPage,

@@ -26,6 +26,10 @@ export const mangaSummarySchema = z.object({
   name: z.string(),
   imageUrl: z.string().optional(),
   lang: z.string(),
+  /** Reading languages this work is available in — drives the flag(s) over the
+   *  listing cover. Catalog listings can't probe sources cheaply, so this is the
+   *  platform's primary reading language for now; enriched later per work. */
+  langs: z.array(z.string()).optional(),
   status: mangaStatusSchema.optional(),
   genres: z.array(z.string()).optional(),
   /** Chapter count, when a source can answer cheaply (e.g. MangaDex /aggregate).

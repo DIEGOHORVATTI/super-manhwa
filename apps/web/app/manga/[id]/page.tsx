@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { DetailView } from "@/components/DetailView";
+import { FavoriteButton } from "@/components/FavoriteButton";
+import { Flag, langLabel } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
-
-export const dynamic = "force-dynamic";
 
 /** Markdown/HTML → plain text, clamped — used for the header sinopse teaser. */
 const toPreview = (text: string, max = 240) => {
@@ -37,17 +38,23 @@ export async function generateMetadata({
   searchParams: SP;
 }): Promise<Metadata> {
   const [{ id }, { n }] = await Promise.all([params, searchParams]);
-  let name = n;
-  if (!name) {
-    try {
-      name = (await api.manga.detail({ id })).detail.title;
-    } catch {}
-  }
-  const title = name ?? "Mangá";
+  let detail: Awaited<ReturnType<typeof api.manga.detail>>["detail"] | undefined;
+  try {
+    detail = (await api.manga.detail({ id, name: n })).detail;
+  } catch {}
+
+  const title = detail?.title ?? n ?? "Mangá";
+  const description = detail?.description
+    ? toPreview(detail.description, 200)
+    : `Leia ${title} online — capítulos e detalhes.`;
+  // The cover is public (signed `?k=`), so it's safe as the share/OG image.
+  const images = detail?.imageUrl ? [detail.imageUrl] : undefined;
+
   return {
     title,
-    description: `Leia ${title} online — capítulos e detalhes.`,
-    openGraph: { title, type: "book" },
+    description,
+    openGraph: { title, description, type: "book", images },
+    twitter: { card: "summary_large_image", title, description, images },
   };
 }
 
@@ -87,6 +94,19 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // Source language the chapters were actually fetched from — drives the
   // per-chapter flag in the list.
   const lang = data.lang;
+
+  // Per-work language mix, computed from the merged chapters. A work can carry
+  // some pt-br + some en chapters (different connectors), so we count each
+  // language and surface the share — flags in the hero, percentages in "Sobre".
+  const langCounts = new Map<string, number>();
+  for (const c of chapters) {
+    const code = (c.lang ?? lang).toLowerCase();
+    langCounts.set(code, (langCounts.get(code) ?? 0) + 1);
+  }
+  const totalChapters = chapters.length || 1;
+  const langBreakdown = [...langCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([code, count]) => ({ code, count, pct: Math.round((count / totalChapters) * 100) }));
 
   // Rich metadata (AniList) — best-effort, never blocks the page.
   const { meta } = await api.manga.meta({ name: title }).catch(() => ({
@@ -128,6 +148,27 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         </dl>
       )}
 
+      {langBreakdown.length > 0 && (
+        <>
+          <h3 className="section">Idiomas</h3>
+          <ul className="lang-breakdown">
+            {langBreakdown.map((b) => (
+              <li key={b.code}>
+                <Flag lang={b.code} size={20} title={langLabel(b.code)} />
+                <span className="lang-name">{langLabel(b.code)}</span>
+                <span className="lang-bar" aria-hidden="true">
+                  <span className="lang-bar-fill" style={{ width: `${b.pct}%` }} />
+                </span>
+                <span className="lang-pct">{b.pct}%</span>
+                <span className="lang-count muted">
+                  {b.count} cap{b.count === 1 ? "." : "s."}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
       {meta.tags.length > 0 && (
         <>
           <h3 className="section">Tags</h3>
@@ -161,44 +202,91 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const rawDesc = detail.description || meta.description || "";
   const descPreview = rawDesc ? toPreview(rawDesc) : undefined;
 
+  // Structured data so search engines render a rich book result (cover, rating,
+  // genres). Image/URL absolute via SITE_URL; relative paths confuse some crawlers.
+  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    name: title,
+    url: `${base}/manga/${id}`,
+    ...(detail.imageUrl ? { image: `${base}${detail.imageUrl}` } : {}),
+    ...(rawDesc ? { description: toPreview(rawDesc, 300) } : {}),
+    ...(detail.author ? { author: { "@type": "Person", name: detail.author } } : {}),
+    ...(detail.genre && detail.genre.length > 0 ? { genre: detail.genre } : {}),
+    ...(meta.score !== undefined
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: meta.score,
+            bestRating: 100,
+            worstRating: 0,
+          },
+        }
+      : {}),
+  };
+
   return (
-    <DetailView
-      title={title}
-      mangaId={id}
-      lang={lang}
-      chapters={chapters}
-      characters={meta.characters}
-      about={aboutTab}
-      descPreview={descPreview}
-      backdrop={meta.bannerImage ?? detail.imageUrl ?? undefined}
-      cover={
-        detail.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key="cover" className="detail-cover" src={detail.imageUrl} alt={title} />
-        ) : null
-      }
-      meta={
-        <div className="detail-meta">
-          <StatusBadge status={detail.status} size="md" />
-          <span className="muted">{chapters.length} capítulos</span>
-          {meta.score !== undefined && (
-            <span className="score-pill">
-              <Icon name="star" size={12} /> {meta.score}
-            </span>
-          )}
-        </div>
-      }
-      genres={
-        detail.genre && detail.genre.length > 0 ? (
-          <div className="genres">
-            {detail.genre.slice(0, 16).map((g) => (
-              <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
-                {g}
-              </Link>
-            ))}
+    <>
+      <script
+        type="application/ld+json"
+        // Trusted, server-built JSON-LD (no user input).
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <DetailView
+        title={title}
+        mangaId={id}
+        lang={lang}
+        chapters={chapters}
+        characters={meta.characters}
+        about={aboutTab}
+        descPreview={descPreview}
+        backdrop={meta.bannerImage ?? detail.imageUrl ?? undefined}
+        cover={
+          detail.imageUrl ? (
+            <Image
+              key="cover"
+              className="detail-cover"
+              src={detail.imageUrl}
+              alt={title}
+              width={160}
+              height={240}
+              sizes="160px"
+              priority
+            />
+          ) : null
+        }
+        meta={
+          <div className="detail-meta">
+            <StatusBadge status={detail.status} size="md" />
+            <span className="muted">{chapters.length} capítulos</span>
+            {meta.score !== undefined && (
+              <span className="score-pill">
+                <Icon name="star" size={12} /> {meta.score}
+              </span>
+            )}
+            {langBreakdown.length > 0 && (
+              <span className="lang-flags" aria-label="Idiomas disponíveis">
+                {langBreakdown.map((b) => (
+                  <Flag key={b.code} lang={b.code} size={20} title={langLabel(b.code)} />
+                ))}
+              </span>
+            )}
+            <FavoriteButton id={id} name={title} imageUrl={detail.imageUrl} />
           </div>
-        ) : null
-      }
-    />
+        }
+        genres={
+          detail.genre && detail.genre.length > 0 ? (
+            <div className="genres">
+              {detail.genre.slice(0, 16).map((g) => (
+                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
+                  {g}
+                </Link>
+              ))}
+            </div>
+          ) : null
+        }
+      />
+    </>
   );
 }

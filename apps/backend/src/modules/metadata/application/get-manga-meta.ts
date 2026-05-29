@@ -2,15 +2,16 @@ import type { MangaMeta as WireMangaMeta } from "@packages/contracts";
 
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
+import { signCoverPath } from "@/shared/image-sign";
 
 import type { MetadataProvider } from "../domain/manga-meta";
 
 const META_TTL = 6 * 60 * 60 * 1000; // metadata is stable — cache 6h
 const EMPTY: WireMangaMeta = { tags: [], characters: [], relations: [] };
 
-/** Proxy an external image URL through our opaque /api/img path. */
+/** Proxy an external image URL through our opaque, public-signed /api/img path. */
 const proxy = (idStore: IdStore, url?: string): string | undefined =>
-  url ? `/api/img/${idStore.encode({ source: "anilist", url })}` : undefined;
+  url ? signCoverPath(`/api/img/${idStore.encode({ source: "anilist", url })}`) : undefined;
 
 /**
  * Rich metadata for a title (AniList). Best-effort: a miss or upstream error

@@ -11,6 +11,8 @@ export type MangaSummary = {
   name: string;
   imageUrl?: string;
   lang: string;
+  /** Reading languages this work is available in (flag overlay on listing covers). */
+  langs?: string[];
   /** Enrichment fields — populated only when the use case ran in enriched mode. */
   status?: MangaStatus;
   genres?: string[];

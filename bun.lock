@@ -52,6 +52,8 @@
         "remark-gfm": "^4.0.1",
       },
       "devDependencies": {
+        "@iconify-json/circle-flags": "^1.2.10",
+        "@iconify-json/flagpack": "^1.2.7",
         "@iconify-json/lucide": "^1.2.110",
         "@types/node": "^20",
         "@types/react": "^19.0.0",
@@ -138,6 +140,10 @@
     "@biomejs/cli-win32-x64": ["@biomejs/cli-win32-x64@2.4.16", "", { "os": "win32", "cpu": "x64" }, "sha512-Kp85jgoBHa05gix6UIRjfCDiUV3w/8VIdZ247VyyO2gEjaw12WEVhdIjlxp/AMzXxqxQwbxNTDVZ3Mwd2RG5rw=="],
 
     "@emnapi/runtime": ["@emnapi/runtime@1.10.0", "", { "dependencies": { "tslib": "^2.4.0" } }, "sha512-ewvYlk86xUoGI0zQRNq/mC+16R1QeDlKQy21Ki3oSYXNgLb45GV1P6A0M+/s6nyCuNDqe5VpaY84BzXGwVbwFA=="],
+
+    "@iconify-json/circle-flags": ["@iconify-json/circle-flags@1.2.10", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-sZRxs689a281RtZvuAiKtV7pQHv8Tk0HkinSM7QvLgdLEK8xgGRCcbDvL09Rq+/KtemmsMzGhS9/qt+r3ca+Ug=="],
+
+    "@iconify-json/flagpack": ["@iconify-json/flagpack@1.2.7", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-m5x7TRsQK54QOvJoV12xFR8GOduQAGjDBlUQ1kwIiXhXRx7wHg9I2hVyl11mFCJCOVSXZ/fqvjNmkiuGnwPrAg=="],
 
     "@iconify-json/lucide": ["@iconify-json/lucide@1.2.110", "", { "dependencies": { "@iconify/types": "*" } }, "sha512-rLeHqnZZBxZbprbVwf6uY7HB5GkGVgvT9VujhjvaUEqFDLKZON6zR8K1f8uD1brBwf5TJ0TIvvW8mz5u2XJU+w=="],
 

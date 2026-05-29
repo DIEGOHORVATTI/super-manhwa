@@ -123,8 +123,10 @@ a:hover {
   width: 30px;
   height: 30px;
 }
+/* In the compact floating island the wordmark drops — the logo carries the
+   brand and the row gets more room for the tabs/search. */
 .app-header.is-scrolled .brand-name {
-  font-size: 18px;
+  display: none;
 }
 .header-back {
   display: inline-flex;
@@ -619,9 +621,9 @@ a:hover {
   background: var(--surface-2);
 }
 .chip-flag {
-  font-size: 15px;
-  line-height: 1;
   flex-shrink: 0;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+  border-radius: 50%;
 }
 .chip-no {
   font-size: 14px;
@@ -1133,12 +1135,247 @@ a:hover {
   min-width: 0;
 }
 
+/* Continue-reading rail (home + biblioteca) */
+.continue {
+  margin: 6px 0 18px;
+}
+.continue-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+}
+.continue-head svg {
+  color: var(--accent);
+}
+.continue-row {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0 8px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+.continue-card {
+  position: relative;
+  flex: 0 0 120px;
+  width: 120px;
+}
+.continue-link {
+  display: block;
+  color: inherit;
+}
+.continue-cover {
+  position: relative;
+  display: block;
+  aspect-ratio: 2 / 3;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.continue-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 12.5px;
+  margin-top: 5px;
+}
+.continue-chap {
+  display: block;
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+}
+.continue-remove {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(14, 16, 22, 0.8);
+  color: #fff;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.continue-card:hover .continue-remove,
+.continue-remove:focus-visible {
+  opacity: 1;
+}
+
+/* Favorite toggle (detail hero) */
+.fav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color 0.12s,
+    background-color 0.12s,
+    color 0.12s;
+}
+.fav-btn:hover {
+  border-color: var(--accent);
+}
+.fav-btn.is-active {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.fav-btn.is-active svg {
+  fill: currentColor;
+}
+
+/* Read chapter chips are dimmed in the list */
+.chip.is-read {
+  opacity: 0.45;
+}
+.chip.is-read:hover {
+  opacity: 0.7;
+}
+
+/* Skeleton shimmer (loading.tsx placeholders) */
+.skel {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.skel-line {
+  height: 13px;
+  border-radius: 6px;
+}
+.skel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  animation: skel-shimmer 1.3s ease-in-out infinite;
+}
+@keyframes skel-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skel::after {
+    animation: none;
+  }
+}
+
+/* Full-screen state pages: error boundary, 404 */
+.state-screen {
+  text-align: center;
+  padding: 64px 16px;
+  max-width: 520px;
+  margin: 0 auto;
+}
+.state-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.state-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+/* Explorar filter bar */
+.explore-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 16px;
+}
+.explore-search {
+  position: relative;
+  flex: 1 1 240px;
+  display: flex;
+  align-items: center;
+}
+.explore-search-icon {
+  position: absolute;
+  left: 11px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.explore-search-field {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 10px 34px;
+  font-size: 14px;
+  outline: none;
+}
+.explore-search-field:focus {
+  border-color: var(--accent);
+}
+.explore-search-clear {
+  position: absolute;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 50%;
+}
+.explore-search-clear:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+.explore-select {
+  flex: 0 1 auto;
+  font-size: 14px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+.explore-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+@media (max-width: 620px) {
+  .explore-select {
+    flex: 1 1 calc(50% - 5px);
+  }
+}
+
 /* Ranking rail — Asura-style numbered "what's hot" list. */
 .rank {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 14px 6px;
+}
+/* On phones the rail would just push the grid down — hide it; the Tendência tab
+   already gives the full trending list. */
+@media (max-width: 620px) {
+  .rank {
+    display: none;
+  }
 }
 @media (min-width: 980px) {
   /* Sticks just below the fixed header while the grid scrolls. */
@@ -1191,6 +1428,7 @@ a:hover {
   color: var(--accent);
 }
 .rank-thumb {
+  position: relative; /* next/image fill anchor */
   flex: 0 0 38px;
   width: 38px;
   height: 52px;
@@ -1337,6 +1575,79 @@ a:hover {
   position: absolute;
   right: 6px;
   top: 6px;
+}
+/* Language flag(s) stacked over the listing cover (top-left). */
+.poster-langs {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  display: flex;
+  gap: 3px;
+}
+.poster-langs svg {
+  box-shadow:
+    0 0 0 1.5px rgba(14, 16, 22, 0.85),
+    0 1px 3px rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+}
+
+/* Detail hero: flags inline with status/score. */
+.lang-flags {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.lang-flags svg {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+  border-radius: 50%;
+}
+
+/* "Sobre" → Idiomas breakdown: flag · name · share bar · percent · count. */
+.lang-breakdown {
+  list-style: none;
+  margin: 8px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.lang-breakdown li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lang-breakdown .lang-name {
+  flex: 0 0 auto;
+  min-width: 92px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.lang-bar {
+  flex: 1 1 auto;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.lang-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+}
+.lang-breakdown .lang-pct {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  min-width: 38px;
+  text-align: right;
+}
+.lang-breakdown .lang-count {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Detail meta line + clickable genre tag */

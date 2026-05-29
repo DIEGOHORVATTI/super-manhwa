@@ -18,16 +18,26 @@ import { Icon, type IconName } from "@/components/Icon";
  */
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
   { href: "/", label: "Início", icon: "house", sort: null },
-  { href: "/?sort=trending", label: "Tendência", icon: "trending-up", sort: "trending" },
-  { href: "/?sort=newest", label: "Novos", icon: "sparkles", sort: "newest" },
-  { href: "/?sort=completed", label: "Completos", icon: "circle-check-big", sort: "completed" },
+  { href: "/explorar", label: "Explorar", icon: "list", sort: null },
+  { href: "/?sort=trending", label: "Tendência", icon: "flame", sort: "trending" },
+  { href: "/?sort=newest", label: "Novos", icon: "calendar-plus", sort: "newest" },
+  { href: "/biblioteca", label: "Biblioteca", icon: "heart", sort: null },
 ];
+
+/** A NAV entry is a home catalog filter (`/`, `/?sort=`) or a standalone page. */
+const isHomeItem = (href: string) => href === "/" || href.startsWith("/?");
+
+/** Active when: a home filter matches the current `?sort=` on `/`, or a page
+ *  entry matches the current pathname. */
+const navActiveIndex = (pathname: string, sort: string | null) =>
+  NAV.findIndex((item) =>
+    isHomeItem(item.href) ? pathname === "/" && item.sort === sort : pathname === item.href,
+  );
 
 /** Renders the tab links + the sliding pill. `sort` is the active `?sort=`. */
 function HeaderTabs({ sort }: { sort: string | null }) {
   const pathname = usePathname();
-  const isHome = pathname === "/";
-  const activeIndex = isHome ? NAV.findIndex((i) => i.sort === sort) : -1;
+  const activeIndex = navActiveIndex(pathname, sort);
 
   const tabRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const [pill, setPill] = useState<{ left: number; width: number } | null>(null);
@@ -89,12 +99,12 @@ function HeaderTabsWithSort() {
  */
 function BottomNav({ sort }: { sort: string | null }) {
   const pathname = usePathname();
-  const isHome = pathname === "/";
+  const activeIndex = navActiveIndex(pathname, sort);
 
   return (
     <nav className="bottom-nav" aria-label="Navegação">
-      {NAV.map((item) => {
-        const active = isHome && item.sort === sort;
+      {NAV.map((item, i) => {
+        const active = i === activeIndex;
         return (
           <Link
             key={item.href}

@@ -94,22 +94,56 @@ const SORT_BY: Record<CatalogSort, string> = {
   completed: "POPULARITY_DESC",
 };
 
-const SEARCH_QUERY = `query ($search: String, $page: Int, $perPage: Int) {
-  Page(page: $page, perPage: $perPage) {
-    pageInfo { hasNextPage }
-    media(type: MANGA, search: $search, sort: SEARCH_MATCH) { ${MEDIA_FIELDS} }
-  }
-}`;
+/** Our status filter → AniList `MediaStatus`. Unmapped values (publishing-finished,
+ *  unknown) impose no filter. */
+const ANILIST_STATUS: Partial<Record<MangaStatus, string>> = {
+  ongoing: "RELEASING",
+  completed: "FINISHED",
+  hiatus: "HIATUS",
+  cancelled: "CANCELLED",
+};
 
-/** Build a paginated browse query for a sort/genre combination. */
+/** Resolve the effective AniList status filter: an explicit one wins; otherwise
+ *  the `completed` sort implies FINISHED. */
+const statusFilterFor = (sort: CatalogSort, status?: MangaStatus): string | undefined => {
+  if (status && ANILIST_STATUS[status]) return ANILIST_STATUS[status];
+  if (sort === "completed") return "FINISHED";
+  return undefined;
+};
+
+/** Build a paginated browse query for a sort/genre/status combination. */
 const buildListQuery = (
   sort: CatalogSort,
   genre?: string,
+  status?: MangaStatus,
 ): { query: string; vars: Record<string, unknown> } => {
   const filters = [`sort: ${SORT_BY[sort]}`];
   const decls = ["$page: Int", "$perPage: Int"];
-  if (sort === "completed") filters.push("status: FINISHED");
-  if (sort === "newest") filters.push("status_not: NOT_YET_RELEASED");
+  const statusFilter = statusFilterFor(sort, status);
+  if (statusFilter) filters.push(`status: ${statusFilter}`);
+  else if (sort === "newest") filters.push("status_not: NOT_YET_RELEASED");
+  if (genre) {
+    filters.push("genre: $genre");
+    decls.push("$genre: String");
+  }
+  const query = `query (${decls.join(", ")}) {
+    Page(page: $page, perPage: $perPage) {
+      pageInfo { hasNextPage }
+      media(type: MANGA, ${filters.join(", ")}) { ${MEDIA_FIELDS} }
+    }
+  }`;
+  return { query, vars: genre ? { genre } : {} };
+};
+
+/** Build a search query, optionally constrained by genre/status. */
+const buildSearchQuery = (
+  genre?: string,
+  status?: MangaStatus,
+): { query: string; vars: Record<string, unknown> } => {
+  const filters = ["search: $search", "sort: SEARCH_MATCH"];
+  const decls = ["$search: String", "$page: Int", "$perPage: Int"];
+  const statusFilter = status && ANILIST_STATUS[status];
+  if (statusFilter) filters.push(`status: ${statusFilter}`);
   if (genre) {
     filters.push("genre: $genre");
     decls.push("$genre: String");
@@ -149,10 +183,13 @@ const listFrom = async (
  * keyed by AniList id; reading sources are matched later by title/aliases.
  */
 export const makeAniListCatalog = (): CatalogSource => ({
-  search: (query, page) => listFrom(SEARCH_QUERY, { search: query, page, perPage: PER_PAGE }),
+  search: (query, page, filters) => {
+    const { query: gql, vars } = buildSearchQuery(filters?.genre, filters?.status);
+    return listFrom(gql, { ...vars, search: query, page, perPage: PER_PAGE });
+  },
 
-  list: ({ sort, genre, page }) => {
-    const { query, vars } = buildListQuery(sort, genre);
+  list: ({ sort, genre, status, page }) => {
+    const { query, vars } = buildListQuery(sort, genre, status);
     return listFrom(query, { ...vars, page, perPage: PER_PAGE });
   },
 

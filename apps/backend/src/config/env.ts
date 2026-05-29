@@ -35,6 +35,9 @@ export const DEFAULT_ENV = {
   IMAGE_TOKEN_SECRET: "dev-only-secret-change-in-prod",
   /** Shared secret the frontend sends as `X-API-KEY` to access this backend. */
   API_KEY: "dev-api-key-change-in-prod",
+  /** HMAC seed for the *public cover* signature (`?k=`). Must match the web
+   *  app's `IMAGE_SIGN_SECRET` so the Next image proxy can verify covers. */
+  IMAGE_SIGN_SECRET: "dev-only-image-sign-secret-change-in-prod",
   /** FlareSolverr sidecar for Cloudflare-protected sources (used by the extension runtime). */
   FLARESOLVERR_URL: "http://flaresolverr:8191/v1",
   /** Whether the OpenAPI reference page is served. */
@@ -49,6 +52,7 @@ export const EnvSchema = z
     CORS_ORIGIN: z.string().default(DEFAULT_ENV.CORS_ORIGIN),
     IMAGE_TOKEN_SECRET: z.string().default(DEFAULT_ENV.IMAGE_TOKEN_SECRET),
     API_KEY: z.string().default(DEFAULT_ENV.API_KEY),
+    IMAGE_SIGN_SECRET: z.string().default(DEFAULT_ENV.IMAGE_SIGN_SECRET),
     FLARESOLVERR_URL: z.string().default(DEFAULT_ENV.FLARESOLVERR_URL),
     EXPOSE_DOCS: boolFromString.default(DEFAULT_ENV.EXPOSE_DOCS),
   })

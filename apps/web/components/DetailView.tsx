@@ -1,37 +1,17 @@
 "use client";
 import type { MangaCharacter } from "@packages/contracts";
+import Image from "next/image";
 import Link from "next/link";
 import { type ReactNode, useMemo, useState } from "react";
 import { CharacterGrid } from "@/components/CharacterGrid";
+import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
+import { useReadChapters } from "@/lib/library";
 
 type Chapter = { id: string; name: string; lang?: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-
-/**
- * Source language → flag emoji for the per-chapter badge. MangaDex's "en" maps
- * to 🇺🇸 by convention; unknown langs fall back to a neutral flag.
- */
-const LANG_FLAG: Record<string, string> = {
-  "pt-br": "🇧🇷",
-  pt: "🇧🇷",
-  en: "🇺🇸",
-  "en-us": "🇺🇸",
-  es: "🇪🇸",
-  "es-la": "🇲🇽",
-  ja: "🇯🇵",
-  ko: "🇰🇷",
-  zh: "🇨🇳",
-  "zh-hk": "🇭🇰",
-  fr: "🇫🇷",
-  it: "🇮🇹",
-  de: "🇩🇪",
-  ru: "🇷🇺",
-  id: "🇮🇩",
-};
-const flagFor = (lang: string) => LANG_FLAG[lang.toLowerCase()] ?? "🏳️";
 
 /**
  * Owns the active-tab + filter state for the whole detail page. The header's
@@ -68,6 +48,7 @@ export function DetailView({
   const hasChars = characters.length > 0;
   const [active, setActive] = useState<"chapters" | "characters" | "about">("chapters");
   const [query, setQuery] = useState("");
+  const read = useReadChapters(mangaId);
 
   // Chapter names have no consistent format across sources, so we don't show
   // them. Number each chapter by its position instead — sources return chapters
@@ -112,8 +93,15 @@ export function DetailView({
     <>
       <section className="detail-hero">
         {backdrop && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="detail-hero-bg" src={backdrop} alt="" aria-hidden="true" />
+          <Image
+            className="detail-hero-bg"
+            src={backdrop}
+            alt=""
+            aria-hidden="true"
+            fill
+            sizes="100vw"
+            style={{ objectFit: "cover" }}
+          />
         )}
         <div className="detail-hero-scrim" />
 
@@ -172,12 +160,15 @@ export function DetailView({
             {shownChapters.map((c) => (
               <li key={c.id}>
                 <Link
-                  className="chip"
+                  className={`chip${read.has(c.id) ? " is-read" : ""}`}
                   href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
                 >
-                  <span className="chip-flag" aria-label={c.lang ?? lang} title={c.lang ?? lang}>
-                    {flagFor(c.lang ?? lang)}
-                  </span>
+                  <Flag
+                    lang={c.lang ?? lang}
+                    size={16}
+                    title={c.lang ?? lang}
+                    className="chip-flag"
+                  />
                   <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
                 </Link>
               </li>
