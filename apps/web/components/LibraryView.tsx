@@ -1,6 +1,7 @@
 "use client";
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
+import { AniListSync } from "@/components/AniListSync";
 import { ContinueReading } from "@/components/ContinueReading";
 import { Icon } from "@/components/Icon";
 import { PosterGrid } from "@/components/PosterGrid";
@@ -26,6 +27,8 @@ export function LibraryView() {
       <h1 className="home-title" style={{ marginBottom: 12 }}>
         Biblioteca
       </h1>
+
+      <AniListSync />
 
       <ContinueReading />
 

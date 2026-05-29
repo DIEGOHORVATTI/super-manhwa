@@ -1299,6 +1299,44 @@ a:hover {
   margin-top: 20px;
 }
 
+/* AniList sync bar (Biblioteca) */
+.anilist-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 14px;
+  margin: 0 0 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.anilist-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.anilist-status svg {
+  color: var(--accent);
+}
+.anilist-link {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.anilist-link:hover {
+  color: var(--text);
+}
+.anilist-msg {
+  flex-basis: 100%;
+  font-size: 12.5px;
+}
+
 /* Horizontal discovery shelf (Explorar carousels) */
 .shelf {
   margin: 0 0 22px;

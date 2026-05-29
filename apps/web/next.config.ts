@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
     // local images that carry a query string unless a localPattern allows them.
     // Omitting `search` here means "any query string under this path is allowed".
     localPatterns: [{ pathname: "/api/img/**" }],
+    // AniList covers imported via the favourites sync are served from AniList's
+    // CDN directly (the client can't mint our signed proxy paths).
+    remotePatterns: [{ protocol: "https", hostname: "s4.anilist.co" }],
   },
 };
 export default nextConfig;

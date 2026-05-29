@@ -117,6 +117,13 @@ export function toggleFavorite(entry: Omit<LibEntry, "addedAt">): void {
   writeRaw(K.favorites, next);
 }
 
+/** Idempotent add (used by the AniList import — never removes). */
+export function addFavorite(entry: Omit<LibEntry, "addedAt">): void {
+  const list = readRaw<LibEntry[]>(K.favorites, []);
+  if (list.some((f) => f.id === entry.id)) return;
+  writeRaw(K.favorites, [{ ...entry, addedAt: Date.now() }, ...list]);
+}
+
 /* ------------------------------- continue reading ------------------------- */
 
 export function useHistory(): ProgressEntry[] {
