@@ -45,10 +45,12 @@ export function Footer() {
     <footer className="footer">
       <div className="footer-grid">
         <div className="footer-brand">
-          <Link href="/" className="brand" style={{ color: "inherit" }}>
-            <h2>
+          <Link href="/" className="brand">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
+            <span className="brand-name brand-name-lg">
               Super Manhwa<span className="dot">.</span>
-            </h2>
+            </span>
           </Link>
           <p className="muted">
             Uma base completa de mangás, manhwas e webtoons feita para facilitar sua leitura em

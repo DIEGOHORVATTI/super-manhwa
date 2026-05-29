@@ -2,6 +2,7 @@ import { APP_INFO } from "@/config/app";
 import { env } from "@/config/env";
 import { startBunServer } from "@/http";
 import { imageRoute } from "@/modules/media/presentation/routes/image-routes";
+import { faviconRoute } from "@/modules/system/presentation/routes/favicon-routes";
 import { router } from "@/router";
 
 /**
@@ -33,5 +34,5 @@ await startBunServer({
   // same X-API-KEY guard as the oRPC routes (defense in depth). Health is NOT
   // here: it lives as a public oRPC route (`pub.health` in the contract) so
   // Docker / probes hit `/api/health` and get the versioned health payload.
-  customHandlers: [imageRoute],
+  customHandlers: [faviconRoute, imageRoute],
 });

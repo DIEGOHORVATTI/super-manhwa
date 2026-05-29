@@ -57,6 +57,10 @@ export const createRpcHandler = ({
             new OpenAPIReferencePlugin({
               docsProvider: "scalar",
               docsPath,
+              docsTitle: `${info.title} — Docs`,
+              // Brand the docs tab with our favicon (served by the backend at
+              // /api/favicon.ico via the customHandler in index.ts).
+              docsHead: `<link rel="icon" type="image/png" sizes="32x32" href="/api/favicon-32x32.png" /><link rel="icon" href="/api/favicon.ico" sizes="any" />`,
               schemaConverters: [new ZodToJsonSchemaConverter()],
               specGenerateOptions: { servers: [{ url: "/" }], info },
             }),
