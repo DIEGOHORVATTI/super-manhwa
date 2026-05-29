@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Cover } from "./Cover";
 import { Flag } from "./Flag";
+import { PosterProgressBadge } from "./PosterProgressBadge";
 import { StatusBadge } from "./StatusBadge";
 
 /** Grid covers render ~150px wide on desktop, up to ~33vw on phones. */
@@ -35,6 +36,7 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
                 ))}
               </span>
             )}
+            <PosterProgressBadge id={m.id} />
           </div>
           <div className="poster-name">{m.name}</div>
         </Link>
