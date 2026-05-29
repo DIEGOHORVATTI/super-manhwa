@@ -1240,12 +1240,12 @@ a:hover {
   fill: currentColor;
 }
 
-/* Read chapter chips are dimmed in the list */
+/* Read chapter chips: only slightly dimmed (just enough to tell apart). */
 .chip.is-read {
-  opacity: 0.45;
+  opacity: 0.7;
 }
 .chip.is-read:hover {
-  opacity: 0.7;
+  opacity: 1;
 }
 
 /* Skeleton shimmer (loading.tsx placeholders) */
