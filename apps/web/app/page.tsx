@@ -19,12 +19,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     ? (sp.sort as MangaSort)
     : "popular";
 
-  const popular = await api.manga.popular({ lang: "pt-br", sort, page: 1 }).catch((e) => ({
-    list: [] as Awaited<ReturnType<typeof api.manga.popular>>["list"],
-    hasNextPage: false,
-    _error: e instanceof Error ? e.message : String(e),
-  }));
-  const error = "_error" in popular ? popular._error : null;
+  const popular = await api.manga.popular({ lang: "pt-br", sort, page: 1 });
 
   return (
     <>
@@ -38,7 +33,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
         {sort === "popular" ? "Em alta" : sort === "newest" ? "Mais novos" : "Completos"} ·{" "}
         {popular.list.length} obras
       </p>
-      {error && <p className="notice">{error}</p>}
 
       <PosterGrid items={popular.list} />
     </>
