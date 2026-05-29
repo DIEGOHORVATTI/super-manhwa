@@ -13,6 +13,7 @@
     "@orpc/contract": "^1.14.3",
     "@orpc/openapi-client": "^1.14.3",
     "@packages/contracts": "workspace:*",
+    "embla-carousel-react": "^8.6.0",
     "next": "latest",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
