@@ -181,10 +181,12 @@ Status values: `Proposed` · `Accepted` · `Superseded by ADR-XXXX` · `Deprecat
     on both sides.
 - **Consequences:** (+) Casual sharing broken without real login; covers stay
   fast/cacheable; `next/image` used only where it's safe. (+) No DB — session is
-  a random cookie, no PII. (−) Page bytes aren't CDN-shareable cross-user
-  (mitigated by browser `private` cache + the upstream CDN; a shared byte cache
-  in Blob/Redis is a future option). (−) Two implementations of one HMAC must
-  stay in sync (guarded by tests). (−) The cover algorithm couples backend↔web.
+  a random cookie, no PII. (−) Page bytes aren't CDN-shareable cross-user; to
+  avoid re-pulling from the source CDN per session the backend keeps a shared,
+  byte-bounded in-process cache keyed by token (`image-byte-cache.ts`, LRU, 64 MB
+  default) — Blob/Redis can replace it behind the same port for multi-instance
+  scale-out. (−) Two implementations of one HMAC must stay in sync (guarded by
+  tests). (−) The cover algorithm couples backend↔web.
 
 ## ADR-0010 — Caching: drop `force-dynamic`, cache the data layer, not the routes
 

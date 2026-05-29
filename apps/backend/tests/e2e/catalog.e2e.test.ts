@@ -5,11 +5,13 @@ import { apiClient } from "../helpers/api-client";
 describe("catalog / aggregation", () => {
   it("popular returns a deduped, source-less list", async () => {
     const r = await apiClient.manga.popular();
-    expect(r.list.length).toBeGreaterThan(30);
+    // AniList catalog returns one page (30/page); more pages via hasNextPage.
+    expect(r.list.length).toBeGreaterThanOrEqual(20);
+    expect(r.hasNextPage).toBe(true);
     // Wire is source-agnostic — no leak of source fields anywhere.
     for (const m of r.list.slice(0, 10)) {
       expect(typeof m.id).toBe("string");
-      expect(m.id.length).toBeLessThan(20); // short ids ~7 chars
+      expect(m.id.length).toBeGreaterThan(0); // opaque catalog id (AniList id string)
       expect(typeof m.name).toBe("string");
       expect(typeof m.lang).toBe("string");
       // No source name should leak via any field, ever.
@@ -18,7 +20,7 @@ describe("catalog / aggregation", () => {
     // No duplicate names (case-insensitive).
     const names = new Set(r.list.map((m) => m.name.trim().toLowerCase()));
     expect(names.size).toBe(r.list.length);
-  }, 30_000); // cold cross-source aggregation can take ~6s
+  }, 30_000);
 
   it("popular with sort=newest triggers enrichment (status + genres populated)", async () => {
     const r = await apiClient.manga.popular({ sort: "newest" });
@@ -95,10 +97,11 @@ describe("catalog / detail + pages flow", () => {
       const r = await apiClient.manga.detail({ id: target.id, name: target.name });
       const chapters = r.detail.chapters ?? [];
       expect(chapters.length).toBeGreaterThan(0);
-      // Chapter shape sanity — id opaque, name string.
+      // Chapter shape sanity — id is an opaque AES-GCM token (long base64url),
+      // name a string.
       for (const c of chapters.slice(0, 3)) {
         expect(typeof c.id).toBe("string");
-        expect(c.id.length).toBeLessThan(20);
+        expect(c.id.length).toBeGreaterThan(0);
         expect(typeof c.name).toBe("string");
       }
     }
@@ -131,11 +134,13 @@ describe("catalog / detail + pages flow", () => {
     }
   }, 180_000);
 
-  it("invalid manga id is rejected with 400", async () => {
+  it("invalid manga id is rejected as not-found", async () => {
+    // Manga ids are AniList lookups (not opaque tokens), so an unresolvable id is
+    // a 404 (unknown work) — distinct from a malformed *chapter* token (400 below).
     const res = await apiClient.rawGet("/api/manga/detail?id=not-a-real-id", {
       headers: { "X-API-KEY": apiClient.apiKey },
     });
-    expect(res.status).toBe(400);
+    expect(res.status).toBe(404);
   });
 
   it("invalid chapter id is rejected with 400", async () => {

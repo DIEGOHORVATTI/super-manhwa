@@ -17,7 +17,7 @@ import {
 } from "@/modules/catalog/application";
 import { makeAniListCatalog, makeConnectorRegistry } from "@/modules/catalog/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
-import { makeHttpImageFetcher } from "@/modules/media/infrastructure";
+import { makeHttpImageFetcher, makeImageByteCache } from "@/modules/media/infrastructure";
 import { makeGetMangaMeta } from "@/modules/metadata/application";
 import { makeAniListProvider } from "@/modules/metadata/infrastructure";
 import { makeGetHealth } from "@/modules/system/application";
@@ -29,6 +29,9 @@ const cache = makeMemoryCache();
 const idStore = makeAesIdStore({ secret: env.IMAGE_TOKEN_SECRET });
 const connectorRegistry = makeConnectorRegistry();
 const imageFetcher = makeHttpImageFetcher();
+// Shared, byte-bounded cache so a cover/page is pulled from the source CDN once
+// and then served to every session from memory (see ADR-0009/0010).
+const imageByteCache = makeImageByteCache();
 const metadataProvider = makeAniListProvider();
 // AniList drives discovery + work identity; connectors only resolve chapters.
 const catalog = makeAniListCatalog();
@@ -46,7 +49,7 @@ export const listGenres = makeListGenres(catalog, cache);
 export const getMangaMeta = makeGetMangaMeta(metadataProvider, idStore, cache);
 
 // Media application
-export const proxyImage = makeProxyImage(idStore, connectorRegistry, imageFetcher);
+export const proxyImage = makeProxyImage(idStore, connectorRegistry, imageFetcher, imageByteCache);
 
 // System application — `startedAt` captured at module load time so uptime is
 // monotonically increasing for the life of the process.
