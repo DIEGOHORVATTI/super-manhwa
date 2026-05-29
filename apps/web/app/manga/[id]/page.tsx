@@ -1,12 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CharacterGrid } from "@/components/CharacterGrid";
-import { DetailTabs } from "@/components/DetailTabs";
+import { DetailView } from "@/components/DetailView";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
 
 export const dynamic = "force-dynamic";
+
+/** Markdown/HTML → plain text, clamped — used for the header sinopse teaser. */
+const toPreview = (text: string, max = 240) => {
+  const plain = text
+    .replace(/<[^>]+>/g, " ") // html tags
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, "$1") // md links/images → label
+    .replace(/[*_`~#>]/g, "") // md emphasis / headings
+    .replace(/\s+/g, " ")
+    .trim();
+  return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain;
+};
 
 type P = Promise<{ id: string }>;
 type SP = Promise<{ n?: string }>;
@@ -175,42 +186,42 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     { key: "about", label: "Sobre", content: aboutTab },
   ];
 
+  // Header sinopse teaser — falls back to AniList's description when the source
+  // connector didn't carry one. Plain text, since the full markdown lives in "Sobre".
+  const rawDesc = detail.description || meta.description || "";
+  const descPreview = rawDesc ? toPreview(rawDesc) : undefined;
+
   return (
-    <>
-      <Link className="back" href="/">
-        ← voltar
-      </Link>
-
-      {meta.bannerImage && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img className="detail-banner" src={meta.bannerImage} alt="" loading="lazy" />
-      )}
-
-      <div className="detail-head">
-        {detail.imageUrl && (
+    <DetailView
+      title={title}
+      aboutKey="about"
+      tabs={tabs}
+      descPreview={descPreview}
+      backdrop={meta.bannerImage ?? detail.imageUrl ?? undefined}
+      cover={
+        detail.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="detail-cover" src={detail.imageUrl} alt={title} />
-        )}
-        <div>
-          <h1 className="detail-title">{title}</h1>
-          <div className="detail-meta">
-            <StatusBadge status={detail.status} size="md" />
-            <span className="muted">{chapters.length} capítulos</span>
-            {meta.score !== undefined && <span className="score-pill">★ {meta.score}</span>}
+        ) : null
+      }
+      meta={
+        <>
+          <StatusBadge status={detail.status} size="md" />
+          <span className="muted">{chapters.length} capítulos</span>
+          {meta.score !== undefined && <span className="score-pill">★ {meta.score}</span>}
+        </>
+      }
+      genres={
+        detail.genre && detail.genre.length > 0 ? (
+          <div className="genres">
+            {detail.genre.slice(0, 16).map((g) => (
+              <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
+                {g}
+              </Link>
+            ))}
           </div>
-          {detail.genre && detail.genre.length > 0 && (
-            <div className="genres">
-              {detail.genre.slice(0, 16).map((g) => (
-                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
-                  {g}
-                </Link>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      <DetailTabs tabs={tabs} />
-    </>
+        ) : null
+      }
+    />
   );
 }

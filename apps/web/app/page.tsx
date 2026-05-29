@@ -1,5 +1,4 @@
 import type { MangaSort } from "@packages/contracts";
-import { Autocomplete } from "@/components/Autocomplete";
 import { PosterGrid } from "@/components/PosterGrid";
 import { SortTabs } from "@/components/SortTabs";
 import { api } from "@/lib/orpc.server";
@@ -23,10 +22,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <>
-      <div className="toolbar">
-        <Autocomplete />
-      </div>
-
       <SortTabs active={sort} />
 
       <p className="muted" style={{ marginTop: 12 }}>

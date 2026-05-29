@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
@@ -35,15 +35,8 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
     <html lang="pt-br">
       <body>
+        <Header />
         <main className="app">
-          <Link href="/" className="brand">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
-            <span className="brand-name">
-              Super Manhwa<span className="dot">.</span>
-            </span>
-          </Link>
-
           {children}
 
           <Footer />
