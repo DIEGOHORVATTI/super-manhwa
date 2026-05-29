@@ -1519,6 +1519,46 @@ a:hover {
   }
 }
 
+/* Active filter chips (below the Explorar filter bar) */
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 16px;
+}
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: rgba(124, 92, 255, 0.14);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.12s;
+}
+.filter-chip:hover {
+  background: rgba(124, 92, 255, 0.26);
+}
+.filter-chip svg {
+  opacity: 0.8;
+}
+.filter-clear {
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.filter-clear:hover {
+  color: var(--text);
+}
+
 /* Explorar filter bar */
 .explore-filters {
   display: flex;
