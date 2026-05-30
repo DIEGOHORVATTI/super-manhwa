@@ -1,7 +1,6 @@
 import * as cheerio from "cheerio";
-
+import { flareFetch, flareFetchJson } from "../shared/flare-fetch";
 import type { MangaConnector, RawDetail, RawListPage, RawPage } from "../types";
-import { flareFetch, flareFetchJson } from "./flare-fetch";
 
 /**
  * Comick (pt-br) — NATIVE connector against the current `comick.live` API.
