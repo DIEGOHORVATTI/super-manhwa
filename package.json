@@ -19,6 +19,11 @@
     "lint": "bunx biome lint .",
     "ci": "bun run format:check && bun run lint && bun run type-check",
     "test": "cd apps/backend && bun test && cd ../web && bun test",
+    "test:api": "cd apps/backend && bun test",
+    "test:web": "cd apps/web && bun test",
+    "test:unit": "cd apps/backend && bun test tests/unit",
+    "test:e2e": "cd apps/backend && bun test tests/e2e",
+    "test:watch": "cd apps/backend && bun test --watch",
     "extensions:list": "bun -e 'import { CONNECTORS } from \"@packages/extension\"; for (const c of CONNECTORS) console.log(c.id, c.lang, c.hasCloudflare ? \"CF\" : \"\");'"
   },
   "dependencies": {

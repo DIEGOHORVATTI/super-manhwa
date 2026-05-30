@@ -6,6 +6,7 @@ import { asurascans } from "./asurascans";
 import { comickPtBr } from "./comick";
 import { mangadex, mangadexPtBr } from "./mangadex";
 import { mangafirePtBr } from "./mangafire";
+import { mangaLivreBlog, mangaLivreTo } from "./mangalivre";
 import { mangaworld } from "./mangaworld";
 import { manhwaz } from "./manhwaz";
 import { webtoons } from "./webtoons";
@@ -34,6 +35,10 @@ export const CONNECTORS: readonly MangaConnector[] = [
   manhwaz,
   asurascans,
   mangadexPtBr,
+  // Native pt-br connectors scraped from the two Manga Livre sites
+  // (mangalivre.to = Madara, mangalivre.blog = custom theme). No Cloudflare.
+  mangaLivreTo,
+  mangaLivreBlog,
   // Mangayomi-backed pt-br aggregators — CF-flagged (out of the popular pool)
   // until validated in a network that reaches their hosts / a vrf that runs
   // under QuickJS. See each connector module for the per-source blocker.

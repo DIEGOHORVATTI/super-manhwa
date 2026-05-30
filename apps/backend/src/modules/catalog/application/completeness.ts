@@ -95,9 +95,11 @@ export const parseChapterNumber = (name: string): number | undefined => {
  * language-filtered feed is usually the most truncated. Unlisted ids sort last.
  */
 export const COMPLETENESS_PRIORITY = [
-  "comick-ptbr",
-  "mangafire-ptbr",
   "mangadex-ptbr",
+  "mangalivre-to",
+  "mangalivre-blog",
+  "mangafire-ptbr",
+  "comick-ptbr",
   "mangadex",
   "weebcentral",
   "manhwaz",
