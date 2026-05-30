@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const manhwaz = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "manhwaz",
   name: "Manhwaz",
   lang: "en",

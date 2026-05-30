@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const weebcentral = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "weebcentral",
   name: "Weeb Central",
   lang: "en",

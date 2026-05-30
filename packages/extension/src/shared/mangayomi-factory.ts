@@ -26,6 +26,7 @@ export interface MangayomiConnectorInit extends ConnectorMeta {
     detail?: number;
     pages?: number;
     count?: number;
+    latest?: number;
   };
 
   /**
@@ -33,6 +34,12 @@ export interface MangayomiConnectorInit extends ConnectorMeta {
    * whose JS actually implements the method (e.g. MangaDex via `/aggregate`).
    */
   hasChapterCount?: boolean;
+
+  /**
+   * Expose the optional `getLatestUpdates` capability — set for bundles whose JS
+   * implements it (most Mangayomi sources do).
+   */
+  hasLatestUpdates?: boolean;
 }
 
 const DEFAULT_TIMEOUTS = {
@@ -41,6 +48,7 @@ const DEFAULT_TIMEOUTS = {
   detail: 25_000,
   pages: 25_000,
   count: 8_000,
+  latest: 15_000,
 };
 
 const resolveSource = async (source: MangayomiConnectorInit["source"]): Promise<string> => {
@@ -100,6 +108,12 @@ export const createMangayomiConnector = (init: MangayomiConnectorInit): MangaCon
       ? {
           getChapterCount: (link: string) =>
             run<number>("getChapterCount", [link], timeouts.count!),
+        }
+      : {}),
+    ...(init.hasLatestUpdates
+      ? {
+          getLatestUpdates: (page: number) =>
+            run<RawListPage>("getLatestUpdates", [page], timeouts.latest!),
         }
       : {}),
   };

@@ -19,6 +19,7 @@ import { Icon, type IconName } from "@/components/Icon";
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
   { href: "/", label: "Início", icon: "house", sort: null },
   { href: "/explorar", label: "Explorar", icon: "list", sort: null },
+  { href: "/atualizacoes", label: "Recentes", icon: "clock", sort: null },
   { href: "/library", label: "Biblioteca", icon: "heart", sort: null },
 ];
 

@@ -33,6 +33,15 @@ export const manga = oc.prefix("/manga").router({
     )
     .output(mangaListSchema),
 
+  latest: prefix
+    .route({
+      method: "GET",
+      path: "/latest",
+      summary: "Recently updated works (from reading sources)",
+    })
+    .input(langFilterSchema.merge(paginationSchema))
+    .output(mangaListSchema),
+
   search: prefix
     .route({ method: "GET", path: "/search", summary: "Search across all integrations" })
     .input(

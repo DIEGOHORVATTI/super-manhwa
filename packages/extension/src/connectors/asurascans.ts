@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const asurascans = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "asurascans",
   name: "Asura Scans",
   lang: "en",

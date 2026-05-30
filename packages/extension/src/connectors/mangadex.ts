@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const mangadex = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "mangadex",
   name: "MangaDex",
   lang: "en",
@@ -19,6 +20,7 @@ export const mangadex = createMangayomiConnector({
  * the catalog returns Portuguese titles ("Jogador solo" etc.) for this one.
  */
 export const mangadexPtBr = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "mangadex-ptbr",
   name: "MangaDex (pt-br)",
   lang: "pt-br",

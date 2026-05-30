@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const mangaworld = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "mangaworld",
   name: "MangaWorld",
   lang: "it",

@@ -1,6 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 export const webtoons = createMangayomiConnector({
+  hasLatestUpdates: true,
   id: "webtoons",
   name: "Webtoons",
   lang: "en",

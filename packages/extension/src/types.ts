@@ -74,4 +74,10 @@ export interface MangaConnector extends ConnectorMeta {
    * omit it — callers must feature-detect.
    */
   getChapterCount?(link: string): Promise<number>;
+  /**
+   * Optional "recently updated" listing (works with a fresh chapter), paginated.
+   * Most Mangayomi bundles implement it; native connectors may not — callers
+   * must feature-detect.
+   */
+  getLatestUpdates?(page: number): Promise<RawListPage>;
 }
