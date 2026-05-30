@@ -45,6 +45,13 @@ export const apiClient = {
       const qs = sp.toString();
       return getJson<MangaList>(`/api/manga/popular${qs ? `?${qs}` : ""}`);
     },
+    latest: (params: { lang?: string; page?: number } = {}) => {
+      const sp = new URLSearchParams();
+      if (params.lang) sp.set("lang", params.lang);
+      if (params.page) sp.set("page", String(params.page));
+      const qs = sp.toString();
+      return getJson<MangaList>(`/api/manga/latest${qs ? `?${qs}` : ""}`);
+    },
     search: (params: { q: string; lang?: string; page?: number }) => {
       const sp = new URLSearchParams({ q: params.q });
       if (params.lang) sp.set("lang", params.lang);

@@ -94,7 +94,10 @@ describe("catalog / detail + pages flow", () => {
     expect(targets.length).toBe(2);
 
     for (const target of targets) {
+      const t0 = performance.now();
       const r = await apiClient.manga.detail({ id: target.id, name: target.name });
+      const ms = Math.round(performance.now() - t0);
+      console.log(`[timing] detail "${target.name}" → ${ms}ms`);
       const chapters = r.detail.chapters ?? [];
       expect(chapters.length).toBeGreaterThan(0);
       // Chapter shape sanity — id is an opaque AES-GCM token (long base64url),
@@ -106,6 +109,36 @@ describe("catalog / detail + pages flow", () => {
       }
     }
   }, 120_000);
+
+  it("measures how long it takes to fetch a work (detail latency)", async () => {
+    const popular = await apiClient.manga.popular();
+    const first = popular.list[0];
+    expect(first).toBeDefined();
+
+    const t0 = performance.now();
+    const r = await apiClient.manga.detail({ id: first.id, name: first.name });
+    const ms = Math.round(performance.now() - t0);
+    console.log(
+      `[timing] fetch work "${first.name}" → ${ms}ms (${(r.detail.chapters ?? []).length} chapters)`,
+    );
+
+    // Generous ceiling: a cold cross-source fan-out can take tens of seconds.
+    expect(ms).toBeLessThan(60_000);
+  }, 90_000);
+
+  it("latest returns recently-updated works (and reports timing)", async () => {
+    const t0 = performance.now();
+    const r = await apiClient.manga.latest({ lang: "pt-br" });
+    const ms = Math.round(performance.now() - t0);
+    console.log(`[timing] latest feed → ${ms}ms (${r.list.length} works)`);
+
+    expect(r.list.length).toBeGreaterThan(0);
+    for (const m of r.list.slice(0, 5)) {
+      expect(typeof m.name).toBe("string");
+      expect(typeof m.id).toBe("string");
+      expect(typeof m.lang).toBe("string");
+    }
+  }, 30_000);
 
   it("pages from TWO different chapters return opaque /api/img/<token> paths (and the bytes are real images)", async () => {
     const popular = await apiClient.manga.popular();
