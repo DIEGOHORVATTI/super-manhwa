@@ -32,10 +32,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
-  const [genresRes, popular, trending] = await Promise.all([
+  const empty = { list: [] as { id: string }[] };
+  const [genresRes, pop1, pop2, trending, newest] = await Promise.all([
     api.manga.genres({ lang: "pt-br" }).catch(() => ({ genres: [] })),
-    api.manga.popular({ lang: "pt-br", sort: "popular", page: 1 }).catch(() => ({ list: [] })),
-    api.manga.popular({ lang: "pt-br", sort: "trending", page: 1 }).catch(() => ({ list: [] })),
+    api.manga.popular({ lang: "pt-br", sort: "popular", page: 1 }).catch(() => empty),
+    api.manga.popular({ lang: "pt-br", sort: "popular", page: 2 }).catch(() => empty),
+    api.manga.popular({ lang: "pt-br", sort: "trending", page: 1 }).catch(() => empty),
+    api.manga.popular({ lang: "pt-br", sort: "newest", page: 1 }).catch(() => empty),
   ]);
 
   for (const g of genresRes.genres) {
@@ -48,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   const seen = new Set<string>();
-  for (const m of [...popular.list, ...trending.list]) {
+  for (const m of [...pop1.list, ...pop2.list, ...trending.list, ...newest.list]) {
     if (seen.has(m.id)) continue;
     seen.add(m.id);
     entries.push({

@@ -189,7 +189,10 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
           <ul className="relations">
             {meta.relations.map((r) => (
               <li key={`${r.relation}-${r.title}`}>
-                <span className="relation-kind">{r.relation}</span> {r.title}
+                <span className="relation-kind">{r.relation}</span>{" "}
+                <Link href={`/explorar?q=${encodeURIComponent(r.title)}`} className="relation-link">
+                  {r.title}
+                </Link>
               </li>
             ))}
           </ul>
@@ -227,12 +230,22 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
       : {}),
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Início", item: base },
+      { "@type": "ListItem", position: 2, name: "Explorar", item: `${base}/explorar` },
+      { "@type": "ListItem", position: 3, name: title, item: `${base}/manga/${id}` },
+    ],
+  };
+
   return (
     <>
       <script
         type="application/ld+json"
         // Trusted, server-built JSON-LD (no user input).
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
       />
       <DetailView
         title={title}

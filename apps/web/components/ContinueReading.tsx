@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Cover } from "@/components/Cover";
 import { Icon } from "@/components/Icon";
+import { ShelfScroller } from "@/components/ShelfScroller";
 import { type ProgressEntry, removeProgress, useHistory } from "@/lib/library";
 
 const readHref = (e: ProgressEntry) =>
@@ -23,7 +24,7 @@ export function ContinueReading() {
       <h2 className="continue-head">
         <Icon name="clock" size={18} /> Continuar lendo
       </h2>
-      <ul className="continue-row">
+      <ShelfScroller>
         {history.map((e) => (
           <li key={e.id} className="continue-card">
             <Link className="continue-link" href={readHref(e)}>
@@ -45,7 +46,7 @@ export function ContinueReading() {
             </button>
           </li>
         ))}
-      </ul>
+      </ShelfScroller>
     </section>
   );
 }

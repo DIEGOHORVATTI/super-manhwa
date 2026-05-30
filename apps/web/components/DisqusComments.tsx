@@ -34,6 +34,7 @@ export function DisqusComments({
 }) {
   const ref = useRef<HTMLElement>(null);
   const [visible, setVisible] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   // Load only when the section is about to enter the viewport.
   useEffect(() => {
@@ -73,10 +74,38 @@ export function DisqusComments({
     }
   }, [visible, identifier, title, url]);
 
+  // Hide the skeleton once Disqus injects its iframe into the thread container.
+  useEffect(() => {
+    if (!visible) return;
+    const el = document.getElementById("disqus_thread");
+    if (!el) return;
+    const mo = new MutationObserver(() => {
+      if (el.querySelector("iframe")) {
+        setLoaded(true);
+        mo.disconnect();
+      }
+    });
+    mo.observe(el, { childList: true, subtree: true });
+    return () => mo.disconnect();
+  }, [visible]);
+
   if (!SHORTNAME) return null;
   return (
     <section className="comments" ref={ref}>
       <h2 className="section">Comentários</h2>
+      {visible && !loaded && (
+        <div className="disqus-skeleton" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="disqus-skel-row">
+              <div className="skel disqus-skel-avatar" />
+              <div className="disqus-skel-lines">
+                <div className="skel skel-line" style={{ width: "30%" }} />
+                <div className="skel skel-line" style={{ width: "85%" }} />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <div id="disqus_thread" className="disqus-thread" />
     </section>
   );

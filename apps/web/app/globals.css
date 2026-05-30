@@ -1315,6 +1315,37 @@ a:hover {
   margin-top: 20px;
 }
 
+/* Clickable "Relacionados" titles → search */
+.relation-link {
+  font-weight: 600;
+}
+.relation-link:hover {
+  text-decoration: underline;
+}
+
+/* Disqus loading skeleton (shown until the iframe is injected) */
+.disqus-skeleton {
+  padding: 16px 18px 4px;
+}
+.disqus-skel-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.disqus-skel-avatar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+.disqus-skel-lines {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 3px;
+}
+
 /* Reader tools bar (offline download) */
 .reader-tools {
   display: flex;
