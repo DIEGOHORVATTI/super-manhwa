@@ -16,6 +16,20 @@ export function PosterGridSkeleton({ count = 18 }: { count?: number }) {
   );
 }
 
+/** Chapter-grid placeholder — the Suspense fallback while the cross-source
+ *  chapter fan-out streams in on the detail page. Mirrors `.chapters-grid`. */
+export function ChaptersGridSkeleton({ count = 18 }: { count?: number }) {
+  return (
+    <ul className="chapters-grid" aria-hidden="true">
+      {Array.from({ length: count }, (_, i) => (
+        <li key={i}>
+          <div className="skel" style={{ height: 38, borderRadius: 8 }} />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function DetailSkeleton() {
   return (
     <div aria-hidden="true">

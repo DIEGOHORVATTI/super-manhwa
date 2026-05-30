@@ -1,8 +1,6 @@
 import type { MangaConnector } from "@packages/extension";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
-import { notFound } from "@/shared/errors";
-import { signCoverPath } from "@/shared/image-sign";
 
 import type { CatalogSource } from "../domain/catalog-source";
 import type { Chapter, MangaDetail } from "../domain/manga";
@@ -15,6 +13,7 @@ import {
   priorityOf,
   titleMatches,
 } from "./completeness";
+import { loadWork } from "./work-cache";
 
 const DETAIL_TTL = 10 * 60 * 1000;
 const SEARCH_TTL = 10 * 60 * 1000;
@@ -48,14 +47,15 @@ const uniqStrings = (xs: Array<string | undefined>): string[] => {
 };
 
 /**
- * Resolve a work's detail. Identity comes from the AniList catalog (the `id` is
- * an AniList id): we take its title + aliases, then fan out across the reading
- * connectors — matching the same work by (now English-aligned) title — and union
- * every source's chapters, deduped by number, preferring {@link PREFERRED_LANG}.
- * Non-chapter content (title/cover/genres/description) comes from AniList, so the
- * page renders even when no reading source carries the work.
+ * Slow half of the obra page: a work's chapters, unioned across reading sources.
+ * Identity comes from the AniList catalog (the `id` is an AniList id, shared with
+ * {@link makeGetMangaCore} via the cached {@link loadWork}): we take its title +
+ * aliases, fan out across the reading connectors — matching the same work by
+ * (English-aligned) title — and union every source's chapters, deduped by number,
+ * preferring {@link PREFERRED_LANG}. Non-chapter content lives in the `core`
+ * route, so the page renders even when no reading source carries the work.
  */
-export const makeGetMangaDetail =
+export const makeGetMangaChapters =
   (catalog: CatalogSource, registry: ConnectorRegistry, idStore: IdStore, cache: Cache) =>
   async ({
     id,
@@ -63,10 +63,7 @@ export const makeGetMangaDetail =
   }: {
     id: string;
     name?: string;
-  }): Promise<{ detail: MangaDetail; lang: string }> => {
-    const anilistImg = (url?: string): string | undefined =>
-      url ? signCoverPath(`/api/img/${idStore.encode({ source: "anilist", url })}`) : undefined;
-
+  }): Promise<{ chapters: Chapter[]; lang: string }> => {
     /** Search a candidate connector for this work and return its shaped detail. */
     const resolveAlt = async (
       connector: MangaConnector,
@@ -96,9 +93,8 @@ export const makeGetMangaDetail =
       return null;
     };
 
-    return cache.remember(`detail-merged:${id}`, MERGED_TTL, async () => {
-      const work = await catalog.byId(id).catch(() => null);
-      if (!work && !name) throw notFound("unknown work");
+    return cache.remember(`chapters:${id}`, MERGED_TTL, async () => {
+      const work = await loadWork(cache, catalog, id);
 
       // Title variants to find the same work across reading sources.
       const targets = uniqStrings([work?.title, name, ...(work?.aliases ?? [])]);
@@ -130,15 +126,6 @@ export const makeGetMangaDetail =
       }));
       const chapters: Chapter[] = mergeChapters(sources, PREFERRED_LANG);
 
-      const detail: MangaDetail = {
-        title: work?.title ?? name,
-        description: work?.description,
-        genre: work?.genres,
-        status: work?.status,
-        imageUrl: anilistImg(work?.imageUrl),
-        chapters,
-        lang: PREFERRED_LANG,
-      };
-      return { detail, lang: PREFERRED_LANG };
+      return { chapters, lang: PREFERRED_LANG };
     });
   };

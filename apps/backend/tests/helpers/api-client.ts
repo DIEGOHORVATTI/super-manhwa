@@ -1,4 +1,11 @@
-import type { Health, MangaDetail, MangaList, MangaSort, MangaSummary } from "@packages/contracts";
+import type {
+  Chapter,
+  Health,
+  MangaCore,
+  MangaList,
+  MangaSort,
+  MangaSummary,
+} from "@packages/contracts";
 
 /**
  * Tiny typed HTTP client for the e2e suite. We intentionally hit the live
@@ -63,10 +70,15 @@ export const apiClient = {
       if (params.lang) sp.set("lang", params.lang);
       return getJson<{ list: MangaSummary[] }>(`/api/manga/suggest?${sp}`);
     },
-    detail: (params: { id: string; name?: string }) => {
+    core: (params: { id: string; name?: string }) => {
       const sp = new URLSearchParams({ id: params.id });
       if (params.name) sp.set("name", params.name);
-      return getJson<{ detail: MangaDetail; lang: string }>(`/api/manga/detail?${sp}`);
+      return getJson<{ core: MangaCore; lang: string }>(`/api/manga/core?${sp}`);
+    },
+    chapters: (params: { id: string; name?: string }) => {
+      const sp = new URLSearchParams({ id: params.id });
+      if (params.name) sp.set("name", params.name);
+      return getJson<{ chapters: Chapter[]; lang: string }>(`/api/manga/chapters?${sp}`);
     },
     pages: (id: string) =>
       getJson<{ pages: string[] }>(`/api/manga/pages?id=${encodeURIComponent(id)}`),

@@ -5,7 +5,7 @@ import type { MangaStatus } from "@packages/contracts";
  * work's canonical identity) is sourced from a metadata DB (AniList) rather than
  * the reading connectors — one consistent catalog with stable ids, titles, covers
  * and genres. The reading connectors are only consulted later, to resolve the
- * actual chapters/pages for a work (see get-manga-detail).
+ * actual chapters/pages for a work (see get-manga-chapters).
  *
  * `id` is the canonical work id (AniList id as a string). Image URLs are raw
  * upstream here; the application layer proxies them like covers/pages.

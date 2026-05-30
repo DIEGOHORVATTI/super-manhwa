@@ -88,17 +88,17 @@ describe("catalog / detail + pages flow", () => {
     return picks.filter((p) => (seen.has(p.id) ? false : seen.add(p.id))).slice(0, 2);
   };
 
-  it("detail returns chapters for TWO different popular titles (fallback works when primary fails)", async () => {
+  it("chapters returns results for TWO different popular titles (fallback works when primary fails)", async () => {
     const popular = await apiClient.manga.popular();
     const targets = pickTitles(popular.list);
     expect(targets.length).toBe(2);
 
     for (const target of targets) {
       const t0 = performance.now();
-      const r = await apiClient.manga.detail({ id: target.id, name: target.name });
+      const r = await apiClient.manga.chapters({ id: target.id, name: target.name });
       const ms = Math.round(performance.now() - t0);
-      console.log(`[timing] detail "${target.name}" → ${ms}ms`);
-      const chapters = r.detail.chapters ?? [];
+      console.log(`[timing] chapters "${target.name}" → ${ms}ms`);
+      const chapters = r.chapters;
       expect(chapters.length).toBeGreaterThan(0);
       // Chapter shape sanity — id is an opaque AES-GCM token (long base64url),
       // name a string.
@@ -110,17 +110,15 @@ describe("catalog / detail + pages flow", () => {
     }
   }, 120_000);
 
-  it("measures how long it takes to fetch a work (detail latency)", async () => {
+  it("measures how long it takes to fetch a work's chapters (fan-out latency)", async () => {
     const popular = await apiClient.manga.popular();
     const first = popular.list[0];
     expect(first).toBeDefined();
 
     const t0 = performance.now();
-    const r = await apiClient.manga.detail({ id: first.id, name: first.name });
+    const r = await apiClient.manga.chapters({ id: first.id, name: first.name });
     const ms = Math.round(performance.now() - t0);
-    console.log(
-      `[timing] fetch work "${first.name}" → ${ms}ms (${(r.detail.chapters ?? []).length} chapters)`,
-    );
+    console.log(`[timing] fetch work "${first.name}" → ${ms}ms (${r.chapters.length} chapters)`);
 
     // Generous ceiling: a cold cross-source fan-out can take tens of seconds.
     expect(ms).toBeLessThan(60_000);
@@ -146,8 +144,8 @@ describe("catalog / detail + pages flow", () => {
     expect(targets.length).toBe(2);
 
     for (const target of targets) {
-      const detail = await apiClient.manga.detail({ id: target.id, name: target.name });
-      const firstChapter = (detail.detail.chapters ?? [])[0];
+      const detail = await apiClient.manga.chapters({ id: target.id, name: target.name });
+      const firstChapter = detail.chapters[0];
       expect(firstChapter).toBeDefined();
 
       const pages = await apiClient.manga.pages(firstChapter.id);

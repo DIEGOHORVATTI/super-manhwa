@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { MangaConnector, RawDetail, RawListPage } from "@packages/extension";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
-import { makeGetMangaDetail } from "@/modules/catalog/application/get-manga-detail";
+import { makeGetMangaChapters } from "@/modules/catalog/application/get-manga-chapters";
 import type { CatalogSource, CatalogWork } from "@/modules/catalog/domain/catalog-source";
 import type { ConnectorRegistry } from "@/modules/catalog/infrastructure/connector-registry";
 
@@ -55,7 +55,7 @@ const work = (over: Partial<CatalogWork> & { id: string; title: string }): Catal
 
 // --- tests -----------------------------------------------------------------
 
-describe("getMangaDetail (AniList identity + connector chapter merge)", () => {
+describe("getMangaChapters (cross-source chapter merge)", () => {
   it("unions chapters across pt-br sources, preferring the deepest one", async () => {
     const comick = makeConnector({
       id: "comick-ptbr",
@@ -76,34 +76,18 @@ describe("getMangaDetail (AniList identity + connector chapter merge)", () => {
       getDetail: async () => ({ chapters: chaps(2, 1) }),
     });
 
-    const get = makeGetMangaDetail(
-      catalogOf(
-        work({
-          id: "123",
-          title: "Solo Leveling",
-          imageUrl: "https://s4.anilist.co/x.jpg",
-          genres: ["Action"],
-        }),
-      ),
+    const get = makeGetMangaChapters(
+      catalogOf(work({ id: "123", title: "Solo Leveling", genres: ["Action"] })),
       registryOf([comick, mangadexPtbr]),
       idStore,
       cache,
     );
 
-    const { detail, lang } = await get({ id: "123" });
+    const { chapters, lang } = await get({ id: "123" });
     expect(lang).toBe("pt-br");
-    expect(detail.title).toBe("Solo Leveling");
-    expect(detail.genre).toEqual(["Action"]);
-    expect(detail.imageUrl).toContain("/api/img/");
-    expect((detail.chapters ?? []).map((c) => c.name)).toEqual([
-      "Ch.5",
-      "Ch.4",
-      "Ch.3",
-      "Ch.2",
-      "Ch.1",
-    ]);
-    expect(detail.chapters?.every((c) => c.lang === "pt-br")).toBe(true);
-    expect(detail.chapters?.find((c) => c.name === "Ch.1")?.id).toBe("comick-ptbr::/c/1");
+    expect(chapters.map((c) => c.name)).toEqual(["Ch.5", "Ch.4", "Ch.3", "Ch.2", "Ch.1"]);
+    expect(chapters.every((c) => c.lang === "pt-br")).toBe(true);
+    expect(chapters.find((c) => c.name === "Ch.1")?.id).toBe("comick-ptbr::/c/1");
   });
 
   it("fills gaps from another language, tagging each chapter's origin", async () => {
@@ -120,14 +104,14 @@ describe("getMangaDetail (AniList identity + connector chapter merge)", () => {
       getDetail: async () => ({ chapters: chaps(3, 2, 1) }),
     });
 
-    const get = makeGetMangaDetail(
+    const get = makeGetMangaChapters(
       catalogOf(work({ id: "1", title: "Work" })),
       registryOf([mangadexPtbr, weeb]),
       idStore,
       cache,
     );
-    const { detail } = await get({ id: "1" });
-    const byNum = Object.fromEntries((detail.chapters ?? []).map((c) => [c.name, c.lang]));
+    const { chapters } = await get({ id: "1" });
+    const byNum = Object.fromEntries(chapters.map((c) => [c.name, c.lang]));
     expect(byNum).toEqual({ "Ch.3": "en", "Ch.2": "pt-br", "Ch.1": "pt-br" });
   });
 
@@ -142,7 +126,7 @@ describe("getMangaDetail (AniList identity + connector chapter merge)", () => {
       getDetail: async () => ({ chapters: chaps(2, 1) }),
     });
 
-    const get = makeGetMangaDetail(
+    const get = makeGetMangaChapters(
       catalogOf(
         work({ id: "7", title: "The Apothecary Diaries", aliases: ["Kusuriya no Hitorigoto"] }),
       ),
@@ -150,24 +134,18 @@ describe("getMangaDetail (AniList identity + connector chapter merge)", () => {
       idStore,
       cache,
     );
-    const { detail } = await get({ id: "7" });
-    expect(detail.chapters).toHaveLength(2);
+    const { chapters } = await get({ id: "7" });
+    expect(chapters).toHaveLength(2);
   });
 
-  it("renders from AniList even when no reading source has the work", async () => {
-    const get = makeGetMangaDetail(
+  it("returns no chapters when no reading source has the work", async () => {
+    const get = makeGetMangaChapters(
       catalogOf(work({ id: "9", title: "Obscure Work" })),
       registryOf([makeConnector({ id: "mangadex-ptbr", lang: "pt-br" })]),
       idStore,
       cache,
     );
-    const { detail } = await get({ id: "9" });
-    expect(detail.title).toBe("Obscure Work");
-    expect(detail.chapters).toEqual([]);
-  });
-
-  it("404s when the id is unknown and there's no name hint", async () => {
-    const get = makeGetMangaDetail(catalogOf(null), registryOf([]), idStore, cache);
-    expect(get({ id: "nope" })).rejects.toThrow();
+    const { chapters } = await get({ id: "9" });
+    expect(chapters).toEqual([]);
   });
 });

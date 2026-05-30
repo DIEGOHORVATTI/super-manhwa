@@ -26,11 +26,13 @@ export async function generateMetadata({ searchParams }: { searchParams: SP }): 
 export default async function ReadPage({ params, searchParams }: { params: P; searchParams: SP }) {
   const [{ id }, { n, m, mn }] = await Promise.all([params, searchParams]);
 
-  // Pages always; manga detail only if we know the manga (m=…) — it powers the
-  // reader nav (prev/next + chapter combobox). Both fired in parallel.
-  const [pagesRes, detailRes] = await Promise.allSettled([
+  // Pages always; manga chapters + cover only if we know the manga (m=…) — they
+  // power the reader nav (prev/next + chapter combobox) and the continue-reading
+  // history entry. All fired in parallel.
+  const [pagesRes, chaptersRes, coreRes] = await Promise.allSettled([
     api.manga.pages({ id }),
-    m ? api.manga.detail({ id: m, name: mn }) : Promise.resolve(null),
+    m ? api.manga.chapters({ id: m, name: mn }) : Promise.resolve(null),
+    m ? api.manga.core({ id: m, name: mn }) : Promise.resolve(null),
   ]);
 
   if (pagesRes.status === "rejected") {
@@ -44,9 +46,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   const nowS = Math.floor(Date.now() / 1000);
   const pages = pagesRes.value.pages.map((p) => signPagePath(p, sid, nowS));
   const chapters =
-    detailRes.status === "fulfilled" && detailRes.value
-      ? (detailRes.value.detail.chapters ?? [])
-      : [];
+    chaptersRes.status === "fulfilled" && chaptersRes.value ? chaptersRes.value.chapters : [];
 
   const hasContext = chapters.length > 0 && !!m && !!mn;
 
@@ -55,9 +55,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   const idx = chapters.findIndex((c) => c.id === id);
   const chapterNo = idx >= 0 ? chapters.length - idx : undefined;
   const cover =
-    detailRes.status === "fulfilled" && detailRes.value
-      ? detailRes.value.detail.imageUrl
-      : undefined;
+    coreRes.status === "fulfilled" && coreRes.value ? coreRes.value.core.imageUrl : undefined;
   const base = process.env.SITE_URL ?? "http://localhost:3000";
 
   return (

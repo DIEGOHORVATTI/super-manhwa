@@ -8,7 +8,8 @@ import { makeAesIdStore } from "@/core/infra/aes-id-store";
 import { makeMemoryCache } from "@/core/infra/memory-cache";
 import {
   makeGetChapterPages,
-  makeGetMangaDetail,
+  makeGetMangaChapters,
+  makeGetMangaCore,
   makeListGenres,
   makeListLangs,
   makeListLatest,
@@ -42,7 +43,8 @@ export const listPopular = makeListPopular(catalog, idStore, cache);
 export const listLatest = makeListLatest(connectorRegistry, idStore, cache);
 export const searchManga = makeSearchManga(catalog, idStore, cache);
 export const suggestManga = makeSuggestManga(catalog, idStore, cache);
-export const getMangaDetail = makeGetMangaDetail(catalog, connectorRegistry, idStore, cache);
+export const getMangaCore = makeGetMangaCore(catalog, idStore, cache);
+export const getMangaChapters = makeGetMangaChapters(catalog, connectorRegistry, idStore, cache);
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(catalog, cache);

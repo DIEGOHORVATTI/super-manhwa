@@ -55,7 +55,13 @@ export const chapterSchema = z.object({
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 
-export const mangaDetailSchema = z.object({
+/**
+ * Work metadata, no chapters — the fast half of the detail page. Comes straight
+ * from the AniList catalog (`catalog.byId`, ~200ms), so the obra page can paint
+ * the hero immediately while the slower cross-source chapter fan-out streams in
+ * separately via the `chapters` route.
+ */
+export const mangaCoreSchema = z.object({
   title: z.string().optional(),
   description: z.string().optional(),
   author: z.string().optional(),
@@ -63,11 +69,14 @@ export const mangaDetailSchema = z.object({
   genre: z.array(z.string()).optional(),
   status: mangaStatusSchema.optional(),
   imageUrl: z.string().optional(),
-  chapters: z.array(chapterSchema).optional(),
 });
-export type MangaDetail = z.infer<typeof mangaDetailSchema>;
+export type MangaCore = z.infer<typeof mangaCoreSchema>;
 
-export const detailResultSchema = z.object({ detail: mangaDetailSchema, lang: z.string() });
+export const coreResultSchema = z.object({ core: mangaCoreSchema, lang: z.string() });
+export const chaptersResultSchema = z.object({
+  chapters: z.array(chapterSchema),
+  lang: z.string(),
+});
 export const pagesResultSchema = z.object({ pages: z.array(z.string()) });
 export const suggestResultSchema = z.object({ list: z.array(mangaSummarySchema) });
 export const langsResultSchema = z.object({ langs: z.array(z.string()) });

@@ -1,14 +1,15 @@
 "use client";
 import type { MangaCharacter } from "@packages/contracts";
 import Image from "next/image";
-import Link from "next/link";
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, Suspense, useMemo, useState } from "react";
+import { ChapterList } from "@/components/ChapterList";
 import { CharacterGrid } from "@/components/CharacterGrid";
-import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
+import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
 
 type Chapter = { id: string; name: string; lang?: string };
+type ChaptersResult = { chapters: Chapter[]; lang: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
@@ -17,8 +18,11 @@ const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,
  * Owns the active-tab + filter state for the whole detail page. The header's
  * "…ver mais" jumps to "Sobre"; the search box on the right of the tab bar
  * filters the active tab live — chapters by name/number, characters by name —
- * and is disabled on "Sobre". Cover/genres/about are server-rendered slots;
- * chapter & character lists render here so the filter can re-render them.
+ * and is disabled on "Sobre". Cover/genres/about/meta are server-rendered slots.
+ *
+ * Chapters are streamed: `chaptersPromise` is consumed (via `use()`) inside a
+ * Suspense boundary by {@link ChapterList}, so the hero and tab bar paint
+ * immediately while the cross-source chapter fan-out resolves behind a skeleton.
  */
 export function DetailView({
   backdrop,
@@ -29,7 +33,7 @@ export function DetailView({
   descPreview,
   mangaId,
   lang,
-  chapters,
+  chaptersPromise,
   characters,
   about,
   comments,
@@ -42,7 +46,7 @@ export function DetailView({
   descPreview?: string;
   mangaId: string;
   lang: string;
-  chapters: Chapter[];
+  chaptersPromise: Promise<ChaptersResult>;
   characters: MangaCharacter[];
   about: ReactNode;
   comments?: ReactNode;
@@ -52,27 +56,11 @@ export function DetailView({
     "chapters",
   );
   const [query, setQuery] = useState("");
-  const read = useReadChapters(mangaId);
-
-  // Chapter names have no consistent format across sources, so we don't show
-  // them. Number each chapter by its position instead — sources return chapters
-  // newest-first, so the top of the list gets the highest number.
-  const chapterNo = useMemo(() => {
-    const m = new Map<string, number>();
-    chapters.forEach((c, i) => m.set(c.id, chapters.length - i));
-    return m;
-  }, [chapters]);
+  // Touch read-state so the hook subscribes the page even before the list
+  // resolves (keeps client cache warm for ChapterList's first paint).
+  useReadChapters(mangaId);
 
   const q = norm(query.trim());
-  const shownChapters = useMemo(
-    () =>
-      q
-        ? chapters.filter(
-            (c) => norm(c.name).includes(q) || String(chapterNo.get(c.id) ?? "").includes(q),
-          )
-        : chapters,
-    [q, chapters, chapterNo],
-  );
   const shownChars = useMemo(
     () => (q ? characters.filter((c) => norm(c.name).includes(q)) : characters),
     [q, characters],
@@ -88,7 +76,7 @@ export function DetailView({
     active === "characters" ? "Buscar personagem…" : "Buscar capítulo por nome ou número…";
 
   const tabs: Array<{ key: typeof active; label: string }> = [
-    { key: "chapters", label: `Capítulos (${chapters.length})` },
+    { key: "chapters", label: "Capítulos" },
     ...(hasChars ? [{ key: "characters" as const, label: "Personagens" }] : []),
     { key: "about", label: "Sobre" },
     ...(comments ? [{ key: "comments" as const, label: "Comentários" }] : []),
@@ -154,38 +142,18 @@ export function DetailView({
         </div>
       </nav>
 
-      {/* Capítulos */}
+      {/* Capítulos — streamed; suspends behind a grid skeleton until the
+          cross-source fan-out resolves. */}
       <div hidden={active !== "chapters"}>
-        {shownChapters.length === 0 ? (
-          <p className="muted">
-            {chapters.length === 0 ? "Nenhum capítulo disponível." : "Nenhum capítulo encontrado."}
-          </p>
-        ) : (
-          <ul className="chapters-grid">
-            {shownChapters.map((c) => (
-              <li key={c.id}>
-                <Link
-                  className={`chip${read.has(c.id) ? " is-read" : ""}`}
-                  href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
-                  title={read.has(c.id) ? "Lido" : undefined}
-                >
-                  <Flag
-                    lang={c.lang ?? lang}
-                    size={16}
-                    title={c.lang ?? lang}
-                    className="chip-flag"
-                  />
-                  <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
-                  {read.has(c.id) && (
-                    <span className="chip-read" aria-label="Lido">
-                      <Icon name="circle-check-big" size={12} />
-                    </span>
-                  )}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Suspense fallback={<ChaptersGridSkeleton />}>
+          <ChapterList
+            promise={chaptersPromise}
+            query={query}
+            mangaId={mangaId}
+            title={title}
+            lang={lang}
+          />
+        </Suspense>
       </div>
 
       {/* Personagens */}

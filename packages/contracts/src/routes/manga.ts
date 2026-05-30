@@ -3,7 +3,8 @@ import { z } from "zod";
 
 import { langFilterSchema, paginationSchema } from "../schemas/base";
 import {
-  detailResultSchema,
+  chaptersResultSchema,
+  coreResultSchema,
   genresResultSchema,
   langsResultSchema,
   mangaListSchema,
@@ -58,8 +59,28 @@ export const manga = oc.prefix("/manga").router({
     .input(z.object({ q: z.string() }).merge(langFilterSchema))
     .output(suggestResultSchema),
 
-  detail: prefix
-    .route({ method: "GET", path: "/detail", summary: "Manga details + chapters (by opaque id)" })
+  core: prefix
+    .route({
+      method: "GET",
+      path: "/core",
+      summary: "Manga metadata only — fast, no chapters (by opaque id)",
+    })
+    .input(
+      z.object({
+        id: z.string(),
+        /** Optional title hint — used as a fallback display name when the
+         *  catalog has no entry for this id. */
+        name: z.string().optional(),
+      }),
+    )
+    .output(coreResultSchema),
+
+  chapters: prefix
+    .route({
+      method: "GET",
+      path: "/chapters",
+      summary: "Merged chapters across reading sources (by opaque id)",
+    })
     .input(
       z.object({
         id: z.string(),
@@ -68,7 +89,7 @@ export const manga = oc.prefix("/manga").router({
         name: z.string().optional(),
       }),
     )
-    .output(detailResultSchema),
+    .output(chaptersResultSchema),
 
   pages: prefix
     .route({ method: "GET", path: "/pages", summary: "Chapter page images (by opaque id)" })

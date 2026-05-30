@@ -1,6 +1,7 @@
 import {
   getChapterPages,
-  getMangaDetail,
+  getMangaChapters,
+  getMangaCore,
   getMangaMeta,
   listGenres,
   listLangs,
@@ -21,8 +22,9 @@ export const listLatestRoute = auth.manga.latest.handler(async ({ input }) => li
 export const suggestMangaRoute = auth.manga.suggest.handler(async ({ input }) =>
   suggestManga(input),
 );
-export const getMangaDetailRoute = auth.manga.detail.handler(async ({ input }) =>
-  getMangaDetail(input),
+export const getMangaCoreRoute = auth.manga.core.handler(async ({ input }) => getMangaCore(input));
+export const getMangaChaptersRoute = auth.manga.chapters.handler(async ({ input }) =>
+  getMangaChapters(input),
 );
 export const getChapterPagesRoute = auth.manga.pages.handler(async ({ input }) =>
   getChapterPages(input),
