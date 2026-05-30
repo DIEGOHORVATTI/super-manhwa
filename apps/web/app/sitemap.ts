@@ -23,6 +23,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
     { url: `${base}/explorar`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
+    ...["/about", "/contact", "/dmca", "/terms", "/privacy", "/cookies"].map((p) => ({
+      url: `${base}${p}`,
+      lastModified: now,
+      changeFrequency: "yearly" as const,
+      priority: 0.2,
+    })),
   ];
 
   const [genresRes, popular, trending] = await Promise.all([

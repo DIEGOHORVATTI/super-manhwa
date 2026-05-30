@@ -30,6 +30,7 @@ const K = {
   favorites: "mr:favorites:v1",
   history: "mr:history:v1",
   read: "mr:read:v1",
+  downloaded: "mr:downloaded:v1",
 } as const;
 
 const HISTORY_CAP = 60;
@@ -159,4 +160,25 @@ export function markChapterRead(mangaId: string, chapterId: string): void {
   if (current.includes(chapterId)) return;
   map[mangaId] = [chapterId, ...current].slice(0, READ_CAP_PER_WORK);
   writeRaw(K.read, map);
+}
+
+/* ----------------------------- offline downloads -------------------------- */
+
+const EMPTY_DOWNLOADED: string[] = [];
+
+export function useIsDownloaded(chapterId: string): boolean {
+  return useStore<string[]>(K.downloaded, EMPTY_DOWNLOADED).includes(chapterId);
+}
+
+export function markDownloaded(chapterId: string): void {
+  const list = readRaw<string[]>(K.downloaded, []);
+  if (list.includes(chapterId)) return;
+  writeRaw(K.downloaded, [chapterId, ...list]);
+}
+
+export function unmarkDownloaded(chapterId: string): void {
+  writeRaw(
+    K.downloaded,
+    readRaw<string[]>(K.downloaded, []).filter((id) => id !== chapterId),
+  );
 }

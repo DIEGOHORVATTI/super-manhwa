@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { DisqusComments } from "@/components/DisqusComments";
+import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
@@ -77,6 +78,10 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
           </span>
         </div>
       )}
+
+      <div className="reader-tools">
+        <DownloadChapterButton pages={pages} chapterId={id} />
+      </div>
 
       <ReaderPages
         pages={pages}

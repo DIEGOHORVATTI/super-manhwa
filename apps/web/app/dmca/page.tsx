@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LegalForm } from "@/components/LegalForm";
 import { StaticPage } from "@/components/StaticPage";
 
 export const metadata: Metadata = {
@@ -33,10 +34,45 @@ export default function DmcaPage() {
         </li>
       </ul>
       <p>
-        Envie para <a href="mailto:dmca@supermanhwa.app">dmca@supermanhwa.app</a>. Avaliaremos e,
-        quando cabível, removeremos o item indexado o mais rápido possível. Como não hospedamos os
+        Preencha o formulário abaixo (ou envie para{" "}
+        <a href="mailto:dmca@supermanhwa.app">dmca@supermanhwa.app</a>). Avaliaremos e, quando
+        cabível, removeremos o item indexado o mais rápido possível. Como não hospedamos os
         arquivos, recomendamos também contatar a fonte original.
       </p>
+
+      <h2>Enviar pedido de remoção</h2>
+      <LegalForm
+        endpoint="/api/legal/dmca"
+        submitLabel="Enviar pedido"
+        fallbackEmail="dmca@supermanhwa.app"
+        fields={[
+          { name: "name", label: "Nome / organização", type: "text", required: true },
+          { name: "email", label: "E-mail de contato", type: "email", required: true },
+          { name: "work", label: "Obra protegida", type: "text", required: true },
+          {
+            name: "urls",
+            label: "URL(s) no Super Manhwa",
+            type: "textarea",
+            required: true,
+            placeholder: "Uma por linha",
+          },
+          { name: "details", label: "Detalhes adicionais", type: "textarea" },
+          {
+            name: "goodFaith",
+            label:
+              "Declaro, de boa-fé, que o uso não foi autorizado pelo titular, seu agente ou pela lei.",
+            type: "checkbox",
+            required: true,
+          },
+          {
+            name: "accurate",
+            label:
+              "Declaro que as informações são verdadeiras e que sou o titular ou seu representante.",
+            type: "checkbox",
+            required: true,
+          },
+        ]}
+      />
     </StaticPage>
   );
 }

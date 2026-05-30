@@ -1315,6 +1315,41 @@ a:hover {
   margin-top: 20px;
 }
 
+/* Reader tools bar (offline download) */
+.reader-tools {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0 2px;
+}
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background-color 0.12s,
+    color 0.12s;
+}
+.download-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.download-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.download-btn.is-done {
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
 /* Disqus comments section (work + chapter). The thread itself lives in a
    cross-origin iframe we can't style — we only frame it in a card; the internal
    look (colour scheme, reactions) is controlled in the Disqus admin. */
@@ -1517,6 +1552,87 @@ a:hover {
     flex-basis: 120px;
     width: 120px;
   }
+}
+
+/* Footer newsletter signup */
+.newsletter {
+  margin-top: 16px;
+}
+.newsletter-title {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+.newsletter-form {
+  display: flex;
+  gap: 8px;
+  max-width: 320px;
+}
+.newsletter-form .field {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 9px 11px;
+  font-size: 13px;
+}
+.newsletter-form .pager-btn {
+  flex: none;
+}
+.newsletter-err,
+.newsletter-done {
+  flex-basis: 100%;
+  font-size: 12px;
+}
+
+/* Legal forms (DMCA / contact) */
+.legal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+  margin-top: 12px;
+}
+.legal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.legal-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.legal-form .field {
+  width: 100%;
+}
+.legal-form textarea.field {
+  resize: vertical;
+  font-family: inherit;
+}
+.legal-check {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.legal-check input {
+  margin-top: 2px;
+  flex: none;
+}
+.legal-form .pager-btn {
+  align-self: flex-start;
+}
+.legal-hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+.notice-ok {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.08);
+  border-color: rgba(74, 222, 128, 0.3);
 }
 
 /* Active filter chips (below the Explorar filter bar) */

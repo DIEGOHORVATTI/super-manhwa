@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { LegalForm } from "@/components/LegalForm";
 import { StaticPage } from "@/components/StaticPage";
 
 export const metadata: Metadata = {
@@ -29,6 +30,19 @@ export default function ContatoPage() {
         Para pedidos de remoção de conteúdo protegido por direitos autorais, use o procedimento
         descrito na página de <a href="/dmca">DMCA</a>.
       </p>
+
+      <h2>Enviar mensagem</h2>
+      <LegalForm
+        endpoint="/api/legal/contact"
+        submitLabel="Enviar"
+        fallbackEmail="contato@supermanhwa.app"
+        fields={[
+          { name: "name", label: "Nome", type: "text", required: true },
+          { name: "email", label: "E-mail", type: "email", required: true },
+          { name: "subject", label: "Assunto", type: "text", required: true },
+          { name: "message", label: "Mensagem", type: "textarea", required: true },
+        ]}
+      />
     </StaticPage>
   );
 }

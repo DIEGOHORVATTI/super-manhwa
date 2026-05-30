@@ -1,8 +1,10 @@
 {
+  "id": "/",
   "name": "Super Manhwa",
   "short_name": "Super Manhwa",
   "description": "Busque e leia mangás, manhwas e webtoons num leitor web rápido.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#0e1016",
   "theme_color": "#0e1016",
@@ -21,7 +23,8 @@
       "src": "/android-icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "density": "4.0"
+      "density": "4.0",
+      "purpose": "any maskable"
     }
   ]
 }

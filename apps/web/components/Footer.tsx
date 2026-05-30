@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 
 const YEAR = new Date().getFullYear();
 
@@ -72,14 +73,15 @@ export function Footer() {
               </a>
             ))}
           </div>
+          <NewsletterSignup />
         </div>
 
         <nav className="footer-col" aria-label="Explorar">
           <h3>Explorar</h3>
           <Link href="/">Início</Link>
-          <Link href="/?sort=popular">Em alta</Link>
-          <Link href="/?sort=newest">Mais novos</Link>
-          <Link href="/?sort=completed">Completos</Link>
+          <Link href="/explorar">Explorar</Link>
+          <Link href="/explorar?sort=trending">Tendência</Link>
+          <Link href="/explorar?sort=newest">Mais novos</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Comunidade">
