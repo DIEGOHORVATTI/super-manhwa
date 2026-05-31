@@ -423,9 +423,14 @@ a:hover {
   position: relative;
   color: inherit;
 }
-.poster-link {
-  display: block;
+.poster-name {
   color: inherit;
+}
+/* Invisible stretched link covering the cover area (heart overlays it via z-index). */
+.poster-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 .poster-cover {
   position: relative;
@@ -1259,12 +1264,13 @@ a:hover {
 .fav-btn:hover {
   border-color: var(--accent);
 }
+/* Favorited: the heart itself goes red (filled), not the button background. */
 .fav-btn.is-active {
-  color: #fff;
-  background: var(--danger);
+  color: var(--danger);
   border-color: var(--danger);
 }
-.fav-btn.is-active svg {
+/* Target the path so it overrides the icon's inline fill="none" (fills the heart). */
+.fav-btn.is-active svg path {
   fill: currentColor;
 }
 /* Icon-only overlay pinned to the poster's bottom-right corner. */
@@ -1273,6 +1279,7 @@ a:hover {
   bottom: 8px;
   right: 8px;
   z-index: 2;
+  justify-content: center;
   width: 34px;
   height: 34px;
   padding: 0;
@@ -1288,9 +1295,10 @@ a:hover {
 .poster:hover .fav-btn-compact {
   opacity: 1;
 }
+/* Keep the dark disc; only the heart turns red. */
 .fav-btn-compact.is-active {
-  background: var(--danger);
-  border-color: var(--danger);
+  color: var(--danger);
+  border-color: rgba(255, 107, 107, 0.5);
   opacity: 1;
 }
 

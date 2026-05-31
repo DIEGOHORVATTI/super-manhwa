@@ -21,9 +21,10 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   }
   return (
     <div className="poster-grid">
-      {items.map((m, i) => (
-        <div key={m.id} className="poster">
-          <Link className="poster-link" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
+      {items.map((m, i) => {
+        const href = `/manga/${m.id}?n=${encodeURIComponent(m.name)}`;
+        return (
+          <div key={m.id} className="poster">
             <div className="poster-cover">
               <Cover src={m.imageUrl} alt={m.name} sizes={COVER_SIZES} priority={i < 6} />
               {m.status && (
@@ -39,12 +40,16 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
                 </span>
               )}
               <PosterProgressBadge id={m.id} />
+              {/* Stretched link makes the whole cover clickable; the heart sits above it. */}
+              <Link className="poster-hit" href={href} aria-label={m.name} tabIndex={-1} />
+              <FavoriteButton compact id={m.id} name={m.name} imageUrl={m.imageUrl} />
             </div>
-            <div className="poster-name">{m.name}</div>
-          </Link>
-          <FavoriteButton compact id={m.id} name={m.name} imageUrl={m.imageUrl} />
-        </div>
-      ))}
+            <Link className="poster-name" href={href}>
+              {m.name}
+            </Link>
+          </div>
+        );
+      })}
     </div>
   );
 }
