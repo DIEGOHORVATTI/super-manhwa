@@ -1,10 +1,12 @@
 import Markdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import remarkGfm from "remark-gfm";
 
 /**
- * Manga synopses from upstream sources (notably MangaDex) embed real markdown —
- * paragraph breaks, bullet lists, bold/italic, links to trailers. We render it
- * properly with `react-markdown` + GFM, then rewrite the link layer:
+ * Manga synopses arrive in two shapes: MangaDex sends real markdown, AniList
+ * sends light HTML (`<br>`, `<i>`, `<b>`). We render both — GFM for markdown,
+ * `rehype-raw` to parse the embedded HTML — with `allowedElements` acting as the
+ * sanitiser (any tag outside the list is dropped). We then rewrite the link layer:
  *
  *   - links to ANY known source domain (mangadex, webtoons, …) are stripped to
  *     plain text so the wire stays source-agnostic and the browser never sees
@@ -32,6 +34,9 @@ const isBlocked = (href: string | undefined): boolean => {
   if (!href) return true;
   try {
     const u = new URL(href);
+    // Only http(s) renders as a link — blocks `javascript:`/`data:` URLs that
+    // rehype-raw would otherwise let through (XSS vector).
+    if (u.protocol !== "http:" && u.protocol !== "https:") return true;
     return BLOCKED_HOSTS.some((host) => u.hostname === host || u.hostname.endsWith(`.${host}`));
   } catch {
     return true;
@@ -45,13 +50,18 @@ export function MarkdownDescription({ text }: { text?: string | null }) {
     <div className="detail-desc detail-desc-md">
       <Markdown
         remarkPlugins={[remarkGfm]}
+        // Parse embedded HTML (AniList synopses use `<br>`, `<i>`, `<b>`).
+        rehypePlugins={[rehypeRaw]}
         // Allow only the elements that make sense in a synopsis — anything
-        // else (images, raw HTML, code blocks) is stripped silently.
+        // else (images, scripts, raw HTML) is stripped silently. This list is
+        // the sanitiser for the rehype-raw output.
         allowedElements={[
           "p",
           "br",
           "strong",
+          "b",
           "em",
+          "i",
           "del",
           "code",
           "ul",
