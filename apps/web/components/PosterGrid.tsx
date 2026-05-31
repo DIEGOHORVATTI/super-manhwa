@@ -2,6 +2,7 @@ import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
 import { Cover } from "./Cover";
+import { FavoriteButton } from "./FavoriteButton";
 import { Flag } from "./Flag";
 import { PosterProgressBadge } from "./PosterProgressBadge";
 import { StatusBadge } from "./StatusBadge";
@@ -21,25 +22,28 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   return (
     <div className="poster-grid">
       {items.map((m, i) => (
-        <Link key={m.id} className="poster" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
-          <div className="poster-cover">
-            <Cover src={m.imageUrl} alt={m.name} sizes={COVER_SIZES} priority={i < 6} />
-            {m.status && (
-              <span className="poster-status">
-                <StatusBadge status={m.status} />
-              </span>
-            )}
-            {m.langs && m.langs.length > 0 && (
-              <span className="poster-langs">
-                {m.langs.map((l) => (
-                  <Flag key={l} lang={l} size={18} title={l} />
-                ))}
-              </span>
-            )}
-            <PosterProgressBadge id={m.id} />
-          </div>
-          <div className="poster-name">{m.name}</div>
-        </Link>
+        <div key={m.id} className="poster">
+          <Link className="poster-link" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
+            <div className="poster-cover">
+              <Cover src={m.imageUrl} alt={m.name} sizes={COVER_SIZES} priority={i < 6} />
+              {m.status && (
+                <span className="poster-status">
+                  <StatusBadge status={m.status} />
+                </span>
+              )}
+              {m.langs && m.langs.length > 0 && (
+                <span className="poster-langs">
+                  {m.langs.map((l) => (
+                    <Flag key={l} lang={l} size={18} title={l} />
+                  ))}
+                </span>
+              )}
+              <PosterProgressBadge id={m.id} />
+            </div>
+            <div className="poster-name">{m.name}</div>
+          </Link>
+          <FavoriteButton compact id={m.id} name={m.name} imageUrl={m.imageUrl} />
+        </div>
       ))}
     </div>
   );

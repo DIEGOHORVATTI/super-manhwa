@@ -3,9 +3,10 @@ import Link from "next/link";
 import { use, useMemo } from "react";
 import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
+import { fmtChapterDate, isRecent } from "@/lib/format";
 import { useReadChapters } from "@/lib/library";
 
-type Chapter = { id: string; name: string; lang?: string };
+type Chapter = { id: string; name: string; lang?: string; dateUpload?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
@@ -62,23 +63,30 @@ export function ChapterList({
 
   return (
     <ul className="chapters-grid">
-      {shown.map((c) => (
-        <li key={c.id}>
-          <Link
-            className={`chip${read.has(c.id) ? " is-read" : ""}`}
-            href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
-            title={read.has(c.id) ? "Lido" : undefined}
-          >
-            <Flag lang={c.lang ?? lang} size={16} title={c.lang ?? lang} className="chip-flag" />
-            <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
-            {read.has(c.id) && (
-              <span className="chip-read" aria-label="Lido">
-                <Icon name="circle-check-big" size={12} />
+      {shown.map((c) => {
+        const date = fmtChapterDate(c.dateUpload);
+        return (
+          <li key={c.id}>
+            <Link
+              className={`chip${read.has(c.id) ? " is-read" : ""}`}
+              href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
+              title={read.has(c.id) ? "Lido" : undefined}
+            >
+              <Flag lang={c.lang ?? lang} size={16} title={c.lang ?? lang} className="chip-flag" />
+              <span className="chip-main">
+                <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
+                {date && <span className="chip-date">{date}</span>}
               </span>
-            )}
-          </Link>
-        </li>
-      ))}
+              {isRecent(c.dateUpload) && <span className="chip-new">Novo</span>}
+              {read.has(c.id) && (
+                <span className="chip-read" aria-label="Lido">
+                  <Icon name="circle-check-big" size={12} />
+                </span>
+              )}
+            </Link>
+          </li>
+        );
+      })}
     </ul>
   );
 }

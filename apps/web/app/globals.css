@@ -420,6 +420,10 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
 }
 .poster {
+  position: relative;
+  color: inherit;
+}
+.poster-link {
   display: block;
   color: inherit;
 }
@@ -625,9 +629,33 @@ a:hover {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
   border-radius: 50%;
 }
+.chip-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
 .chip-no {
   font-size: 14px;
   font-variant-numeric: tabular-nums;
+}
+.chip-date {
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.chip-new {
+  margin-left: auto;
+  align-self: center;
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
 }
 .pages {
   display: flex;
@@ -1233,11 +1261,37 @@ a:hover {
 }
 .fav-btn.is-active {
   color: #fff;
-  background: var(--accent);
-  border-color: var(--accent);
+  background: var(--danger);
+  border-color: var(--danger);
 }
 .fav-btn.is-active svg {
   fill: currentColor;
+}
+/* Icon-only overlay pinned to the poster's bottom-right corner. */
+.fav-btn-compact {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  z-index: 2;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  gap: 0;
+  border-radius: 50%;
+  background: rgba(14, 16, 22, 0.7);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: #fff;
+  opacity: 0.85;
+}
+.fav-btn-compact:hover,
+.poster:hover .fav-btn-compact {
+  opacity: 1;
+}
+.fav-btn-compact.is-active {
+  background: var(--danger);
+  border-color: var(--danger);
+  opacity: 1;
 }
 
 /* Read chapter chips: only slightly dimmed + a check badge in the corner. */
