@@ -1,51 +1,29 @@
 import type { MangaMeta as WireMangaMeta } from "@packages/contracts";
 
-import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
-import { signCoverPath } from "@/shared/image-sign";
 
-import type { MetadataProvider } from "../domain/manga-meta";
+import { type LoadMeta, proxyImage } from "./load-meta";
 
-const META_TTL = 6 * 60 * 60 * 1000; // metadata is stable — cache 6h
-const EMPTY: WireMangaMeta = { tags: [], characters: [], relations: [] };
-
-/** Proxy an external image URL through our opaque, public-signed /api/img path. */
-const proxy = (idStore: IdStore, url?: string): string | undefined =>
-  url ? signCoverPath(`/api/img/${idStore.encode({ source: "anilist", url })}`) : undefined;
+const EMPTY: WireMangaMeta = { tags: [], relations: [] };
 
 /**
- * Rich metadata for a title (AniList). Best-effort: a miss or upstream error
- * returns an empty meta so the detail page just renders without the extra
- * tabs. Image URLs are proxied like covers/pages so the browser never sees
- * the metadata provider's CDN.
+ * Rich metadata for a title (AniList) minus characters, which live in their own
+ * route. Best-effort: a miss returns an empty meta so the detail page renders
+ * without the extras. Image URLs are proxied so the browser never sees the
+ * metadata provider's CDN.
  */
 export const makeGetMangaMeta =
-  (provider: MetadataProvider, idStore: IdStore, cache: Cache) =>
+  (load: LoadMeta, idStore: IdStore) =>
   async ({ name }: { name: string }): Promise<{ meta: WireMangaMeta }> => {
-    const title = name.trim();
-    if (!title) return { meta: EMPTY };
-
-    return cache.remember(`meta:${title.toLowerCase()}`, META_TTL, async () => {
-      const m = await provider.byTitle(title).catch(() => null);
-      if (!m) return { meta: EMPTY };
-      return {
-        meta: {
-          score: m.score,
-          bannerImage: proxy(idStore, m.bannerImage),
-          description: m.description,
-          tags: m.tags,
-          characters: m.characters.map((c) => ({
-            name: c.name,
-            nativeName: c.nativeName,
-            role: c.role,
-            imageUrl: proxy(idStore, c.imageUrl),
-            description: c.description,
-            gender: c.gender,
-            age: c.age,
-            favourites: c.favourites,
-          })),
-          relations: m.relations,
-        },
-      };
-    });
+    const m = name.trim() ? await load(name.trim()) : null;
+    if (!m) return { meta: EMPTY };
+    return {
+      meta: {
+        score: m.score,
+        bannerImage: proxyImage(idStore, m.bannerImage),
+        description: m.description,
+        tags: m.tags,
+        relations: m.relations,
+      },
+    };
   };

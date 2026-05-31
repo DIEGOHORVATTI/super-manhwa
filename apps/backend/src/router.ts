@@ -19,5 +19,6 @@ export const router = {
     langs: mangaRoutes.listLangsRoute,
     genres: mangaRoutes.listGenresRoute,
     meta: mangaRoutes.getMangaMetaRoute,
+    characters: mangaRoutes.getMangaCharactersRoute,
   },
 };

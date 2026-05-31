@@ -123,10 +123,14 @@ export const mangaMetaSchema = z.object({
   score: z.number().optional(),
   bannerImage: z.string().optional(),
   tags: z.array(z.string()).default([]),
-  characters: z.array(mangaCharacterSchema).default([]),
   relations: z.array(mangaRelationSchema).default([]),
   description: z.string().optional(),
 });
 export type MangaMeta = z.infer<typeof mangaMetaSchema>;
 
 export const metaResultSchema = z.object({ meta: mangaMetaSchema });
+
+/** Characters live in their own route — heavy, and only the "Personagens" tab needs them. */
+export const charactersResultSchema = z.object({
+  characters: z.array(mangaCharacterSchema).default([]),
+});

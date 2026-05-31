@@ -99,11 +99,16 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // resolves. A failure degrades to an empty list so the page still renders.
   const chaptersPromise = api.manga.chapters({ id, name: n }).catch(() => ({ chapters: [], lang }));
 
+  // Characters are the heavy half of the metadata and only feed the "Personagens"
+  // tab — streamed, NOT awaited, so they never hold up the hero.
+  const charactersPromise = api.manga
+    .characters({ name: title })
+    .then((r) => r.characters)
+    .catch(() => []);
+
   // Rich metadata (AniList) — best-effort, never blocks the page meaningfully.
   const { meta } = await api.manga.meta({ name: title }).catch(() => ({
-    meta: { tags: [], characters: [], relations: [] } as Awaited<
-      ReturnType<typeof api.manga.meta>
-    >["meta"],
+    meta: { tags: [], relations: [] } as Awaited<ReturnType<typeof api.manga.meta>>["meta"],
   }));
 
   const aboutTab = (
@@ -225,7 +230,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         mangaId={id}
         lang={lang}
         chaptersPromise={chaptersPromise}
-        characters={meta.characters}
+        charactersPromise={charactersPromise}
         about={aboutTab}
         comments={
           <DisqusComments identifier={`manga-${id}`} title={title} url={`${base}/manga/${id}`} />

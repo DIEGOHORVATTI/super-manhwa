@@ -4,6 +4,7 @@ import { z } from "zod";
 import { langFilterSchema, paginationSchema } from "../schemas/base";
 import {
   chaptersResultSchema,
+  charactersResultSchema,
   coreResultSchema,
   genresResultSchema,
   langsResultSchema,
@@ -110,8 +111,17 @@ export const manga = oc.prefix("/manga").router({
     .route({
       method: "GET",
       path: "/meta",
-      summary: "Rich metadata (characters, tags, score) by title",
+      summary: "Rich metadata (tags, score, banner, relations) by title",
     })
     .input(z.object({ name: z.string() }))
     .output(metaResultSchema),
+
+  characters: prefix
+    .route({
+      method: "GET",
+      path: "/characters",
+      summary: "Character list by title — heavy, loaded on demand for the tab",
+    })
+    .input(z.object({ name: z.string() }))
+    .output(charactersResultSchema),
 });

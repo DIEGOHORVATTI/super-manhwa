@@ -20,7 +20,11 @@ import {
 import { makeAniListCatalog, makeConnectorRegistry } from "@/modules/catalog/infrastructure";
 import { makeProxyImage } from "@/modules/media/application";
 import { makeHttpImageFetcher, makeImageByteCache } from "@/modules/media/infrastructure";
-import { makeGetMangaMeta } from "@/modules/metadata/application";
+import {
+  makeGetMangaCharacters,
+  makeGetMangaMeta,
+  makeLoadMeta,
+} from "@/modules/metadata/application";
 import { makeAniListProvider } from "@/modules/metadata/infrastructure";
 import { makeGetHealth } from "@/modules/system/application";
 
@@ -49,8 +53,11 @@ export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, c
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(catalog, cache);
 
-// Metadata application (AniList enrichment)
-export const getMangaMeta = makeGetMangaMeta(metadataProvider, idStore, cache);
+// Metadata application (AniList enrichment) — meta + characters share one
+// cached lookup so a work resolves with a single provider round-trip.
+const loadMeta = makeLoadMeta(metadataProvider, cache);
+export const getMangaMeta = makeGetMangaMeta(loadMeta, idStore);
+export const getMangaCharacters = makeGetMangaCharacters(loadMeta, idStore);
 
 // Media application
 export const proxyImage = makeProxyImage(idStore, connectorRegistry, imageFetcher, imageByteCache);

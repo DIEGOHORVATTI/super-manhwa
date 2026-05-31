@@ -1,18 +1,15 @@
 "use client";
 import type { MangaCharacter } from "@packages/contracts";
 import Image from "next/image";
-import { type ReactNode, Suspense, useMemo, useState } from "react";
+import { type ReactNode, Suspense, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
-import { CharacterGrid } from "@/components/CharacterGrid";
+import { CharactersTab } from "@/components/CharactersTab";
 import { Icon } from "@/components/Icon";
 import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
 
 type Chapter = { id: string; name: string; lang?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
-
-/** Accent/diacritic-insensitive haystack for the in-tab filter. */
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 /**
  * Owns the active-tab + filter state for the whole detail page. The header's
@@ -34,7 +31,7 @@ export function DetailView({
   mangaId,
   lang,
   chaptersPromise,
-  characters,
+  charactersPromise,
   about,
   comments,
 }: {
@@ -47,11 +44,10 @@ export function DetailView({
   mangaId: string;
   lang: string;
   chaptersPromise: Promise<ChaptersResult>;
-  characters: MangaCharacter[];
+  charactersPromise: Promise<MangaCharacter[]>;
   about: ReactNode;
   comments?: ReactNode;
 }) {
-  const hasChars = characters.length > 0;
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",
   );
@@ -59,12 +55,6 @@ export function DetailView({
   // Touch read-state so the hook subscribes the page even before the list
   // resolves (keeps client cache warm for ChapterList's first paint).
   useReadChapters(mangaId);
-
-  const q = norm(query.trim());
-  const shownChars = useMemo(
-    () => (q ? characters.filter((c) => norm(c.name).includes(q)) : characters),
-    [q, characters],
-  );
 
   const select = (key: typeof active) => {
     setActive(key);
@@ -77,7 +67,7 @@ export function DetailView({
 
   const tabs: Array<{ key: typeof active; label: string }> = [
     { key: "chapters", label: "Capítulos" },
-    ...(hasChars ? [{ key: "characters" as const, label: "Personagens" }] : []),
+    { key: "characters", label: "Personagens" },
     { key: "about", label: "Sobre" },
     ...(comments ? [{ key: "comments" as const, label: "Comentários" }] : []),
   ];
@@ -156,16 +146,12 @@ export function DetailView({
         </Suspense>
       </div>
 
-      {/* Personagens */}
-      {hasChars && (
-        <div hidden={active !== "characters"}>
-          {shownChars.length === 0 ? (
-            <p className="muted">Nenhum personagem encontrado.</p>
-          ) : (
-            <CharacterGrid characters={shownChars} />
-          )}
-        </div>
-      )}
+      {/* Personagens — streamed; suspends until the AniList lookup resolves. */}
+      <div hidden={active !== "characters"}>
+        <Suspense fallback={<p className="muted">Carregando personagens…</p>}>
+          <CharactersTab promise={charactersPromise} query={query} />
+        </Suspense>
+      </div>
 
       {/* Sobre */}
       <div hidden={active !== "about"}>{about}</div>
