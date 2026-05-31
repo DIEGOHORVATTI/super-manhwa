@@ -52,6 +52,9 @@ export const chapterSchema = z.object({
   /** Source language this chapter was fetched from. Set when a detail merges
    *  chapters across connectors so the UI can flag each row's origin. */
   lang: z.string().optional(),
+  /** Reading source this chapter came from (connector id, e.g. `mangafire-ptbr`),
+   *  so a merged list shows which site each row was pulled from. */
+  source: z.string().optional(),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 

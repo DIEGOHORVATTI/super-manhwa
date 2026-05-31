@@ -76,6 +76,7 @@ export const MangaMapper = {
       scanlator: raw.scanlator,
       dateUpload: raw.dateUpload,
       lang: meta.lang,
+      source: meta.id,
     };
   },
 

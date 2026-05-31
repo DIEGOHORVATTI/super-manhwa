@@ -28,6 +28,8 @@ export type Chapter = {
   dateUpload?: string;
   /** Source language this chapter was fetched from (set on merged details). */
   lang?: string;
+  /** Reading source (connector id) this chapter came from. */
+  source?: string;
 };
 
 export type MangaDetail = {
