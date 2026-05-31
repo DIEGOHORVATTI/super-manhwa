@@ -8,6 +8,29 @@ import { ZodToJsonSchemaConverter } from "@orpc/zod/zod4";
 
 import { logger } from "@/shared/logger";
 
+const clip = (s: string, max = 160) => (s.length > max ? `${s.slice(0, max)}…` : s);
+
+/** Route input for the log: the decoded query string, or the body for mutations. */
+const reqInput = async (req: {
+  url: URL;
+  body: () => Promise<unknown>;
+}): Promise<string | undefined> => {
+  const { search } = req.url;
+  if (search) {
+    try {
+      return clip(decodeURIComponent(search));
+    } catch {
+      return clip(search);
+    }
+  }
+  try {
+    const body = await req.body();
+    return body == null ? undefined : clip(typeof body === "string" ? body : JSON.stringify(body));
+  } catch {
+    return undefined;
+  }
+};
+
 /**
  * Minimal OpenAPI info shape — keeps us off the `openapi-types` dependency
  * while still feeding the docs page. Same fields the reference plugin reads.
@@ -68,21 +91,30 @@ export const createRpcHandler = ({
         : []),
     ],
     interceptors: [
-      async ({ request: { method, url }, next }) => {
-        const { pathname } = new URL(url);
+      // Single access-log site: route + payload in, status + response out. Raw
+      // `/api/img` streams bypass dispatch, so they never reach here (by design).
+      async ({ request, next }) => {
+        const { pathname } = request.url;
+        const method = request.method;
         const startedAt = performance.now();
         try {
           const result = await next();
-          logger.info("rpc", {
-            method,
-            path: pathname,
-            ms: Number((performance.now() - startedAt).toFixed(0)),
-            matched: result.matched,
-            status: result.response?.status,
-          });
+          const ms = Number((performance.now() - startedAt).toFixed(0));
+          // The response body is already a parsed value — no clone/parse needed.
+          void reqInput(request).then((input) =>
+            logger.http({
+              method,
+              path: pathname,
+              input,
+              output: result.response?.body,
+              ms,
+              status: result.response?.status,
+              matched: result.matched,
+            }),
+          );
           return result;
         } catch (error) {
-          logger.error("rpc error", {
+          logger.http({
             method,
             path: pathname,
             ms: Number((performance.now() - startedAt).toFixed(0)),

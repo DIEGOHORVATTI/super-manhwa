@@ -54,6 +54,8 @@ const DEFAULT_NOT_FOUND = { error: "Route not found" };
  * Single-call Bun server bootstrap. The whole "build OpenAPIHandler, wrap in
  * Bun.serve, dispatch /api/img before oRPC, add security headers" dance lives
  * here, so the entry point (`src/index.ts`) becomes a few-line configuration.
+ * Request logging lives in the oRPC interceptor (`create-rpc-handler`), so the
+ * raw `/api/img` streams that bypass dispatch stay out of the log by design.
  *
  * Mirrors `novo-horizonte/server/src/http/orpc-server.ts`.
  */
@@ -99,17 +101,14 @@ export const startBunServer = async <TContext>({
     hostname,
     idleTimeout,
     async fetch(req: Request): Promise<Response> {
-      for (const handler of beforeHandlers) {
-        const response = await handler(req);
-        if (response) return response;
-      }
-      for (const handler of customHandlers) {
+      // Raw handlers (`/api/img`, favicon) claim the request before oRPC dispatch.
+      for (const handler of [...beforeHandlers, ...customHandlers]) {
         const response = await handler(req);
         if (response) return response;
       }
 
-      const orpcReq = stripPrefix(req);
-      const { matched, response } = await rpcHandler.handle(orpcReq, {
+      // oRPC dispatch — the interceptor in `create-rpc-handler` logs these.
+      const { matched, response } = await rpcHandler.handle(stripPrefix(req), {
         context: createContext(req),
       });
       if (matched && response) {
