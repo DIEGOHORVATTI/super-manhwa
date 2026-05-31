@@ -1,13 +1,13 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Autocomplete } from "@/components/Autocomplete";
 import { Icon, type IconName } from "@/components/Icon";
 
 /**
- * Global app bar. Layout: contextual back button (router.back(), hidden on home)
- * → brand → primary tab nav (catalog shortcuts) → global search. Fixed-position
+ * Global app bar. Layout: brand → primary tab nav (catalog shortcuts) → global
+ * search. Fixed-position
  * so it can detach into a compact floating island once scrolled.
  *
  * The nav doubles as the home catalog filter (the home page no longer renders
@@ -126,9 +126,7 @@ function BottomNavWithSort() {
 }
 
 export function Header() {
-  const router = useRouter();
   const pathname = usePathname();
-  const isHome = pathname === "/";
   // The reader has its own sticky toolbar (ReaderNav) to follow the chapter —
   // a second floating bar reads badly, so here the global header stays static at
   // the top and scrolls away with the page.
@@ -149,17 +147,6 @@ export function Header() {
     <>
       <header className={`app-header${isReader ? " is-static" : scrolled ? " is-scrolled" : ""}`}>
         <div className="app-header-inner">
-          {!isHome && (
-            <button
-              type="button"
-              className="header-back"
-              onClick={() => router.back()}
-              aria-label="Voltar"
-            >
-              <Icon name="arrow-left" size={18} />
-            </button>
-          )}
-
           <Link href="/" className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />

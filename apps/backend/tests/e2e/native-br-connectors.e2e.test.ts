@@ -60,7 +60,11 @@ describe("native BR connectors / failure modes", () => {
   // connector. What is NOT acceptable: crashing the process, hanging
   // forever, or returning malformed data.
 
-  const TEST_TIMEOUT = 40_000;
+  // comick's search routes through FlareSolverr (CF challenge), whose solve is
+  // flaky (~30 s, sometimes a 500). The connector caps the solve at 30 s and
+  // flareFetch aborts the round-trip at solve+15 s, so the call always settles
+  // (list or throw) within ~45 s — this budget proves "never hangs", not speed.
+  const TEST_TIMEOUT = 50_000;
 
   it.each(NATIVE_BR_IDS)(
     "'%s'.getPopular returns a list (possibly empty) or throws a typed Error",

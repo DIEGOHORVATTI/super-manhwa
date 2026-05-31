@@ -24,6 +24,17 @@ import { httpFetch } from "@/shared/http-fetch";
 
 const NON_CF_CONNECTORS: readonly MangaConnector[] = CONNECTORS.filter((c) => !c.hasCloudflare);
 
+/**
+ * Connectors that route every request through FlareSolverr even though they
+ * carry `hasCloudflare: false` (the flag means "behind an active CF challenge",
+ * which these sites are not — yet the connectors fetch defensively via the
+ * solver). A solver round-trip renders a headless Chromium, so the *dynamic*
+ * WordPress search route (`/?s=…`, uncached) measures ~18 s end-to-end — well
+ * past the direct-fetch search budget. They get an extended search timeout so
+ * the suite reflects real solver latency instead of flaking on a deadline.
+ */
+const SOLVER_ROUTED = new Set<string>(["mangalivre-to", "mangalivre-blog"]);
+
 const KNOWN_SEARCH_FAILURES = new Set<string>([
   "weebcentral", // extension throws "cannot read property 'text' of null"
   "webtoons", // search consistently returns 0 hits even for catalog titles
@@ -46,6 +57,19 @@ const DEFAULT_QUERY = "one piece";
 const POPULAR_TIMEOUT_MS = 20_000;
 const SEARCH_TIMEOUT_MS = 15_000;
 const DETAIL_TIMEOUT_MS = 25_000;
+/**
+ * Solver-routed connectors render a headless Chromium for every request, so
+ * each call costs ~18 s on its own and more under load (the solver serializes).
+ * Their popular/search budgets are widened accordingly — direct-fetch mirrors
+ * keep the tight budgets so a real perf regression there still fails.
+ */
+const SOLVER_POPULAR_TIMEOUT_MS = 30_000;
+const SOLVER_SEARCH_TIMEOUT_MS = 30_000;
+
+const popularTimeout = (id: string) =>
+  (SOLVER_ROUTED.has(id) ? SOLVER_POPULAR_TIMEOUT_MS : POPULAR_TIMEOUT_MS) + 2_000;
+const searchTimeout = (id: string) =>
+  (SOLVER_ROUTED.has(id) ? SOLVER_SEARCH_TIMEOUT_MS : SEARCH_TIMEOUT_MS) + 2_000;
 
 describe("mirrors / per-connector contract", () => {
   for (const c of NON_CF_CONNECTORS) {
@@ -72,7 +96,7 @@ describe("mirrors / per-connector contract", () => {
             expect(m.link.length).toBeGreaterThan(0);
           }
         },
-        POPULAR_TIMEOUT_MS + 2_000,
+        popularTimeout(c.id),
       );
 
       if (!KNOWN_SEARCH_FAILURES.has(c.id)) {
@@ -83,7 +107,7 @@ describe("mirrors / per-connector contract", () => {
             const r: RawListPage = await c.search(q, 1);
             expect((r.list ?? []).length).toBeGreaterThanOrEqual(1);
           },
-          SEARCH_TIMEOUT_MS + 2_000,
+          searchTimeout(c.id),
         );
       } else {
         it.skip(`search is known broken upstream (id=${c.id}); skipped`, () => {});

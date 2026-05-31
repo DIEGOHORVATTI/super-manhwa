@@ -160,8 +160,8 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         <>
           <h3 className="section">Relacionados</h3>
           <ul className="relations">
-            {meta.relations.map((r) => (
-              <li key={`${r.relation}-${r.title}`}>
+            {meta.relations.map((r, i) => (
+              <li key={`${r.relation}-${r.title}-${i}`}>
                 <span className="relation-kind">{r.relation}</span>{" "}
                 <Link href={`/explorar?q=${encodeURIComponent(r.title)}`} className="relation-link">
                   {r.title}
@@ -247,7 +247,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
           ) : null
         }
         meta={
-          <div className="detail-meta">
+          <div key="meta" className="detail-meta">
             <StatusBadge status={core.status} size="md" />
             <Suspense
               fallback={
@@ -269,7 +269,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         }
         genres={
           core.genre && core.genre.length > 0 ? (
-            <div className="genres">
+            <div key="genres" className="genres">
               {core.genre.slice(0, 16).map((g) => (
                 <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
                   {g}

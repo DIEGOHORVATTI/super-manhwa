@@ -17,6 +17,13 @@ export interface FlareFetchOptions {
   headers?: Record<string, string>;
   /** Solver timeout in ms (default 60s — JS challenges take a while). */
   maxTimeout?: number;
+  /**
+   * Force a plain `fetch()` even when `FLARESOLVERR_URL` is configured. For
+   * endpoints that pass with a browser UA directly and would only be slowed
+   * (and rate-limited) by a needless Chromium render — e.g. paginated JSON
+   * APIs. The solver is reserved for the routes that actually trip a challenge.
+   */
+  direct?: boolean;
 }
 
 export interface FlareFetchResult {
@@ -37,11 +44,13 @@ export const flareFetch = async (
   url: string,
   opts: FlareFetchOptions = {},
 ): Promise<FlareFetchResult> => {
-  const solver = process.env.FLARESOLVERR_URL;
+  const solver = opts.direct ? undefined : process.env.FLARESOLVERR_URL;
   const headers = { "User-Agent": DEFAULT_UA, ...opts.headers };
+  const maxTimeout = opts.maxTimeout ?? 60_000;
 
   if (!solver) {
-    const res = await fetch(url, { headers });
+    // Hard client-side ceiling so a dead host can't hang the connector forever.
+    const res = await fetch(url, { headers, signal: AbortSignal.timeout(30_000) });
     return {
       status: res.status,
       url: res.url,
@@ -51,14 +60,19 @@ export const flareFetch = async (
     };
   }
 
+  // The solver's `maxTimeout` only bounds the in-browser challenge solve; the
+  // POST itself can still hang if the solver is saturated or wedged. Cap the
+  // round-trip client-side (solve budget + margin) so a stuck solver surfaces
+  // as a throw the connector/aggregator can fall back from — never a hang.
   const fs = await fetch(solver, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       cmd: "request.get",
       url,
-      maxTimeout: opts.maxTimeout ?? 60_000,
+      maxTimeout,
     }),
+    signal: AbortSignal.timeout(maxTimeout + 15_000),
   });
   if (!fs.ok) {
     throw new Error(`flaresolverr ${fs.status} for ${url}`);

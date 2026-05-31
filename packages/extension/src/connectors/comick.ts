@@ -104,15 +104,25 @@ export const comickPtBr: MangaConnector = {
   featured: false,
 
   async getPopular(_page): Promise<RawListPage> {
+    // `/api/comics/top` passes CF with a browser UA — go direct (a solver
+    // render would only add latency). See the header note: solver is search-only.
     const data = await flareFetchJson<{ data: BrowseComic[] }>(
       `${BASE}/api/comics/top?days=30&type=follow`,
+      { direct: true },
     );
     return { list: (data.data ?? []).map(toListItem), hasNextPage: false };
   },
 
   async search(query, _page): Promise<RawListPage> {
+    // `/api/search` is the one route that trips CF, so it must go through the
+    // solver. Its challenge is heavy and flaky (often 30–60 s, sometimes 500),
+    // so cap the solve budget: a search that can't clear CF quickly is best
+    // abandoned as a typed error and let the aggregator fall back to a faster
+    // source, rather than tying up a slow render.
     const sp = new URLSearchParams({ q: query.trim(), type: "comic" });
-    const data = await flareFetchJson<SearchResponse>(`${BASE}/api/search?${sp}`);
+    const data = await flareFetchJson<SearchResponse>(`${BASE}/api/search?${sp}`, {
+      maxTimeout: 30_000,
+    });
     return {
       list: (data.data ?? []).map(toListItem),
       hasNextPage: Boolean(data.next_cursor),
@@ -120,7 +130,10 @@ export const comickPtBr: MangaConnector = {
   },
 
   async getDetail(slug): Promise<RawDetail> {
-    const res = await flareFetch(`${BASE}/comic/${slug}`);
+    // Detail page + paginated chapter-list both pass CF with a browser UA, so
+    // go direct. Routing the (up to 7+) chapter-list pages through a Chromium
+    // render would cost ~7 s each and blow past any reasonable deadline.
+    const res = await flareFetch(`${BASE}/comic/${slug}`, { direct: true });
     if (res.status >= 400) throw new Error(`comick detail ${res.status}`);
     const c = embeddedJson<ComicData>(res.body, "comic-data");
 
@@ -130,6 +143,7 @@ export const comickPtBr: MangaConnector = {
     for (;;) {
       const cl = await flareFetchJson<ChapterListResponse>(
         `${BASE}/api/comics/${slug}/chapter-list?lang=${LANG}&page=${page}`,
+        { direct: true },
       );
       for (const ch of cl.data ?? []) {
         const label = [
@@ -164,7 +178,8 @@ export const comickPtBr: MangaConnector = {
   },
 
   async getPageList(chapterPath): Promise<RawPage[]> {
-    const res = await flareFetch(`${BASE}/comic/${chapterPath}`);
+    // Chapter page (with embedded image JSON) passes CF directly too.
+    const res = await flareFetch(`${BASE}/comic/${chapterPath}`, { direct: true });
     if (res.status >= 400) throw new Error(`comick pages ${res.status}`);
     const data = embeddedJson<PageListData>(res.body, "sv-data");
     return (data.chapter?.images ?? []).map((img) => img.url);
