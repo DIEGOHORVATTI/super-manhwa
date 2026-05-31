@@ -1347,16 +1347,13 @@ a:hover {
 }
 
 /* Reader tools bar (offline download) */
-.reader-tools {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0 2px;
-}
+/* Lives in the reader toolbar — sized to line up with the .reader-btn pills. */
 .download-btn {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  padding: 8px 14px;
+  height: 36px;
+  padding: 0 14px;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface);
@@ -1364,6 +1361,7 @@ a:hover {
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  flex-shrink: 0;
   transition:
     border-color 0.12s,
     background-color 0.12s,

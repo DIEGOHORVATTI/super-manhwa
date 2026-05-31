@@ -53,7 +53,7 @@ export function DownloadChapterButton({
       disabled={busy}
       aria-pressed={downloaded}
     >
-      <Icon name={downloaded ? "circle-check-big" : "book-open"} size={15} />
+      <Icon name={downloaded ? "circle-check-big" : "download"} size={15} />
       {busy ? "Baixando…" : downloaded ? "Baixado (offline)" : "Baixar p/ ler offline"}
     </button>
   );

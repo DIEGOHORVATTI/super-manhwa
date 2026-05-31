@@ -61,7 +61,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   return (
     <>
       {hasContext ? (
-        <ReaderNav chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
+        <ReaderNav chapters={chapters} currentId={id} mangaId={m} mangaName={mn} pages={pages} />
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
@@ -69,6 +69,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
             <Icon name="house" size={16} />
             <span className="reader-series-name">Início</span>
           </Link>
+          <DownloadChapterButton pages={pages} chapterId={id} />
           <div className="reader-nav-spacer" />
           <span className="reader-count">
             {n ? `${n} · ` : ""}
@@ -76,10 +77,6 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
           </span>
         </div>
       )}
-
-      <div className="reader-tools">
-        <DownloadChapterButton pages={pages} chapterId={id} />
-      </div>
 
       <ReaderPages
         pages={pages}
