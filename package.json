@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
     "dev:web": "cd apps/web && bun run dev",
-    "dev:api": "cd apps/backend && bun run dev",
+    "dev:api": "cd apps/backend && bun run --watch dev",
     "start": "cd apps/backend && bun run start",
     "build": "cd apps/web && bun run build",
     "type-check": "cd apps/backend && bunx tsc --noEmit && cd ../web && bunx tsc --noEmit",
