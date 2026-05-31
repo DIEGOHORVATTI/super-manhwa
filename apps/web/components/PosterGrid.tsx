@@ -20,10 +20,10 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   }
   return (
     <div className="poster-grid">
-      {items.map((m) => (
+      {items.map((m, i) => (
         <Link key={m.id} className="poster" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
           <div className="poster-cover">
-            <Cover src={m.imageUrl} alt={m.name} sizes={COVER_SIZES} />
+            <Cover src={m.imageUrl} alt={m.name} sizes={COVER_SIZES} priority={i < 6} />
             {m.status && (
               <span className="poster-status">
                 <StatusBadge status={m.status} />

@@ -1,6 +1,12 @@
+import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Raiz do monorepo (apps/web -> ../..). Evita o Turbopack inferir a raiz
+  // errada quando há lockfiles em diretórios pai (ex.: ~/bun.lock).
+  turbopack: {
+    root: path.join(import.meta.dirname, "..", ".."),
+  },
   transpilePackages: ["@packages/contracts", "@packages/extension-runtime"],
   images: {
     // Covers are local, same-origin (`/api/img/<token>?k=<sig>`). Next 16 blocks
@@ -12,4 +18,5 @@ const nextConfig: NextConfig = {
     remotePatterns: [{ protocol: "https", hostname: "s4.anilist.co" }],
   },
 };
+
 export default nextConfig;
