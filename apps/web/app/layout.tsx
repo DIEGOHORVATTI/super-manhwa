@@ -2,8 +2,11 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
+import { AdblockModal } from "@/components/AdblockModal";
+import { AdsConsentProvider } from "@/components/AdsConsent";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
+import { Popunder } from "@/components/Popunder";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
@@ -38,15 +41,19 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
   return (
     <html lang="pt-br">
       <body>
-        <Header />
-        <main className="app">
-          {children}
+        <AdsConsentProvider>
+          <Header />
+          <main className="app">
+            {children}
 
-          <Footer />
-        </main>
-        <Analytics />
-        <SpeedInsights />
-        <ServiceWorkerRegister />
+            <Footer />
+          </main>
+          <Analytics />
+          <SpeedInsights />
+          <ServiceWorkerRegister />
+          <Popunder />
+          <AdblockModal />
+        </AdsConsentProvider>
       </body>
     </html>
   );

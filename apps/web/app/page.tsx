@@ -1,7 +1,9 @@
 import { ContinueReading } from "@/components/ContinueReading";
+import { NativeAd } from "@/components/NativeAd";
 import { Pagination } from "@/components/Pagination";
 import { PosterGrid } from "@/components/PosterGrid";
 import { RankingList } from "@/components/RankingList";
+import { adKeys } from "@/lib/ads";
 import { api } from "@/lib/orpc.server";
 
 /**
@@ -24,6 +26,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ p
   return (
     <>
       <ContinueReading />
+
+      <NativeAd src={adKeys.nativeSrc} />
 
       <div className="home-layout">
         <div className="home-main">

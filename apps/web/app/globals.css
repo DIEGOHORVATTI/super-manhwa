@@ -2693,3 +2693,131 @@ a:hover {
     transform: translateY(8px) scale(0.98);
   }
 }
+
+/* ── Ads ────────────────────────────────────────────────────────────────── */
+/* min-height is reserved per slot in the component (inline style / native rule)
+   so ads don't shift layout as they load — keeps CLS stable for Web Vitals. */
+.ad-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 16px auto;
+  padding: 8px;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.ad-slot-native {
+  width: 100%;
+  min-height: 90px;
+}
+.ad-slot-native > div {
+  width: 100%;
+}
+.ad-label {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ad-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 6px;
+}
+.ad-disclaimer {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--muted);
+}
+
+/* ── Consent banner (LGPD) ──────────────────────────────────────────────── */
+.consent-banner {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 20px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+}
+.consent-text {
+  margin: 0;
+  max-width: 720px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.consent-text a {
+  color: var(--accent);
+}
+.consent-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.consent-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+.consent-btn-ghost {
+  background: transparent;
+  color: var(--muted);
+}
+.consent-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ── Adblock modal ──────────────────────────────────────────────────────── */
+.adblock-card {
+  max-width: 460px;
+}
+.adblock-gif {
+  display: block;
+  margin: 0 auto 14px;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
+.adblock-title {
+  margin: 0 0 10px;
+  font-size: 18px;
+}
+.adblock-text {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text);
+}
+.adblock-steps {
+  margin: 0 0 18px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.adblock-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}

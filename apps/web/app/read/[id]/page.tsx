@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AdBanner } from "@/components/AdBanner";
 import { DisqusComments } from "@/components/DisqusComments";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
+import { adKeys } from "@/lib/ads";
 import { signPagePath } from "@/lib/image-sign";
 import { api } from "@/lib/orpc.server";
 import { getSessionId } from "@/lib/session";
@@ -78,6 +80,8 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
         </div>
       )}
 
+      <AdBanner slotKey={adKeys.banner728x90} width={728} height={90} />
+
       <ReaderPages
         pages={pages}
         mangaId={m}
@@ -93,6 +97,8 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       {hasContext && (
         <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       )}
+
+      <AdBanner slotKey={adKeys.banner300x250} width={300} height={250} />
 
       <DisqusComments
         identifier={`chapter-${id}`}
