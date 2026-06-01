@@ -20,7 +20,6 @@ export function Autocomplete() {
   const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
-  const [navigating, setNavigating] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -63,7 +62,6 @@ export function Autocomplete() {
   }, []);
 
   const go = (m: MangaSummary) => {
-    setNavigating(true);
     setOpen(false);
     router.push(`/manga/${m.id}?n=${encodeURIComponent(m.name)}`);
   };
@@ -82,9 +80,9 @@ export function Autocomplete() {
     } else if (e.key === "Escape") setOpen(false);
   };
 
-  // Only while the field is focused: blurred means the dropdown is gone, so the
-  // spinner has nothing to foreshadow.
-  const showSpinner = focused && (loading || navigating);
+  // Only while a suggestion fetch is actually in flight AND the field is focused
+  // (blurred → no dropdown, so nothing to foreshadow). Focus alone never shows it.
+  const showSpinner = focused && loading;
 
   return (
     <div className={`combobox${open ? " is-open" : ""}`} ref={boxRef}>

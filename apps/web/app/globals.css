@@ -615,6 +615,21 @@ a:hover {
   gap: 8px;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
 }
+.chapters-more {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chapters-more:hover {
+  text-decoration: underline;
+}
 .chip {
   display: flex;
   align-items: center;
@@ -2247,13 +2262,48 @@ a:hover {
 }
 /* Contextual filter on the far right of the tab bar — searches the active tab
    (chapters by name/number, characters by name), disabled on "Sobre". */
+/* Sort button + search field, grouped on the far right of the tab bar. */
+.tab-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px auto;
+  min-width: 0;
+  flex: 0 1 320px;
+}
+.sort-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    color 0.12s;
+}
+.sort-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.sort-btn svg {
+  transition: transform 0.15s;
+}
+/* Flip the up/down arrows to signal ascending order. */
+.sort-btn.is-asc svg {
+  transform: scaleY(-1);
+}
 .tab-search {
   position: relative;
   display: flex;
   align-items: center;
-  margin: 0 0 6px auto;
   min-width: 0;
-  flex: 0 1 280px;
+  flex: 1 1 auto;
 }
 .tab-search-icon {
   position: absolute;

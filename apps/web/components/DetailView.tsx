@@ -52,6 +52,8 @@ export function DetailView({
     "chapters",
   );
   const [query, setQuery] = useState("");
+  // Chapter sort order: false = newest first (source default), true = oldest first.
+  const [sortAsc, setSortAsc] = useState(false);
   // Touch read-state so the hook subscribes the page even before the list
   // resolves (keeps client cache warm for ChapterList's first paint).
   useReadChapters(mangaId);
@@ -126,16 +128,33 @@ export function DetailView({
           </button>
         ))}
 
-        <div className="tab-search">
-          <Icon className="tab-search-icon" name="search" size={15} />
-          <input
-            className="tab-search-field"
-            value={searchDisabled ? "" : query}
-            placeholder={placeholder}
-            disabled={searchDisabled}
-            onChange={(e) => setQuery(e.target.value)}
-            aria-label={placeholder}
-          />
+        <div className="tab-tools">
+          {active === "chapters" && (
+            <button
+              type="button"
+              className={`sort-btn${sortAsc ? " is-asc" : ""}`}
+              onClick={() => setSortAsc((s) => !s)}
+              title={sortAsc ? "Mais antigos primeiro" : "Mais recentes primeiro"}
+              aria-label={
+                sortAsc
+                  ? "Ordenar capítulos: mais antigos primeiro"
+                  : "Ordenar capítulos: mais recentes primeiro"
+              }
+            >
+              <Icon name="arrow-down-up" size={15} />
+            </button>
+          )}
+          <div className="tab-search">
+            <Icon className="tab-search-icon" name="search" size={15} />
+            <input
+              className="tab-search-field"
+              value={searchDisabled ? "" : query}
+              placeholder={placeholder}
+              disabled={searchDisabled}
+              onChange={(e) => setQuery(e.target.value)}
+              aria-label={placeholder}
+            />
+          </div>
         </div>
       </nav>
 
@@ -149,6 +168,7 @@ export function DetailView({
             mangaId={mangaId}
             title={title}
             lang={lang}
+            sortAsc={sortAsc}
           />
         </Suspense>
       </div>

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { use, useMemo } from "react";
+import { use, useMemo, useState } from "react";
 import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
 import { fmtChapterDate, isRecent } from "@/lib/format";
@@ -11,6 +11,9 @@ type ChaptersResult = { chapters: Chapter[]; lang: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
 const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+/** Chapters rendered before the "ver todos" link — keeps first paint cheap. */
+const INITIAL = 21;
 
 /**
  * Chapter grid for the detail page. `use()`s the streamed chapters promise, so
@@ -24,15 +27,18 @@ export function ChapterList({
   mangaId,
   title,
   lang,
+  sortAsc,
 }: {
   promise: Promise<ChaptersResult>;
   query: string;
   mangaId: string;
   title: string;
   lang: string;
+  sortAsc: boolean;
 }) {
   const { chapters } = use(promise);
   const read = useReadChapters(mangaId);
+  const [expanded, setExpanded] = useState(false);
 
   // Sources return chapters newest-first, so the top of the list gets the
   // highest number — number each by position rather than its (inconsistent) name.
@@ -43,15 +49,15 @@ export function ChapterList({
   }, [chapters]);
 
   const q = norm(query.trim());
-  const shown = useMemo(
-    () =>
-      q
-        ? chapters.filter(
-            (c) => norm(c.name).includes(q) || String(chapterNo.get(c.id) ?? "").includes(q),
-          )
-        : chapters,
-    [q, chapters, chapterNo],
-  );
+  const shown = useMemo(() => {
+    const matched = q
+      ? chapters.filter(
+          (c) => norm(c.name).includes(q) || String(chapterNo.get(c.id) ?? "").includes(q),
+        )
+      : chapters;
+    // Source order is newest-first; ascending shows oldest-first.
+    return sortAsc ? [...matched].reverse() : matched;
+  }, [q, chapters, chapterNo, sortAsc]);
 
   if (shown.length === 0) {
     return (
@@ -61,32 +67,49 @@ export function ChapterList({
     );
   }
 
+  // Cap the unfiltered browse list to keep first paint cheap; a search shows
+  // every match, and "ver todos" reveals the rest.
+  const visible = q || expanded ? shown : shown.slice(0, INITIAL);
+  const hidden = shown.length - visible.length;
+
   return (
-    <ul className="chapters-grid">
-      {shown.map((c) => {
-        const date = fmtChapterDate(c.dateUpload);
-        return (
-          <li key={c.id}>
-            <Link
-              className={`chip${read.has(c.id) ? " is-read" : ""}`}
-              href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
-              title={read.has(c.id) ? "Lido" : undefined}
-            >
-              <Flag lang={c.lang ?? lang} size={16} title={c.lang ?? lang} className="chip-flag" />
-              <span className="chip-main">
-                <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
-                {date && <span className="chip-date">{date}</span>}
-              </span>
-              {isRecent(c.dateUpload) && <span className="chip-new">Novo</span>}
-              {read.has(c.id) && (
-                <span className="chip-read" aria-label="Lido">
-                  <Icon name="circle-check-big" size={12} />
+    <>
+      <ul className="chapters-grid">
+        {visible.map((c) => {
+          const date = fmtChapterDate(c.dateUpload);
+          return (
+            <li key={c.id}>
+              <Link
+                className={`chip${read.has(c.id) ? " is-read" : ""}`}
+                href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
+                title={read.has(c.id) ? "Lido" : undefined}
+              >
+                <Flag
+                  lang={c.lang ?? lang}
+                  size={16}
+                  title={c.lang ?? lang}
+                  className="chip-flag"
+                />
+                <span className="chip-main">
+                  <span className="chip-no">Cap. {chapterNo.get(c.id)}</span>
+                  {date && <span className="chip-date">{date}</span>}
                 </span>
-              )}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+                {isRecent(c.dateUpload) && <span className="chip-new">Novo</span>}
+                {read.has(c.id) && (
+                  <span className="chip-read" aria-label="Lido">
+                    <Icon name="circle-check-big" size={12} />
+                  </span>
+                )}
+              </Link>
+            </li>
+          );
+        })}
+      </ul>
+      {hidden > 0 && (
+        <button type="button" className="chapters-more" onClick={() => setExpanded(true)}>
+          Ver todos ({shown.length})
+        </button>
+      )}
+    </>
   );
 }
