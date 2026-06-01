@@ -8,15 +8,21 @@ const toMs = (ms?: string): number | undefined => {
 };
 
 /**
- * Short, locale-stable date for a chapter's unix-ms-string upload time, e.g.
- * "12 de mai.". Absolute (not relative) so it renders identically on server and
- * client — no hydration mismatch. Undefined when the source gave no timestamp.
+ * Compact date for a chapter's unix-ms-string upload time, e.g. "12 mai 2025".
+ * Formatted in UTC so it renders identically on server and client (no hydration
+ * mismatch). Undefined when the source gave no timestamp.
  */
 export const fmtChapterDate = (ms?: string): string | undefined => {
   const n = toMs(ms);
-  return n === undefined
-    ? undefined
-    : new Date(n).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  if (n === undefined) return undefined;
+  const parts = new Intl.DateTimeFormat("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    timeZone: "UTC",
+  }).formatToParts(new Date(n));
+  const part = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${part("day")} ${part("month").replace(".", "")} ${part("year")}`;
 };
 
 /** True when the upload timestamp falls within the last {@link NEW_FOR_DAYS} days. */

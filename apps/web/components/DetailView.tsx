@@ -1,7 +1,7 @@
 "use client";
 import type { MangaCharacter } from "@packages/contracts";
 import Image from "next/image";
-import { type ReactNode, Suspense, useState } from "react";
+import { type ReactNode, Suspense, useEffect, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
 import { CharactersTab } from "@/components/CharactersTab";
 import { Icon } from "@/components/Icon";
@@ -55,6 +55,13 @@ export function DetailView({
   // Touch read-state so the hook subscribes the page even before the list
   // resolves (keeps client cache warm for ChapterList's first paint).
   useReadChapters(mangaId);
+
+  // Always open a work at the top — navigating between obras (or back from the
+  // reader) otherwise keeps the previous scroll position. Smooth so the jump
+  // reads as a deliberate scroll, not a flash.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [mangaId]);
 
   const select = (key: typeof active) => {
     setActive(key);
