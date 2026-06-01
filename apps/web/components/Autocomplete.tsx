@@ -17,6 +17,7 @@ export function Autocomplete() {
   const [q, setQ] = useState("");
   const [items, setItems] = useState<MangaSummary[]>([]);
   const [open, setOpen] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [active, setActive] = useState(0);
   const [navigating, setNavigating] = useState(false);
@@ -81,7 +82,9 @@ export function Autocomplete() {
     } else if (e.key === "Escape") setOpen(false);
   };
 
-  const showSpinner = loading || navigating;
+  // Only while the field is focused: blurred means the dropdown is gone, so the
+  // spinner has nothing to foreshadow.
+  const showSpinner = focused && (loading || navigating);
 
   return (
     <div className={`combobox${open ? " is-open" : ""}`} ref={boxRef}>
@@ -92,7 +95,14 @@ export function Autocomplete() {
           value={q}
           placeholder="Buscar mangá pelo nome…"
           onChange={(e) => setQ(e.target.value)}
-          onFocus={() => items.length > 0 && setOpen(true)}
+          onFocus={() => {
+            setFocused(true);
+            if (items.length > 0) setOpen(true);
+          }}
+          onBlur={() => {
+            setFocused(false);
+            setOpen(false);
+          }}
           onKeyDown={onKey}
           aria-autocomplete="list"
           aria-expanded={open}
