@@ -100,19 +100,43 @@ export const mangafirePtBr: MangaConnector = {
       .get()
       .filter(Boolean);
 
-    // 2. Chapter list (signed ajax → JSON with embedded HTML).
+    // 2. Chapter list (signed ajax → JSON with embedded HTML). The /ajax/read
+    //    view carries the chapter ids; the upload date lives only in the
+    //    /ajax/manga view (same vrf), matched per chapter by `data-number`.
     const vrf = await generateVrf(`${id}@chapter@${LANG}`);
-    const chRes = await get(
-      `${BASE}/ajax/read/${id}/chapter/${LANG}?vrf=${encodeURIComponent(vrf)}`,
-      { "X-Requested-With": "XMLHttpRequest" },
-    );
+    const sign = (v: string) => encodeURIComponent(v);
+    const chRes = await get(`${BASE}/ajax/read/${id}/chapter/${LANG}?vrf=${sign(vrf)}`, {
+      "X-Requested-With": "XMLHttpRequest",
+    });
     const chJson = (await chRes.json()) as { result?: { html?: string } };
     const $ch = cheerio.load(chJson.result?.html ?? "");
+
+    // Best-effort date map (chapter number → unix ms). A failure here just
+    // leaves chapters dateless — the ids above are what actually drive reading.
+    const dateByNo = new Map<string, string>();
+    try {
+      const dRes = await get(`${BASE}/ajax/manga/${id}/chapter/${LANG}?vrf=${sign(vrf)}`, {
+        "X-Requested-With": "XMLHttpRequest",
+      });
+      const dJson = (await dRes.json()) as { result?: string };
+      const $d = cheerio.load(dJson.result ?? "");
+      $d("li.item").each((_, el) => {
+        const no = $d(el).attr("data-number");
+        const ts = Date.parse($d(el).find("span").eq(1).text().trim()); // e.g. "Nov 19, 2025"
+        if (no && !Number.isNaN(ts)) dateByNo.set(no, String(ts));
+      });
+    } catch {
+      /* date is enrichment only */
+    }
+
     const chapters: NonNullable<RawDetail["chapters"]> = [];
     $ch("a").each((_, el) => {
       const name = $ch(el).text().trim();
       const chapId = $ch(el).attr("data-id");
-      if (name && chapId) chapters.push({ name, url: chapId });
+      const no = $ch(el).attr("data-number");
+      if (name && chapId) {
+        chapters.push({ name, url: chapId, dateUpload: no ? dateByNo.get(no) : undefined });
+      }
     });
 
     return {
