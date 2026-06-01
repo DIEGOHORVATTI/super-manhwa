@@ -1,0 +1,48 @@
+name: Vercel Deploy
+
+# Option A: GitHub Actions drives the Vercel CLI (no Vercel Git integration /
+# bot needed — works on Hobby). Push to master ships production; push to
+# develop ships a preview. The build runs on Vercel's side via `vercel build`,
+# so the project's own settings (root dir, framework, env vars) are used — the
+# NEXT_PUBLIC_* ad keys live in the Vercel project, not in this repo.
+on:
+  push:
+    branches: [master, develop]
+  workflow_dispatch:
+
+# Pulled from repo secrets — set once with:
+#   gh secret set VERCEL_TOKEN     # create at vercel.com/account/tokens
+#   gh secret set VERCEL_ORG_ID    # from .vercel/project.json -> orgId
+#   gh secret set VERCEL_PROJECT_ID# from .vercel/project.json -> projectId
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: Resolve target (prod on master, preview elsewhere)
+        id: target
+        run: |
+          if [ "${{ github.ref }}" = "refs/heads/master" ]; then
+            echo "env=production" >> "$GITHUB_OUTPUT"
+            echo "flag=--prod" >> "$GITHUB_OUTPUT"
+          else
+            echo "env=preview" >> "$GITHUB_OUTPUT"
+            echo "flag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=${{ steps.target.outputs.env }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build
+        run: vercel build ${{ steps.target.outputs.flag }} --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt
+        run: vercel deploy --prebuilt ${{ steps.target.outputs.flag }} --token=${{ secrets.VERCEL_TOKEN }}
