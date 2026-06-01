@@ -692,7 +692,11 @@ a:hover {
   max-width: 860px;
   height: auto;
   background: #0b0c11;
-  min-height: 120px;
+  /* Reserve a portrait-ish box BEFORE the image loads so the document height is
+     stable from the start. `auto` keeps the real ratio once it loads (no
+     distortion); the fallback ratio just stops each page ballooning from a tiny
+     placeholder and shoving the scroll position around as pages stream in. */
+  aspect-ratio: auto 2 / 3;
 }
 
 /* Autocomplete combobox */

@@ -82,7 +82,11 @@ export function ReaderSkeleton({ count = 4 }: { count?: number }) {
       </div>
       <div className="pages">
         {Array.from({ length: count }, (_, i) => (
-          <div key={i} className="skel" style={{ width: "100%", maxWidth: 860, height: 1100 }} />
+          <div
+            key={i}
+            className="skel"
+            style={{ width: "100%", maxWidth: 860, aspectRatio: "2 / 3" }}
+          />
         ))}
       </div>
     </div>
