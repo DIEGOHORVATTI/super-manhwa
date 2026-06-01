@@ -30,15 +30,59 @@ export function ChaptersGridSkeleton({ count = 18 }: { count?: number }) {
   );
 }
 
+/** Detail-page placeholder — mirrors the hero (cover + info), the tab bar and the
+ *  chapter grid so the swap to real content doesn't shift the layout. */
 export function DetailSkeleton() {
   return (
     <div aria-hidden="true">
-      <div className="skel" style={{ height: 280, borderRadius: "var(--radius)" }} />
-      <div className="skel skel-line" style={{ width: 180, height: 22, marginTop: 16 }} />
-      <div className="skel skel-line" style={{ width: 120, marginTop: 10 }} />
-      <div className="chapters-grid" style={{ marginTop: 18 }}>
-        {Array.from({ length: 12 }, (_, i) => (
-          <div key={i} className="skel" style={{ height: 38, borderRadius: 8 }} />
+      <section className="detail-hero">
+        <div className="detail-hero-inner">
+          <div className="skel detail-cover" />
+          <div className="detail-info" style={{ flex: "1 1 280px", minWidth: 0 }}>
+            <div
+              className="skel skel-line"
+              style={{ width: "55%", height: 28, marginBottom: 14 }}
+            />
+            <div className="skel skel-line" style={{ width: 150, height: 20, marginBottom: 14 }} />
+            <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+              {[58, 76, 48].map((w) => (
+                <div
+                  key={w}
+                  className="skel skel-line"
+                  style={{ width: w, height: 22, borderRadius: 999 }}
+                />
+              ))}
+            </div>
+            <div className="skel skel-line" style={{ width: "100%", marginBottom: 7 }} />
+            <div className="skel skel-line" style={{ width: "85%" }} />
+          </div>
+        </div>
+      </section>
+
+      <div style={{ display: "flex", gap: 14, margin: "18px 0 14px" }}>
+        {[68, 92, 58].map((w) => (
+          <div key={w} className="skel skel-line" style={{ width: w, height: 18 }} />
+        ))}
+      </div>
+
+      <ChaptersGridSkeleton count={12} />
+    </div>
+  );
+}
+
+/** Reader placeholder — a toolbar bar plus a stack of tall page slots, mirroring
+ *  `.reader-nav` + `.pages`/`.page-img` so the swap to real pages doesn't jump. */
+export function ReaderSkeleton({ count = 4 }: { count?: number }) {
+  return (
+    <div aria-hidden="true">
+      <div className="reader-nav">
+        <div className="skel skel-line" style={{ width: 150, height: 20 }} />
+        <div className="reader-nav-spacer" />
+        <div className="skel skel-line" style={{ width: 180, height: 20 }} />
+      </div>
+      <div className="pages">
+        {Array.from({ length: count }, (_, i) => (
+          <div key={i} className="skel" style={{ width: "100%", maxWidth: 860, height: 1100 }} />
         ))}
       </div>
     </div>
