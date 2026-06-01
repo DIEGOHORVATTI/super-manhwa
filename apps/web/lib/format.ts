@@ -30,3 +30,17 @@ export const isRecent = (ms?: string, days = NEW_FOR_DAYS): boolean => {
   const n = toMs(ms);
   return n !== undefined && Date.now() - n < days * 86_400_000;
 };
+
+/**
+ * The real chapter number parsed from its (inconsistent) name — mirrors the
+ * backend merge logic: drop volume, prefer a ch/cap/# marker, else first number.
+ * Undefined when the name carries no number (e.g. "Prólogo").
+ */
+export const parseChapterNumber = (name: string): number | undefined => {
+  const cleaned = name.replace(/vol(?:ume)?\.?\s*\d+(?:[.,]\d+)?/gi, " ");
+  const marker = cleaned.match(/(?:ch(?:apter)?|cap(?:[íi]tulo)?|#)\s*\.?\s*(\d+(?:[.,]\d+)?)/i);
+  const raw = marker?.[1] ?? cleaned.match(/(\d+(?:[.,]\d+)?)/)?.[1];
+  if (!raw) return undefined;
+  const n = Number.parseFloat(raw.replace(",", "."));
+  return Number.isFinite(n) ? n : undefined;
+};

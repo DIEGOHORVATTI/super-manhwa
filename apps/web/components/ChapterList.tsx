@@ -3,7 +3,7 @@ import Link from "next/link";
 import { use, useMemo, useState } from "react";
 import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
-import { fmtChapterDate, isRecent } from "@/lib/format";
+import { fmtChapterDate, isRecent, parseChapterNumber } from "@/lib/format";
 import { useReadChapters } from "@/lib/library";
 
 type Chapter = { id: string; name: string; lang?: string; dateUpload?: string };
@@ -40,11 +40,12 @@ export function ChapterList({
   const read = useReadChapters(mangaId);
   const [expanded, setExpanded] = useState(false);
 
-  // Sources return chapters newest-first, so the top of the list gets the
-  // highest number — number each by position rather than its (inconsistent) name.
+  // Show each chapter's real number (parsed from its name); fall back to its
+  // position only when the name carries no number, so high/gapped numbering
+  // (e.g. a source that starts at Cap. 114) displays faithfully.
   const chapterNo = useMemo(() => {
     const m = new Map<string, number>();
-    chapters.forEach((c, i) => m.set(c.id, chapters.length - i));
+    chapters.forEach((c, i) => m.set(c.id, parseChapterNumber(c.name) ?? chapters.length - i));
     return m;
   }, [chapters]);
 
