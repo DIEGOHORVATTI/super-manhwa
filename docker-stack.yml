@@ -1,0 +1,73 @@
+# Docker Swarm + Traefik stack for the VPS (ADR-0008). The frontend lives on
+# Vercel (supermanhwa.com); this stack runs only the delivery backend + the
+# FlareSolverr sidecar, exposed by Traefik at api.supermanhwa.com.
+#
+# Deploy (image pulled from GHCR — no rebuild needed for Traefik changes):
+#   docker stack deploy -c docker-stack.yml super-manhwa --with-registry-auth
+# Requires: `docker login ghcr.io` first (private image) and the env vars below
+# present in the shell / Portainer stack env (IMAGE_TOKEN_SECRET, API_KEY).
+
+x-defaults: &defaults
+  restart: unless-stopped
+
+x-healthcheck: &healthcheck
+  interval: 30s
+  timeout: 5s
+  retries: 3
+  start_period: 20s
+
+x-traefik-common-labels: &traefik-common-labels
+  traefik.enable: 'true'
+  traefik.docker.network: network_swarm_public
+
+x-backend-traefik-labels: &backend-traefik-labels
+  <<: *traefik-common-labels
+  traefik.http.routers.super-manhwa-api.entrypoints: websecure
+  traefik.http.routers.super-manhwa-api.rule: Host(`api.supermanhwa.com`)
+  traefik.http.routers.super-manhwa-api.priority: '20'
+  traefik.http.routers.super-manhwa-api.tls.certresolver: letsencryptresolver
+  traefik.http.routers.super-manhwa-api.service: super-manhwa-api
+  traefik.http.services.super-manhwa-api.loadbalancer.server.port: '8787'
+
+services:
+  super-manhwa-delivery:
+    <<: *defaults
+    image: ${BACKEND_IMAGE_NAME:-ghcr.io/diegohorvatti/super-manhwa}:latest
+    environment:
+      PORT: '8787'
+      NODE_ENV: production
+      # Sidecar reached via the overlay network by its service name.
+      FLARESOLVERR_URL: 'http://super-manhwa-flaresolverr:8191/v1'
+      # Never baked into the image — supplied at deploy time.
+      IMAGE_TOKEN_SECRET: ${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set}
+      API_KEY: ${API_KEY:?API_KEY must be set}
+    networks:
+      - network_swarm_public
+    # Container-level label so Portainer's "Hidden containers" filter
+    # (io.portainer.hideStack=true) keeps it out of the UI.
+    labels:
+      io.portainer.hideStack: 'true'
+    deploy:
+      labels:
+        <<: *backend-traefik-labels
+    healthcheck:
+      <<: *healthcheck
+      test:
+        - CMD
+        - bun
+        - -e
+        - "fetch('http://127.0.0.1:8787/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+  super-manhwa-flaresolverr:
+    <<: *defaults
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    environment:
+      LOG_LEVEL: info
+    networks:
+      - network_swarm_public
+    labels:
+      io.portainer.hideStack: 'true'
+
+networks:
+  network_swarm_public:
+    external: true

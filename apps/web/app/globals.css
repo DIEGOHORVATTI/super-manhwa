@@ -2740,7 +2740,8 @@ a:hover {
 .consent-banner {
   position: fixed;
   inset: auto 0 0 0;
-  z-index: 40;
+  /* Above the mobile bottom-nav (z-index 50) so the buttons stay clickable. */
+  z-index: 60;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -2750,6 +2751,13 @@ a:hover {
   background: var(--surface);
   border-top: 1px solid var(--border);
   box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.4);
+}
+/* On phones the fixed bottom-nav sits at bottom:0 — lift the banner above it
+   so both are visible and tappable. */
+@media (max-width: 620px) {
+  .consent-banner {
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
 }
 .consent-text {
   margin: 0;
