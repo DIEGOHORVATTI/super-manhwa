@@ -1,4 +1,5 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "installCommand": "cd ../.. && bun install --frozen-lockfile",
   "crons": [{ "path": "/api/cron/newsletter", "schedule": "0 12 * * 1" }]
 }
