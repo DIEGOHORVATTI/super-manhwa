@@ -5,7 +5,7 @@
 services:
   app:
     # Use the CI-built image, or `build:` to build locally from the repo root.
-    image: ghcr.io/horvatti-digital/super-manhwa:latest
+    image: ghcr.io/diegohorvatti/super-manhwa:latest
     build:
       context: .
       dockerfile: apps/backend/Dockerfile
