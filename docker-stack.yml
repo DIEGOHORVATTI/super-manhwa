@@ -22,22 +22,22 @@ x-traefik-common-labels: &traefik-common-labels
 
 x-backend-traefik-labels: &backend-traefik-labels
   <<: *traefik-common-labels
-  traefik.http.routers.super-manhwa-api.entrypoints: websecure
-  traefik.http.routers.super-manhwa-api.rule: Host(`api.supermanhwa.com`)
-  traefik.http.routers.super-manhwa-api.priority: '20'
-  traefik.http.routers.super-manhwa-api.tls.certresolver: letsencryptresolver
-  traefik.http.routers.super-manhwa-api.service: super-manhwa-api
-  traefik.http.services.super-manhwa-api.loadbalancer.server.port: '8787'
+  traefik.http.routers.traefik-test-edge.entrypoints: websecure
+  traefik.http.routers.traefik-test-edge.rule: Host(`api.supermanhwa.com`)
+  traefik.http.routers.traefik-test-edge.priority: '20'
+  traefik.http.routers.traefik-test-edge.tls.certresolver: letsencryptresolver
+  traefik.http.routers.traefik-test-edge.service: traefik-test-edge
+  traefik.http.services.traefik-test-edge.loadbalancer.server.port: '8787'
 
 services:
-  super-manhwa-delivery:
+  traefik-test-edge:
     <<: *defaults
     image: ${BACKEND_IMAGE_NAME:-ghcr.io/diegohorvatti/super-manhwa}:latest
     environment:
       PORT: '8787'
       NODE_ENV: production
       # Sidecar reached via the overlay network by its service name.
-      FLARESOLVERR_URL: 'http://super-manhwa-flaresolverr:8191/v1'
+      FLARESOLVERR_URL: 'http://traefik-test-solver:8191/v1'
       # Never baked into the image — supplied at deploy time.
       IMAGE_TOKEN_SECRET: ${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set}
       API_KEY: ${API_KEY:?API_KEY must be set}
@@ -58,7 +58,7 @@ services:
         - -e
         - "fetch('http://127.0.0.1:8787/api/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-  super-manhwa-flaresolverr:
+  traefik-test-solver:
     <<: *defaults
     image: ghcr.io/flaresolverr/flaresolverr:latest
     environment:

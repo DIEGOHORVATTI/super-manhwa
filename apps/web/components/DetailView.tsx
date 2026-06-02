@@ -3,6 +3,7 @@ import type { MangaCharacter } from "@packages/contracts";
 import Image from "next/image";
 import { type ReactNode, Suspense, useEffect, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
+import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
 import { Icon } from "@/components/Icon";
 import { NativeAd } from "@/components/NativeAd";
@@ -163,7 +164,14 @@ export function DetailView({
       {/* Capítulos — streamed; suspends behind a grid skeleton until the
           cross-source fan-out resolves. */}
       <div hidden={active !== "chapters"}>
-        <Suspense fallback={<ChaptersGridSkeleton />}>
+        <Suspense
+          fallback={
+            <>
+              <ChapterLoadingNote />
+              <ChaptersGridSkeleton />
+            </>
+          }
+        >
           <ChapterList
             promise={chaptersPromise}
             query={query}
