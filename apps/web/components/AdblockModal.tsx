@@ -7,9 +7,8 @@ import { useAdsConsent } from "@/components/AdsConsent";
  * the site behind a non-dismissible modal: the visitor must allow-list the
  * domain and reload to continue (ads are what keep it free). Runs only after
  * the LGPD consent is accepted — there's no point gating someone who hasn't
- * opted into ads. Detection is two-pronged: a DOM "bait" element that
- * class-based blockers hide, plus a request to a known ad host that
- * network-level blockers kill.
+ * opted into ads. Detection relies on a single reliable signal — a DOM "bait"
+ * element that cosmetic blockers hide — see {@link detectAdblock}.
  */
 export function AdblockModal() {
   const consent = useAdsConsent();
@@ -68,31 +67,32 @@ export function AdblockModal() {
   );
 }
 
-/** Returns true when an ad blocker is detected (DOM bait or blocked request). */
+/**
+ * Returns true only when an ad blocker is *clearly* present. Uses a single,
+ * reliable signal — a DOM "bait" element with ad-ish class names that blockers
+ * (uBlock, AdBlock, AdGuard, Brave…) force to display:none. We deliberately do
+ * NOT probe an ad host over the network: ad domains get filtered by ISPs,
+ * antivirus and corporate DNS even with no browser blocker, which produced
+ * false positives. The bait test has effectively no false positives — a normal
+ * browser always renders the element at its given size.
+ */
 async function detectAdblock(): Promise<boolean> {
-  // 1) DOM bait — class-based blockers set these to display:none.
   const bait = document.createElement("div");
-  bait.className = "adsbox ad-banner ads pub_300x250 adsbygoogle";
+  bait.className = "adsbox ad-banner ad-placement ads pub_300x250 adsbygoogle banner_ads";
+  bait.setAttribute("aria-hidden", "true");
   bait.style.cssText =
-    "position:absolute;left:-9999px;top:-9999px;height:10px;width:10px;pointer-events:none;";
+    "position:absolute;left:-9999px;top:-9999px;height:12px;width:12px;pointer-events:none;";
   bait.innerHTML = "&nbsp;";
   document.body.appendChild(bait);
-  await new Promise((r) => setTimeout(r, 120));
-  const hidden =
-    bait.offsetHeight === 0 || bait.clientHeight === 0 || getComputedStyle(bait).display === "none";
+  // Give the blocker a moment to apply its cosmetic filters before measuring.
+  await new Promise((r) => setTimeout(r, 250));
+  const s = getComputedStyle(bait);
+  const blocked =
+    bait.offsetParent === null ||
+    bait.offsetHeight === 0 ||
+    bait.clientHeight === 0 ||
+    s.display === "none" ||
+    s.visibility === "hidden";
   bait.remove();
-  if (hidden) return true;
-
-  // 2) Network bait — network-level blockers (uBlock, antivirus) abort requests
-  // to known ad hosts. A successful opaque response just resolves; a block throws.
-  try {
-    await fetch("https://www.highperformanceformat.com/favicon.ico", {
-      method: "HEAD",
-      mode: "no-cors",
-      cache: "no-store",
-    });
-    return false;
-  } catch {
-    return true;
-  }
+  return blocked;
 }
