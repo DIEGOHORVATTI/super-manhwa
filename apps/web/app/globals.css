@@ -2694,6 +2694,22 @@ a:hover {
   }
 }
 
+/* ── Chapter loading note (rotating, while caps stream in) ──────────────── */
+.chapters-loading-note {
+  margin: 2px 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+  color: var(--muted);
+  animation: note-fade 0.5s ease;
+}
+@keyframes note-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
 /* ── Ads ────────────────────────────────────────────────────────────────── */
 /* min-height is reserved per slot in the component (inline style / native rule)
    so ads don't shift layout as they load — keeps CLS stable for Web Vitals. */
