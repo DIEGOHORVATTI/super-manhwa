@@ -3,7 +3,7 @@
 # Usage on the VPS:  docker compose up -d
 # Then point the Vercel frontend at this host: set DELIVERY_SERVICE_URL on Vercel.
 services:
-  app:
+  super-manhwa-delivery:
     # Use the CI-built image, or `build:` to build locally from the repo root.
     image: ghcr.io/diegohorvatti/super-manhwa:latest
     build:
@@ -14,7 +14,7 @@ services:
     environment:
       PORT: "8787"
       # The app routes hasCloudflare sources through this sidecar.
-      FLARESOLVERR_URL: "http://flaresolverr:8191/v1"
+      FLARESOLVERR_URL: "http://super-manhwa-flaresolverr:8191/v1"
       # AES-256-GCM key (sha256-derived) used to encrypt the stateless opaque
       # chapter/image tokens (manga ids are AniList ids). Loaded from .env — never
       # bake into the image. Rotate to invalidate every outstanding token at once.
@@ -29,9 +29,9 @@ services:
       - "io.portainer.hideStack=true"
     restart: unless-stopped
     depends_on:
-      - flaresolverr
+      - super-manhwa-flaresolverr
 
-  flaresolverr:
+  super-manhwa-flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
     environment:
       LOG_LEVEL: info
