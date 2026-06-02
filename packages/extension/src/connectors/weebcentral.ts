@@ -4,7 +4,7 @@ export const weebcentral = createMangayomiConnector({
   hasLatestUpdates: true,
   id: "weebcentral",
   name: "Weeb Central",
-  lang: "en",
+  langs: ["en"],
   baseUrl: "https://weebcentral.com",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=weebcentral.com",
   hasCloudflare: false,

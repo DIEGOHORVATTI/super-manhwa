@@ -4,7 +4,7 @@ export const mangaworld = createMangayomiConnector({
   hasLatestUpdates: true,
   id: "mangaworld",
   name: "MangaWorld",
-  lang: "it",
+  langs: ["it"],
   baseUrl: "https://www.mangaworld.mx",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=mangaworld.mx",
   hasCloudflare: false,

@@ -29,7 +29,10 @@ export const makeListLatest =
       const pool = registry
         .listCurated()
         .filter((c) => typeof c.getLatestUpdates === "function")
-        .sort((a, b) => (a.lang === PREFERRED_LANG ? 0 : 1) - (b.lang === PREFERRED_LANG ? 0 : 1))
+        .sort(
+          (a, b) =>
+            (a.langs.includes(PREFERRED_LANG) ? 0 : 1) - (b.langs.includes(PREFERRED_LANG) ? 0 : 1),
+        )
         .slice(0, MAX_POOL);
 
       let timer: ReturnType<typeof setTimeout> | undefined;

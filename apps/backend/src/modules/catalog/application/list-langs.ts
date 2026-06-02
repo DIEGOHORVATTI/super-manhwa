@@ -12,7 +12,7 @@ export const makeListLangs =
         registry
           .listCurated()
           .filter((c) => !c.hasCloudflare)
-          .map((c) => c.lang),
+          .flatMap((c) => c.langs),
       ),
     )
       .filter(Boolean)

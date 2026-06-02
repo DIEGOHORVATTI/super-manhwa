@@ -96,7 +96,7 @@ const embeddedJson = <T>(html: string, id: string): T => {
 export const comickPtBr: MangaConnector = {
   id: "comick-ptbr",
   name: "Comick (pt-br)",
-  lang: LANG,
+  langs: [LANG],
   baseUrl: BASE,
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=comick.live",
   hasCloudflare: true,

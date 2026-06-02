@@ -4,7 +4,7 @@ export const asurascans = createMangayomiConnector({
   hasLatestUpdates: true,
   id: "asurascans",
   name: "Asura Scans",
-  lang: "en",
+  langs: ["en"],
   baseUrl: "https://asurascans.com",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=asurascans.com",
   hasCloudflare: true, // routed through FlareSolverr when available

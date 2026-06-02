@@ -61,7 +61,7 @@ export const resolveConnector = async (id: string): Promise<MangaConnector | und
   return createMangayomiConnector({
     id,
     name: entry.name,
-    lang: entry.lang,
+    langs: [entry.lang],
     baseUrl: entry.baseUrl ?? "",
     iconUrl: entry.iconUrl ?? "",
     hasCloudflare: Boolean(entry.hasCloudflare),

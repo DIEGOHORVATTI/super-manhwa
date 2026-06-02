@@ -70,19 +70,25 @@ export const makeGetMangaChapters =
       queries: string[],
       targets: string[],
     ): Promise<{ priority: number; shaped: MangaDetail } | null> => {
+      // Ask the source in the preferred language when it serves it, else its
+      // own first language (fallback). The chosen language tags every chapter
+      // and namespaces the cache so per-language requests never collide.
+      const qlang = connector.langs.includes(PREFERRED_LANG) ? PREFERRED_LANG : connector.langs[0];
       for (const q of queries) {
         try {
           const r = await cache.remember(
-            `search:${connector.id}:${q.toLowerCase()}`,
+            `search:${connector.id}:${qlang}:${q.toLowerCase()}`,
             SEARCH_TTL,
-            () => connector.search(q, 1),
+            () => connector.search(q, 1, qlang),
           );
           const hit = (r.list ?? []).find((m) => titleMatches(m.name, targets));
           if (!hit) continue;
-          const raw = await cache.remember(`detail:${connector.id}:${hit.link}`, DETAIL_TTL, () =>
-            connector.getDetail(hit.link),
+          const raw = await cache.remember(
+            `detail:${connector.id}:${qlang}:${hit.link}`,
+            DETAIL_TTL,
+            () => connector.getDetail(hit.link, qlang),
           );
-          const shaped = MangaMapper.toDetail(idStore, connector, raw ?? {});
+          const shaped = MangaMapper.toDetail(idStore, connector, raw ?? {}, qlang);
           if (shaped.chapters && shaped.chapters.length > 0) {
             return { priority: priorityOf(connector.id), shaped };
           }

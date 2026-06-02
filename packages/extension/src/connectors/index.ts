@@ -4,7 +4,7 @@
 import type { MangaConnector } from "../types";
 import { asurascans } from "./asurascans";
 import { comickPtBr } from "./comick";
-import { mangadex, mangadexPtBr } from "./mangadex";
+import { mangadex } from "./mangadex";
 import { mangafirePtBr } from "./mangafire";
 import { mangaLivreBlog, mangaLivreTo } from "./mangalivre";
 import { mangaworld } from "./mangaworld";
@@ -34,7 +34,6 @@ export const CONNECTORS: readonly MangaConnector[] = [
   mangaworld,
   manhwaz,
   asurascans,
-  mangadexPtBr,
   // Native pt-br connectors scraped from the two Manga Livre sites
   // (mangalivre.to = Madara, mangalivre.blog = custom theme). No Cloudflare.
   mangaLivreTo,

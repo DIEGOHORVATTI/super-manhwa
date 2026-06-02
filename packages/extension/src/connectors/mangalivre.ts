@@ -247,7 +247,7 @@ const blogConnector = (meta: ConnectorMeta): MangaConnector => {
 export const mangaLivreTo = madaraConnector({
   id: "mangalivre-to",
   name: "Manga Livre",
-  lang: "pt-br",
+  langs: ["pt-br"],
   baseUrl: "https://mangalivre.to",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=mangalivre.to",
   hasCloudflare: false,
@@ -258,7 +258,7 @@ export const mangaLivreTo = madaraConnector({
 export const mangaLivreBlog = blogConnector({
   id: "mangalivre-blog",
   name: "Manga Livre (blog)",
-  lang: "pt-br",
+  langs: ["pt-br"],
   baseUrl: "https://mangalivre.blog",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=mangalivre.blog",
   hasCloudflare: false,

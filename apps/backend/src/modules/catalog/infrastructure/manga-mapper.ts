@@ -59,28 +59,30 @@ export const MangaMapper = {
     };
   },
 
-  toSummary(idStore: IdStore, meta: ConnectorMeta, raw: RawListItem): MangaSummary {
+  toSummary(idStore: IdStore, meta: ConnectorMeta, raw: RawListItem, lang?: string): MangaSummary {
     return {
       id: idStore.encode({ source: meta.id, url: raw.link }),
       name: raw.name,
       imageUrl: imagePath(idStore, meta.id, raw.imageUrl),
-      lang: meta.lang,
-      langs: [meta.lang],
+      // `lang` = the language this batch was fetched in; defaults to the
+      // connector's first supported language when the caller doesn't pin one.
+      lang: lang ?? meta.langs[0],
+      langs: meta.langs,
     };
   },
 
-  toChapter(idStore: IdStore, meta: ConnectorMeta, raw: RawChapter): Chapter {
+  toChapter(idStore: IdStore, meta: ConnectorMeta, raw: RawChapter, lang?: string): Chapter {
     return {
       id: idStore.encode({ source: meta.id, url: raw.url }),
       name: raw.name,
       scanlator: raw.scanlator,
       dateUpload: raw.dateUpload,
-      lang: meta.lang,
+      lang: lang ?? meta.langs[0],
       source: meta.id,
     };
   },
 
-  toDetail(idStore: IdStore, meta: ConnectorMeta, raw: RawDetail): MangaDetail {
+  toDetail(idStore: IdStore, meta: ConnectorMeta, raw: RawDetail, lang?: string): MangaDetail {
     return {
       // MangaDex's extension omits the title from getDetail; some others use
       // `title`, some `name`. We accept either; callers can fall back to the
@@ -92,8 +94,8 @@ export const MangaMapper = {
       genre: raw.genre,
       status: mapStatus(raw.status),
       imageUrl: imagePath(idStore, meta.id, raw.imageUrl),
-      chapters: (raw.chapters ?? []).map((c) => MangaMapper.toChapter(idStore, meta, c)),
-      lang: meta.lang,
+      chapters: (raw.chapters ?? []).map((c) => MangaMapper.toChapter(idStore, meta, c, lang)),
+      lang: lang ?? meta.langs[0],
     };
   },
 };

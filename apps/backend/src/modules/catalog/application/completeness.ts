@@ -95,7 +95,6 @@ export const parseChapterNumber = (name: string): number | undefined => {
  * language-filtered feed is usually the most truncated. Unlisted ids sort last.
  */
 export const COMPLETENESS_PRIORITY = [
-  "mangadex-ptbr",
   "mangalivre-to",
   "mangalivre-blog",
   "mangafire-ptbr",
@@ -119,7 +118,7 @@ export const priorityOf = (id: string): number => {
  * popular/search pools this does NOT drop Cloudflare sources — Comick/Mangafire
  * hold the deepest pt-br catalogs and are reachable by id via FlareSolverr.
  */
-export const orderCompletenessPool = <T extends { id: string; lang: string }>(
+export const orderCompletenessPool = <T extends { id: string; langs: string[] }>(
   connectors: readonly T[],
   primaryLang: string,
   excludeId: string,
@@ -127,8 +126,8 @@ export const orderCompletenessPool = <T extends { id: string; lang: string }>(
   connectors
     .filter((c) => c.id !== excludeId)
     .sort((a, b) => {
-      const al = a.lang === primaryLang ? 0 : 1;
-      const bl = b.lang === primaryLang ? 0 : 1;
+      const al = a.langs.includes(primaryLang) ? 0 : 1;
+      const bl = b.langs.includes(primaryLang) ? 0 : 1;
       return al - bl || priorityOf(a.id) - priorityOf(b.id);
     });
 

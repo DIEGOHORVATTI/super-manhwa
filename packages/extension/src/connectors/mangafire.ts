@@ -60,7 +60,7 @@ const STATUS: Record<string, number> = {
 export const mangafirePtBr: MangaConnector = {
   id: "mangafire-ptbr",
   name: "Mangafire (pt-br)",
-  lang: LANG,
+  langs: [LANG],
   baseUrl: BASE,
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=mangafire.to",
   hasCloudflare: true,
