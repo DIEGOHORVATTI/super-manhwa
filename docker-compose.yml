@@ -22,6 +22,11 @@ services:
       # Shared secret the frontend sends as X-API-KEY. Never exposed to the
       # browser — only the Next server (RSC + same-origin proxy) holds it.
       API_KEY: "${API_KEY:?API_KEY must be set in .env}"
+    labels:
+      # Hidden from the Portainer UI via its "Hidden containers" label filter
+      # (Settings → add label io.portainer.hideStack=true). Still shows in
+      # `docker ps` — this only de-clutters Portainer, it is not isolation.
+      - "io.portainer.hideStack=true"
     restart: unless-stopped
     depends_on:
       - flaresolverr
@@ -34,4 +39,6 @@ services:
     # at http://localhost:8191/v1. The dockerized app uses the internal DNS name.
     ports:
       - "8191:8191"
+    labels:
+      - "io.portainer.hideStack=true"
     restart: unless-stopped
