@@ -10,6 +10,7 @@ import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/orpc.server";
+import { translatePt } from "@/lib/translate";
 
 /** Markdown/HTML → plain text, clamped — used for the header sinopse teaser. */
 const toPreview = (text: string, max = 240) => {
@@ -47,7 +48,7 @@ export async function generateMetadata({
 
   const title = core?.title ?? n ?? "Mangá";
   const description = core?.description
-    ? toPreview(core.description, 200)
+    ? toPreview(await translatePt(core.description), 200)
     : `Leia ${title} online — capítulos e detalhes.`;
   // The cover is public (signed `?k=`), so it's safe as the share/OG image.
   const images = core?.imageUrl ? [core.imageUrl] : undefined;
@@ -103,7 +104,15 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // tab — streamed, NOT awaited, so they never hold up the hero.
   const charactersPromise = api.manga
     .characters({ name: title })
-    .then((r) => r.characters)
+    // Translate each bio to pt-br (cached). Names/roles stay as-is; this streams
+    // behind the Personagens tab's Suspense, so it never holds up the hero.
+    .then((r) =>
+      Promise.all(
+        r.characters.map(async (c) =>
+          c.description ? { ...c, description: await translatePt(c.description) } : c,
+        ),
+      ),
+    )
     .catch(() => []);
 
   // Rich metadata (AniList) — best-effort, never blocks the page meaningfully.
@@ -111,12 +120,16 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     meta: { tags: [], relations: [] } as Awaited<ReturnType<typeof api.manga.meta>>["meta"],
   }));
 
+  // Synopsis translated to pt-br once (server-side, cached) — reused by the
+  // header teaser, the "Sobre" tab, the SEO metadata and the JSON-LD. Falls back
+  // to the original text if the translation proxy fails.
+  const rawDesc = core.description || meta.description || "";
+  const desc = await translatePt(rawDesc);
+
   const aboutTab = (
     <div className="about">
-      {core.description ? (
-        <MarkdownDescription text={core.description} />
-      ) : meta.description ? (
-        <MarkdownDescription text={meta.description} />
+      {desc ? (
+        <MarkdownDescription text={desc} />
       ) : (
         <p className="muted">Sem sinopse disponível.</p>
       )}
@@ -179,10 +192,8 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     </div>
   );
 
-  // Header sinopse teaser — falls back to AniList's description when the catalog
-  // didn't carry one. Plain text, since the full markdown lives in "Sobre".
-  const rawDesc = core.description || meta.description || "";
-  const descPreview = rawDesc ? toPreview(rawDesc) : undefined;
+  // Header sinopse teaser — plain text, since the full markdown lives in "Sobre".
+  const descPreview = desc ? toPreview(desc) : undefined;
 
   // Structured data so search engines render a rich book result (cover, rating,
   // genres). Image/URL absolute via SITE_URL; relative paths confuse some crawlers.
@@ -193,7 +204,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     name: title,
     url: `${base}/manga/${id}`,
     ...(core.imageUrl ? { image: `${base}${core.imageUrl}` } : {}),
-    ...(rawDesc ? { description: toPreview(rawDesc, 300) } : {}),
+    ...(desc ? { description: toPreview(desc, 300) } : {}),
     ...(core.author ? { author: { "@type": "Person", name: core.author } } : {}),
     ...(core.genre && core.genre.length > 0 ? { genre: core.genre } : {}),
     ...(meta.score !== undefined
