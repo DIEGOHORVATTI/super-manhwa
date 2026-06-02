@@ -1,11 +1,16 @@
 import path from "node:path";
 import type { NextConfig } from "next";
 
+// Raiz do monorepo (apps/web -> ../..). O bun hoista o node_modules pra cá, então
+// tanto o Turbopack quanto o file-tracing precisam apontar pra raiz — senão o
+// build (ex.: `vercel build`, que fixa outputFileTracingRoot em apps/web) não
+// resolve o `next`/workspaces. Next 16 exige que os dois valores sejam iguais.
+const monorepoRoot = path.join(import.meta.dirname, "..", "..");
+
 const nextConfig: NextConfig = {
-  // Raiz do monorepo (apps/web -> ../..). Evita o Turbopack inferir a raiz
-  // errada quando há lockfiles em diretórios pai (ex.: ~/bun.lock).
+  outputFileTracingRoot: monorepoRoot,
   turbopack: {
-    root: path.join(import.meta.dirname, "..", ".."),
+    root: monorepoRoot,
   },
   transpilePackages: ["@packages/contracts", "@packages/extension-runtime"],
   images: {
