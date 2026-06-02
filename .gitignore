@@ -12,3 +12,5 @@ dist/
 .wrangler
 
 data
+# Local deploy helper(s) with embedded server credentials — never commit
+scripts/*.local.sh
