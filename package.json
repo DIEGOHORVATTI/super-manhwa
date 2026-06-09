@@ -1,12 +1,12 @@
 {
   "name": "manga-search-app",
-  "private": true,
   "version": "0.1.0",
-  "type": "module",
+  "private": true,
   "workspaces": [
     "apps/*",
     "packages/*"
   ],
+  "type": "module",
   "scripts": {
     "dev": "concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
     "dev:web": "cd apps/web && bun run dev",
@@ -14,9 +14,10 @@
     "start": "cd apps/backend && bun run start",
     "build": "cd apps/web && bun run build",
     "type-check": "cd apps/backend && bunx tsc --noEmit && cd ../web && bunx tsc --noEmit",
-    "format": "bunx biome format . --write",
-    "format:check": "bunx biome format .",
-    "lint": "bunx biome lint .",
+    "format": "bunx oxfmt",
+    "format:check": "bunx oxfmt --check",
+    "lint": "bunx oxlint",
+    "lint:fix": "bunx oxlint --fix",
     "ci": "bun run format:check && bun run lint && bun run type-check",
     "test": "cd apps/backend && bun test && cd ../web && bun test",
     "test:api": "cd apps/backend && bun test",
@@ -27,23 +28,24 @@
     "extensions:list": "bun -e 'import { CONNECTORS } from \"@packages/extension\"; for (const c of CONNECTORS) console.log(c.id, c.lang, c.hasCloudflare ? \"CF\" : \"\");'"
   },
   "dependencies": {
-    "@packages/contracts": "workspace:*",
-    "@packages/core": "workspace:*",
-    "@packages/extension": "workspace:*",
     "@jitl/quickjs-singlefile-cjs-release-sync": "0.31.0",
     "@orpc/contract": "^1.14.3",
     "@orpc/openapi": "^1.14.3",
     "@orpc/server": "^1.14.3",
     "@orpc/zod": "^1.14.3",
+    "@packages/contracts": "workspace:*",
+    "@packages/core": "workspace:*",
+    "@packages/extension": "workspace:*",
     "@types/crypto-js": "^4.2.2",
     "crypto-js": "^4.2.0",
     "quickjs-emscripten-core": "0.31.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.16",
     "@types/bun": "^1.3.14",
     "concurrently": "^9.2.1",
+    "oxfmt": "^0.54.0",
+    "oxlint": "^1.69.0",
     "typescript": "^5.5.3"
   }
 }
