@@ -25,6 +25,7 @@ const makeConnector = (
   over: Partial<MangaConnector> & { id: string; lang: string },
 ): MangaConnector => ({
   name: over.id,
+  langs: [over.lang],
   baseUrl: "https://x",
   iconUrl: "https://x/i",
   hasCloudflare: false,

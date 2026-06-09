@@ -1,6 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { mangaHref } from "@/lib/slug";
 import { Cover } from "./Cover";
 import { FavoriteButton } from "./FavoriteButton";
 import { Flag } from "./Flag";
@@ -12,8 +13,8 @@ const COVER_SIZES = "(max-width: 620px) 33vw, 160px";
 
 /**
  * Shared grid used by the home, genre pages, and any future listing. Each card
- * carries only the opaque id; the `?n=` query is the title hint used for SEO,
- * fallback detail lookup, and the reader's back-button label.
+ * carries only the opaque id; the slug tail is the keyword-rich title used for
+ * SEO and doubles as the fallback detail-lookup hint (de-slugified server-side).
  */
 export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   if (items.length === 0) {
@@ -22,7 +23,7 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   return (
     <div className="poster-grid">
       {items.map((m, i) => {
-        const href = `/manga/${m.id}?n=${encodeURIComponent(m.name)}`;
+        const href = mangaHref(m.id, m.name);
         return (
           <div key={m.id} className="poster">
             <div className="poster-cover">

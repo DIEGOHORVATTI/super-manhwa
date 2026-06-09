@@ -3,6 +3,7 @@ import type { MangaSummary } from "@packages/contracts";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { mangaHref } from "@/lib/slug";
 
 /** Frontend is pt-br locked, so suggest always filters to pt-br titles. */
 const LANG = "pt-br";
@@ -10,7 +11,7 @@ const LANG = "pt-br";
 /**
  * Search combobox. Debounced fetch → spinner inline while loading → dropdown of
  * matches with cover thumb + lang badge. Click or Enter on a row navigates to
- * /manga/<opaque-id>?n=<name> (the frontend never learns which source backed it).
+ * /manga/<opaque-id>/<slug> (the frontend never learns which source backed it).
  */
 export function Autocomplete() {
   const router = useRouter();
@@ -63,7 +64,7 @@ export function Autocomplete() {
 
   const go = (m: MangaSummary) => {
     setOpen(false);
-    router.push(`/manga/${m.id}?n=${encodeURIComponent(m.name)}`);
+    router.push(mangaHref(m.id, m.name));
   };
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {

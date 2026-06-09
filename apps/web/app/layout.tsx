@@ -12,10 +12,21 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Super Manhwa — leitor de mangás web",
+    default: "Super Manhwa — Ler Manhwas, Mangás e Webtoons Online Grátis",
     template: "%s · Super Manhwa",
   },
-  description: "Busque e leia mangás, manhwas e webtoons num leitor web rápido.",
+  description:
+    "Leia manhwas, mangás e webtoons em português, de graça e atualizados todo dia. Milhares de obras como Solo Leveling com capítulos novos direto de várias fontes.",
+  keywords: [
+    "ler manhwa",
+    "ler mangá online",
+    "manhwa português",
+    "webtoon grátis",
+    "ler webtoon",
+    "mangá online grátis",
+    "super manhwa",
+  ],
+  applicationName: "Super Manhwa",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -38,9 +49,37 @@ export const metadata: Metadata = {
 export const viewport = { themeColor: "#0e1016" };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
+  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  // Site-wide structured data: WebSite (with a SearchAction that hints Google at a
+  // sitelinks search box) + Organization (brand name/logo for the knowledge panel).
+  const siteLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Super Manhwa",
+    alternateName: "SuperManhwa",
+    url: base,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${base}/?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+  const orgLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Super Manhwa",
+    url: base,
+    logo: `${base}/android-icon-192x192.png`,
+  };
+
   return (
     <html lang="pt-br">
       <body>
+        <script
+          type="application/ld+json"
+          // Trusted, server-built JSON-LD (no user input).
+          dangerouslySetInnerHTML={{ __html: JSON.stringify([siteLd, orgLd]) }}
+        />
         <AdsConsentProvider>
           <Header />
           <main className="app">

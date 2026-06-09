@@ -1,6 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { mangaHref } from "@/lib/slug";
 import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
 
@@ -30,7 +31,7 @@ export function RankingList({
       <ol className="rank-list">
         {items.map((m, i) => (
           <li key={m.id} className="rank-item">
-            <Link className="rank-link" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
+            <Link className="rank-link" href={mangaHref(m.id, m.name)}>
               <span className={`rank-no${i < 3 ? " is-top" : ""}`}>{i + 1}</span>
               <span className="rank-thumb">
                 <Cover src={m.imageUrl} alt="" sizes="38px" />

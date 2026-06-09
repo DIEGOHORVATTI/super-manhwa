@@ -15,7 +15,7 @@ const cache: Cache = { remember: (_k, _ttl, fn) => fn(), set: () => {}, get: () 
 const conn = (id: string, lang: string, latest?: () => Promise<RawListPage>): MangaConnector => ({
   id,
   name: id,
-  lang,
+  langs: [lang],
   baseUrl: "https://x",
   iconUrl: "https://x/i",
   hasCloudflare: false,

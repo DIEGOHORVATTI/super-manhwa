@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { permanentRedirect } from "next/navigation";
+import { after } from "next/server";
 import { Suspense } from "react";
 import { ChapterStats } from "@/components/ChapterStats";
+import { Comments } from "@/components/Comments";
 import { DetailView } from "@/components/DetailView";
-import { DisqusComments } from "@/components/DisqusComments";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
+import { buildAltTitles } from "@/lib/alt-titles";
+import { cacheChaptersOnRead, cacheWorkOnRead, getCachedWork } from "@/lib/cache-works";
 import { api } from "@/lib/orpc.server";
+import { deslugify, slugify } from "@/lib/slug";
 import { translatePt } from "@/lib/translate";
 
 /** Markdown/HTML → plain text, clamped — used for the header sinopse teaser. */
@@ -23,8 +28,16 @@ const toPreview = (text: string, max = 240) => {
   return plain.length > max ? `${plain.slice(0, max).trimEnd()}…` : plain;
 };
 
-type P = Promise<{ id: string }>;
+type P = Promise<{ id: string; slug?: string[] }>;
 type SP = Promise<{ n?: string }>;
+
+/**
+ * Name hint for the backend's id-fallback resolution. Prefers the legacy `?n=`
+ * query (exact title) and falls back to de-slugifying the path tail, so clean
+ * `/manga/{id}/{slug}` URLs keep the same resilience the old `?n=` links had.
+ */
+const nameHint = (slug: string[] | undefined, n: string | undefined): string | undefined =>
+  n ?? (slug?.[0] ? deslugify(slug[0]) : undefined);
 
 /** URL-friendly slug for the genre route — must round-trip with the backend's normGenre. */
 const slugifyGenre = (g: string) =>
@@ -40,37 +53,57 @@ export async function generateMetadata({
   params: P;
   searchParams: SP;
 }): Promise<Metadata> {
-  const [{ id }, { n }] = await Promise.all([params, searchParams]);
+  const [{ id, slug }, { n }] = await Promise.all([params, searchParams]);
+  const name = nameHint(slug, n);
   let core: Awaited<ReturnType<typeof api.manga.core>>["core"] | undefined;
   try {
-    core = (await api.manga.core({ id, name: n })).core;
+    core = (await api.manga.core({ id, name })).core;
   } catch {}
 
-  const title = core?.title ?? n ?? "Mangá";
+  const title = core?.title ?? name ?? "Mangá";
+  // Keyword-rich title so the work ranks for "<título>" and "super manhwa <título>".
+  const metaTitle = `${title} — Ler Online em Português`;
   const description = core?.description
     ? toPreview(await translatePt(core.description), 200)
-    : `Leia ${title} online — capítulos e detalhes.`;
+    : `Leia ${title} online de graça, em português, com capítulos atualizados no Super Manhwa.`;
   // The cover is public (signed `?k=`), so it's safe as the share/OG image.
   const images = core?.imageUrl ? [core.imageUrl] : undefined;
+  // Canonical fixes the duplicate URLs the old `?n=` query and slug-less paths created.
+  const canonical = `/manga/${id}/${slugify(title)}`;
+  // Every name the work is known by (official variants + machine pt-BR title), so
+  // it surfaces for searches in Portuguese and any other language.
+  const altTitles = await buildAltTitles(title, core?.aliases ?? []);
 
   return {
-    title,
+    title: metaTitle,
     description,
-    openGraph: { title, description, type: "book", images },
-    twitter: { card: "summary_large_image", title, description, images },
+    keywords: [title, ...altTitles],
+    alternates: { canonical },
+    openGraph: { title: metaTitle, description, type: "book", url: canonical, images },
+    twitter: { card: "summary_large_image", title: metaTitle, description, images },
   };
 }
 
 export default async function MangaPage({ params, searchParams }: { params: P; searchParams: SP }) {
-  const [{ id }, { n }] = await Promise.all([params, searchParams]);
+  const [{ id, slug }, { n }] = await Promise.all([params, searchParams]);
+  const name = nameHint(slug, n);
 
   // Fast half: work metadata (AniList, cached) — paints the hero immediately.
   let coreData: Awaited<ReturnType<typeof api.manga.core>> | undefined;
   let error: string | null = null;
   try {
-    coreData = await api.manga.core({ id, name: n });
+    coreData = await api.manga.core({ id, name });
   } catch (e) {
     error = e instanceof Error ? e.message : String(e);
+    // Read-side fallback: a downed source serves the last cached metadata.
+    const cached = await getCachedWork(id);
+    if (cached) {
+      coreData = {
+        core: { ...cached.core, title: cached.title },
+        lang: "pt-br",
+      } as typeof coreData;
+      error = null;
+    }
   }
 
   if (error) {
@@ -93,12 +126,26 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   if (!coreData) return null;
 
   const { core, lang } = coreData;
-  const title = core.title ?? n ?? "Mangá";
+  const title = core.title ?? name ?? "Mangá";
+
+  // Send slug-less or stale-slug visits (and old `?n=` links) to the canonical
+  // path with a 308, so search engines consolidate on one keyword-rich URL.
+  const canonicalSlug = slugify(title);
+  if (slug?.[0] !== canonicalSlug) permanentRedirect(`/manga/${id}/${canonicalSlug}`);
 
   // Slow half: cross-source chapter fan-out — streamed, NOT awaited. The promise
   // is handed to the client components, which suspend behind skeletons while it
   // resolves. A failure degrades to an empty list so the page still renders.
-  const chaptersPromise = api.manga.chapters({ id, name: n }).catch(() => ({ chapters: [], lang }));
+  const chaptersPromise = api.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
+
+  // Cache-on-read: persist metadata + cover (R2) now, and the merged chapters
+  // once they resolve. Runs after the response is streamed, so it never delays
+  // the page; all writes are best-effort and idempotent.
+  after(async () => {
+    await cacheWorkOnRead(id, core);
+    const resolved = await chaptersPromise;
+    await cacheChaptersOnRead(id, resolved.chapters);
+  });
 
   // Characters are the heavy half of the metadata and only feed the "Personagens"
   // tab — streamed, NOT awaited, so they never hold up the hero.
@@ -125,6 +172,11 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // to the original text if the translation proxy fails.
   const rawDesc = core.description || meta.description || "";
   const desc = await translatePt(rawDesc);
+
+  // Every name the work is known by (official variants + machine pt-BR title).
+  // Rendered as real on-page text and fed to JSON-LD, so the obra is found
+  // whether searched by its English, native, or Portuguese name.
+  const altTitles = await buildAltTitles(title, core.aliases ?? []);
 
   const aboutTab = (
     <div className="about">
@@ -155,6 +207,12 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
             </div>
           )}
         </dl>
+      )}
+
+      {altTitles.length > 0 && (
+        <p className="alt-titles">
+          <span className="muted">Também conhecido como:</span> {altTitles.join(" · ")}
+        </p>
       )}
 
       <Suspense fallback={null}>
@@ -198,11 +256,13 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // Structured data so search engines render a rich book result (cover, rating,
   // genres). Image/URL absolute via SITE_URL; relative paths confuse some crawlers.
   const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const canonicalUrl = `${base}/manga/${id}/${canonicalSlug}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Book",
     name: title,
-    url: `${base}/manga/${id}`,
+    ...(altTitles.length > 0 ? { alternateName: altTitles } : {}),
+    url: canonicalUrl,
     ...(core.imageUrl ? { image: `${base}${core.imageUrl}` } : {}),
     ...(desc ? { description: toPreview(desc, 300) } : {}),
     ...(core.author ? { author: { "@type": "Person", name: core.author } } : {}),
@@ -225,7 +285,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Início", item: base },
       { "@type": "ListItem", position: 2, name: "Explorar", item: `${base}/explorar` },
-      { "@type": "ListItem", position: 3, name: title, item: `${base}/manga/${id}` },
+      { "@type": "ListItem", position: 3, name: title, item: canonicalUrl },
     ],
   };
 
@@ -243,9 +303,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         chaptersPromise={chaptersPromise}
         charactersPromise={charactersPromise}
         about={aboutTab}
-        comments={
-          <DisqusComments identifier={`manga-${id}`} title={title} url={`${base}/manga/${id}`} />
-        }
+        comments={<Comments targetType="work" targetId={id} />}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={

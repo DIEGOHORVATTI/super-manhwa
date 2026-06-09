@@ -8,9 +8,12 @@
     "build": "next build",
     "start": "next start",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "test": "bun test",
+    "test:coverage": "bun test --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1064.0",
     "@neondatabase/serverless": "^1.1.0",
     "@orpc/client": "^1.14.3",
     "@orpc/contract": "^1.14.3",
@@ -20,8 +23,10 @@
     "@react-email/render": "^2.0.8",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
+    "better-auth": "^1.6.15",
     "drizzle-orm": "^0.45.2",
     "embla-carousel-react": "^8.6.0",
+    "mercadopago": "^3.1.0",
     "next": "16.2.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

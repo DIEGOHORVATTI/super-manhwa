@@ -72,6 +72,12 @@ export const mangaCoreSchema = z.object({
   genre: z.array(z.string()).optional(),
   status: mangaStatusSchema.optional(),
   imageUrl: z.string().optional(),
+  /**
+   * Official title variants (english/romaji/native/synonyms, incl. localized
+   * names like the pt-BR title). Surfaced on the detail page so the work is found
+   * when searched by any of its names, in any language.
+   */
+  aliases: z.array(z.string()).default([]),
 });
 export type MangaCore = z.infer<typeof mangaCoreSchema>;
 

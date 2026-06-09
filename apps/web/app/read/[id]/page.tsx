@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdBanner } from "@/components/AdBanner";
-import { DisqusComments } from "@/components/DisqusComments";
+import { Comments } from "@/components/Comments";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
@@ -58,7 +58,6 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   const chapterNo = idx >= 0 ? chapters.length - idx : undefined;
   const cover =
     coreRes.status === "fulfilled" && coreRes.value ? coreRes.value.core.imageUrl : undefined;
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
 
   return (
     <>
@@ -100,11 +99,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
 
       <AdBanner slotKey={adKeys.banner300x250} width={300} height={250} />
 
-      <DisqusComments
-        identifier={`chapter-${id}`}
-        title={mn ? `${mn} — ${n ?? "capítulo"}` : (n ?? "Capítulo")}
-        url={`${base}/read/${id}`}
-      />
+      <Comments targetType="chapter" targetId={id} />
     </>
   );
 }

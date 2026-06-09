@@ -4,6 +4,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Autocomplete } from "@/components/Autocomplete";
 import { Icon, type IconName } from "@/components/Icon";
+import { UserMenu } from "@/components/UserMenu";
 
 /**
  * Global app bar. Layout: brand → primary tab nav (catalog shortcuts) → global
@@ -17,8 +18,7 @@ import { Icon, type IconName } from "@/components/Icon";
  * header) persists across client navigation, the pill animates to the new tab.
  */
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
-  { href: "/", label: "Início", icon: "house", sort: null },
-  { href: "/explorar", label: "Explorar", icon: "list", sort: null },
+  { href: "/", label: "Explorar", icon: "house", sort: null },
   { href: "/atualizacoes", label: "Recentes", icon: "clock", sort: null },
   { href: "/library", label: "Biblioteca", icon: "heart", sort: null },
 ];
@@ -164,6 +164,8 @@ export function Header() {
           <div className="header-search">
             <Autocomplete />
           </div>
+
+          <UserMenu />
         </div>
       </header>
 

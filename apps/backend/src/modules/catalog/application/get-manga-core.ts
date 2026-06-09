@@ -41,6 +41,7 @@ export const makeGetMangaCore =
       genre: work?.genres,
       status: work?.status,
       imageUrl,
+      aliases: work?.aliases ?? [],
     };
     return { core, lang: PREFERRED_LANG };
   };

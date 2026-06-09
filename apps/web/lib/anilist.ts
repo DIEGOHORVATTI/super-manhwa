@@ -112,10 +112,15 @@ export function consumeReturnPath(): string {
  * Parse the implicit-grant fragment (`#access_token=…&expires_in=…`), persist the
  * session, then best-effort fetch the viewer's name. Returns success.
  */
-export async function completeAuthFromHash(hash: string): Promise<boolean> {
+/**
+ * Persists the AniList session from the OAuth fragment. Returns the access token
+ * (so the caller can also link it to a signed-in platform account), or null on
+ * failure.
+ */
+export async function completeAuthFromHash(hash: string): Promise<string | null> {
   const params = new URLSearchParams(hash.replace(/^#/, ""));
   const token = params.get("access_token");
-  if (!token) return false;
+  if (!token) return null;
   const expiresIn = Number(params.get("expires_in") ?? 0);
   const expiresAt =
     Date.now() +
@@ -131,7 +136,7 @@ export async function completeAuthFromHash(hash: string): Promise<boolean> {
   } catch {
     /* name is cosmetic — keep the session even if it fails */
   }
-  return true;
+  return token;
 }
 
 /* --------------------------------- graphql -------------------------------- */

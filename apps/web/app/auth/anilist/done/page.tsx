@@ -15,10 +15,24 @@ export default function AniListDone() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const ok = await completeAuthFromHash(window.location.hash);
+      const token = await completeAuthFromHash(window.location.hash);
       if (!active) return;
-      if (ok) router.replace(consumeReturnPath());
-      else setFailed(true);
+      if (token) {
+        // If the visitor is signed in, also persist the AniList link to their
+        // account (multiple AniList accounts allowed). No-op / 401 when anon.
+        try {
+          await fetch("/api/anilist/link", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ token }),
+          });
+        } catch {
+          /* favourites sync still works from localStorage even if linking fails */
+        }
+        router.replace(consumeReturnPath());
+      } else {
+        setFailed(true);
+      }
     })();
     return () => {
       active = false;

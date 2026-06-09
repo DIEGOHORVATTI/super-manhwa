@@ -5,6 +5,7 @@ import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { api } from "@/lib/orpc.server";
 import { subscribersRepo } from "@/lib/repositories/subscribers";
+import { mangaHref } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -20,7 +21,7 @@ const base = process.env.SITE_URL;
 const toItem = (m: MangaSummary): DigestItem => ({
   title: m.name,
   imageUrl: m.imageUrl ? `${base}${m.imageUrl}` : undefined,
-  link: `${base}/manga/${m.id}`,
+  link: `${base}${mangaHref(m.id, m.name)}`,
 });
 
 export async function GET(req: Request): Promise<Response> {

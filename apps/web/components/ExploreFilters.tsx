@@ -29,12 +29,15 @@ export function ExploreFilters({
   genre,
   status,
   sort,
+  basePath = "/",
 }: {
   genres: string[];
   q: string;
   genre: string;
   status: string;
   sort: string;
+  /** Where filter changes navigate to — `/` now that explore is the home. */
+  basePath?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(q);
@@ -47,7 +50,7 @@ export function ExploreFilters({
     if (merged.status) params.set("status", merged.status);
     if (merged.sort && merged.sort !== "popular") params.set("sort", merged.sort);
     const qs = params.toString();
-    router.push(qs ? `/explorar?${qs}` : "/explorar");
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
   // Remove a single applied filter — rebuilt from the *applied* props (not the
@@ -63,7 +66,7 @@ export function ExploreFilters({
     if (m.sort && m.sort !== "popular") params.set("sort", m.sort);
     if (patch.q === "") setQuery("");
     const qs = params.toString();
-    router.push(qs ? `/explorar?${qs}` : "/explorar");
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
   // Applied filters as removable chips (popular sort is the default → no chip).
@@ -177,7 +180,7 @@ export function ExploreFilters({
               className="filter-clear"
               onClick={() => {
                 setQuery("");
-                router.push("/explorar");
+                router.push(basePath);
               }}
             >
               Limpar tudo

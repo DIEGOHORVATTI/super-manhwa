@@ -6,7 +6,7 @@ const YEAR = new Date().getFullYear();
 const SOCIALS: ReadonlyArray<{ label: string; href: string; icon: React.ReactNode }> = [
   {
     label: "Discord",
-    href: "#",
+    href: process.env.NEXT_PUBLIC_DISCORD_URL ?? "#",
     icon: (
       <path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.2 1.7c-2.1-1-4.3-1.5-6.5-1.5-2.2 0-4.4.5-6.5 1.5a14.6 14.6 0 0 1 4.2-1.7L10.3 3a19.8 19.8 0 0 0-4.9 1.4C2.2 9.2 1.4 13.9 1.8 18.5a19.9 19.9 0 0 0 6 3l.5-.7c-1-.3-2-.8-2.9-1.4l.2-.2c3.7 1.7 7.7 1.7 11.4 0l.2.2c-.9.6-1.9 1.1-2.9 1.4l.5.7a19.9 19.9 0 0 0 6-3c.5-5.3-.8-10-3.2-14.1ZM8.5 15.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z" />
     ),
@@ -79,18 +79,17 @@ export function Footer() {
         <nav className="footer-col" aria-label="Explorar">
           <h3>Explorar</h3>
           <Link href="/">Início</Link>
-          <Link href="/explorar">Explorar</Link>
-          <Link href="/explorar?sort=trending">Tendência</Link>
-          <Link href="/explorar?sort=newest">Mais novos</Link>
+          <Link href="/?sort=trending">Tendência</Link>
+          <Link href="/?sort=newest">Mais novos</Link>
+          <Link href="/library">Biblioteca</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Comunidade">
           <h3>Comunidade</h3>
           <Link href="/about">Sobre nós</Link>
           <Link href="/contact">Contato</Link>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-            Feedback
-          </a>
+          <Link href="/doar">Doar</Link>
+          <Link href="/studio">Studio</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Legal">
