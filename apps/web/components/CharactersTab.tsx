@@ -4,7 +4,11 @@ import { use } from "react";
 import { CharacterGrid } from "@/components/CharacterGrid";
 
 /** Accent-insensitive haystack for the in-tab filter. */
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 
 /**
  * Consumes the streamed characters promise (via `use()`) inside the detail

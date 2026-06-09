@@ -4,9 +4,9 @@ import { profileSchema } from "../lib/schemas/profile";
 
 describe("profileSchema", () => {
   it("accepts valid name/handle/bio", () => {
-    expect(
-      profileSchema.safeParse({ name: "Diego", handle: "diego_99", bio: "olá" }).success,
-    ).toBe(true);
+    expect(profileSchema.safeParse({ name: "Diego", handle: "diego_99", bio: "olá" }).success).toBe(
+      true,
+    );
   });
 
   it("lowercases the handle", () => {

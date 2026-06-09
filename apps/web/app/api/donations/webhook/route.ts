@@ -27,7 +27,8 @@ export async function POST(req: Request) {
     // MP also sends id as a querystring param on some integrations.
   }
   if (!paymentId) {
-    paymentId = new URL(req.url).searchParams.get("data.id") ?? new URL(req.url).searchParams.get("id");
+    paymentId =
+      new URL(req.url).searchParams.get("data.id") ?? new URL(req.url).searchParams.get("id");
   }
   if (!paymentId) return NextResponse.json({ ok: true });
 

@@ -10,11 +10,15 @@ describe("joinPublicUrl", () => {
   });
 
   it("normalizes a trailing slash on the base", () => {
-    expect(joinPublicUrl("https://cdn.example.com/", "a.jpg")).toBe("https://cdn.example.com/a.jpg");
+    expect(joinPublicUrl("https://cdn.example.com/", "a.jpg")).toBe(
+      "https://cdn.example.com/a.jpg",
+    );
   });
 
   it("normalizes a leading slash on the key", () => {
-    expect(joinPublicUrl("https://cdn.example.com", "/a.jpg")).toBe("https://cdn.example.com/a.jpg");
+    expect(joinPublicUrl("https://cdn.example.com", "/a.jpg")).toBe(
+      "https://cdn.example.com/a.jpg",
+    );
   });
 
   it("normalizes both at once (no double slash)", () => {

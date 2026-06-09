@@ -8,9 +8,9 @@ describe("donationCreateSchema", () => {
   });
 
   it("accepts the max amount (R$5.000) with a message", () => {
-    expect(
-      donationCreateSchema.safeParse({ amountCents: 500000, message: "valeu!" }).success,
-    ).toBe(true);
+    expect(donationCreateSchema.safeParse({ amountCents: 500000, message: "valeu!" }).success).toBe(
+      true,
+    );
   });
 
   it("rejects below R$1 and above R$5.000", () => {

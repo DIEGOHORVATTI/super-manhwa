@@ -39,7 +39,9 @@ export function AdminDonations() {
               {d.message && <span className="muted">{d.message}</span>}
               <span className="muted">{new Date(d.createdAt).toLocaleString("pt-BR")}</span>
             </div>
-            <span className={`status-badge status-${d.status === "approved" ? "published" : d.status}`}>
+            <span
+              className={`status-badge status-${d.status === "approved" ? "published" : d.status}`}
+            >
               {d.status}
             </span>
           </div>

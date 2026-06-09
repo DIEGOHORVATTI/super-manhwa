@@ -194,7 +194,9 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
 
   return (
     <section className="comments">
-      <h2 className="section">Comentários {count > 0 && <span className="muted">({count})</span>}</h2>
+      <h2 className="section">
+        Comentários {count > 0 && <span className="muted">({count})</span>}
+      </h2>
 
       {me ? (
         <div className="comment-composer">

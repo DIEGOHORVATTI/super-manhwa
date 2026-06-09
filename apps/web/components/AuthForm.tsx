@@ -100,7 +100,9 @@ export function AuthForm({ mode }: { mode: Mode }) {
             <button type="button" className="auth-google" onClick={google} disabled={busy}>
               <Icon name="log-in" size={16} /> Continuar com o Google
             </button>
-            <div className="auth-divider"><span>ou</span></div>
+            <div className="auth-divider">
+              <span>ou</span>
+            </div>
           </>
         )}
 

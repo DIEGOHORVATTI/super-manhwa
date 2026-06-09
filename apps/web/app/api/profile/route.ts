@@ -17,7 +17,10 @@ export async function PATCH(req: Request) {
 
   const parsed = profileSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "bad_request" }, { status: 400 });
+    return NextResponse.json(
+      { error: parsed.error.issues[0]?.message ?? "bad_request" },
+      { status: 400 },
+    );
   }
 
   const db = getDb();

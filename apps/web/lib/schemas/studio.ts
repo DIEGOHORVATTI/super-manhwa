@@ -1,9 +1,25 @@
 import { z } from "zod";
 
 /** Studio (user-works) validation, shared by routes + tests. */
-export const workCreateSchema = z.object({
-  title: z.string().trim().min(1).max(120),
-  synopsis: z.string().trim().max(2000).optional(),
+export const learnLanguageSchema = z.enum(["pt", "en"]);
+
+export const workCreateSchema = z
+  .object({
+    title: z.string().trim().min(1).max(120),
+    synopsis: z.string().trim().max(2000).optional(),
+    kind: z.enum(["manga", "novel"]).default("manga"),
+    language: learnLanguageSchema.optional(), // required for novels
+  })
+  .refine((d) => d.kind !== "novel" || !!d.language, {
+    message: "Novels precisam de um idioma.",
+    path: ["language"],
+  });
+
+/** Create a TEXT chapter for a novel work — its content is tokenized on save. */
+export const textChapterCreateSchema = z.object({
+  number: z.string().trim().min(1).max(40),
+  title: z.string().trim().max(200).optional(),
+  content: z.string().trim().min(1).max(200_000),
 });
 
 export const workEditSchema = z.object({

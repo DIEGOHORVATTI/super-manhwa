@@ -16,9 +16,7 @@ const accessKeyId = process.env.R2_ACCESS_KEY_ID;
 const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 const publicUrl = process.env.R2_PUBLIC_URL;
 
-export const r2Enabled = Boolean(
-  endpoint && bucket && accessKeyId && secretAccessKey && publicUrl,
-);
+export const r2Enabled = Boolean(endpoint && bucket && accessKeyId && secretAccessKey && publicUrl);
 
 let cached: S3Client | null = null;
 

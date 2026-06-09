@@ -22,6 +22,8 @@ export function StudioDashboard() {
   const { data: session, isPending } = useSession();
   const [works, setWorks] = useState<Work[] | null>(null);
   const [title, setTitle] = useState("");
+  const [kind, setKind] = useState<"manga" | "novel">("manga");
+  const [language, setLanguage] = useState<"pt" | "en">("pt");
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -50,7 +52,7 @@ export function StudioDashboard() {
       const res = await fetch("/api/studio/works", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title, kind, language: kind === "novel" ? language : undefined }),
       });
       if (res.ok) {
         setTitle("");
@@ -69,8 +71,38 @@ export function StudioDashboard() {
         <h2>Nova obra</h2>
         <label className="auth-field">
           <span>Título</span>
-          <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Nome da obra" />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Nome da obra"
+          />
         </label>
+        <div className="studio-upload-row">
+          <label className="auth-field">
+            <span>Tipo</span>
+            <select
+              className="select"
+              value={kind}
+              onChange={(e) => setKind(e.target.value as "manga" | "novel")}
+            >
+              <option value="manga">Mangá (imagem)</option>
+              <option value="novel">Novel (texto — aprendizado)</option>
+            </select>
+          </label>
+          {kind === "novel" && (
+            <label className="auth-field">
+              <span>Idioma</span>
+              <select
+                className="select"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as "pt" | "en")}
+              >
+                <option value="pt">Português</option>
+                <option value="en">Inglês</option>
+              </select>
+            </label>
+          )}
+        </div>
         <button type="button" className="auth-submit" onClick={create} disabled={creating}>
           {creating ? "Criando…" : "Criar obra"}
         </button>

@@ -74,6 +74,12 @@ function build() {
         handle: { type: "string", required: false },
         bio: { type: "string", required: false },
         banned: { type: "boolean", defaultValue: false, input: false },
+        // Language-learning profile — surfaced in the session, server-managed.
+        xp: { type: "number", defaultValue: 0, input: false },
+        streakDays: { type: "number", defaultValue: 0, input: false },
+        dailyGoal: { type: "number", defaultValue: 20, input: false },
+        plan: { type: "string", defaultValue: "free", input: false },
+        premiumUntil: { type: "date", required: false, input: false },
       },
     },
   });

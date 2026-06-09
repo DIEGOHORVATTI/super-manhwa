@@ -45,7 +45,9 @@ export function DonateView() {
       });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
-        throw new Error(j.error === "unconfigured" ? "Doações ainda não configuradas." : "Erro ao gerar o Pix.");
+        throw new Error(
+          j.error === "unconfigured" ? "Doações ainda não configuradas." : "Erro ao gerar o Pix.",
+        );
       }
       const data = await res.json();
       if (!data.qrCode) throw new Error("Pix indisponível no momento.");

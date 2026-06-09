@@ -38,7 +38,10 @@ export async function cacheWorkOnRead(catalogId: string, core: Core): Promise<vo
         const res = await fetch(core.imageUrl);
         if (res.ok) {
           const bytes = new Uint8Array(await res.arrayBuffer());
-          const ext = (res.headers.get("content-type")?.split("/")[1] ?? "jpg").replace("jpeg", "jpg");
+          const ext = (res.headers.get("content-type")?.split("/")[1] ?? "jpg").replace(
+            "jpeg",
+            "jpg",
+          );
           coverR2Key = await putObject(
             `cache/works/${catalogId}/cover.${ext}`,
             bytes,

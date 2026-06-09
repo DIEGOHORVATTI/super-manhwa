@@ -34,7 +34,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     .orderBy(asc(chapterPages.index));
 
   return NextResponse.json({
-    chapter: { id: chapter.id, number: chapter.number, title: chapter.title, status: chapter.status },
+    chapter: {
+      id: chapter.id,
+      number: chapter.number,
+      title: chapter.title,
+      status: chapter.status,
+    },
     pages: pages.map((p) => ({ index: p.index, url: publicUrlFor(p.r2Key) })),
   });
 }

@@ -79,7 +79,12 @@ export async function POST(req: Request) {
   if (existing.length) {
     await db
       .update(account)
-      .set({ userId: session.user.id, accessToken: parsed.data.token, scope: viewer.name, updatedAt: now })
+      .set({
+        userId: session.user.id,
+        accessToken: parsed.data.token,
+        scope: viewer.name,
+        updatedAt: now,
+      })
       .where(eq(account.id, existing[0].id));
   } else {
     await db.insert(account).values({

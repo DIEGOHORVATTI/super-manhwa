@@ -35,7 +35,12 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
 
   const members = work.teamId
     ? await db
-        .select({ userId: teamMembers.userId, role: teamMembers.role, name: user.name, handle: user.handle })
+        .select({
+          userId: teamMembers.userId,
+          role: teamMembers.role,
+          name: user.name,
+          handle: user.handle,
+        })
         .from(teamMembers)
         .leftJoin(user, eq(teamMembers.userId, user.id))
         .where(eq(teamMembers.teamId, work.teamId))
@@ -58,7 +63,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const db = getDb();
   const { userWorks } = schema;
-  const [updated] = await db.update(userWorks).set(parsed.data).where(eq(userWorks.id, id)).returning();
+  const [updated] = await db
+    .update(userWorks)
+    .set(parsed.data)
+    .where(eq(userWorks.id, id))
+    .returning();
   return NextResponse.json({ work: updated });
 }
 

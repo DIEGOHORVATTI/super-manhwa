@@ -17,18 +17,31 @@ export async function GET() {
   const userId = session.user.id;
 
   const teamIds = (
-    await db.select({ teamId: teamMembers.teamId }).from(teamMembers).where(eq(teamMembers.userId, userId))
+    await db
+      .select({ teamId: teamMembers.teamId })
+      .from(teamMembers)
+      .where(eq(teamMembers.userId, userId))
   ).map((r) => r.teamId);
 
   const owned = await db
-    .select({ id: userWorks.id, title: userWorks.title, slug: userWorks.slug, status: userWorks.status })
+    .select({
+      id: userWorks.id,
+      title: userWorks.title,
+      slug: userWorks.slug,
+      status: userWorks.status,
+    })
     .from(userWorks)
     .where(eq(userWorks.ownerId, userId))
     .orderBy(desc(userWorks.createdAt));
 
   const collab = teamIds.length
     ? await db
-        .select({ id: userWorks.id, title: userWorks.title, slug: userWorks.slug, status: userWorks.status })
+        .select({
+          id: userWorks.id,
+          title: userWorks.title,
+          slug: userWorks.slug,
+          status: userWorks.status,
+        })
         .from(userWorks)
         .where(inArray(userWorks.teamId, teamIds))
     : [];
@@ -71,6 +84,8 @@ export async function POST(req: Request) {
       slug,
       synopsis: parsed.data.synopsis ?? null,
       status: "draft",
+      kind: parsed.data.kind,
+      language: parsed.data.kind === "novel" ? (parsed.data.language ?? null) : null,
     })
     .returning({ id: userWorks.id, slug: userWorks.slug });
 

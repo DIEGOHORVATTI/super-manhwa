@@ -29,7 +29,13 @@ export function UserMenu() {
   if (isPending) return <span className="user-menu-skel" aria-hidden="true" />;
 
   const user = data?.user as
-    | { name?: string; email?: string; image?: string | null; role?: string; handle?: string | null }
+    | {
+        name?: string;
+        email?: string;
+        image?: string | null;
+        role?: string;
+        handle?: string | null;
+      }
     | undefined;
 
   if (!user) {
@@ -72,6 +78,9 @@ export function UserMenu() {
           </Link>
           <Link href="/library" role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="heart" size={15} /> Biblioteca
+          </Link>
+          <Link href="/learn" role="menuitem" onClick={() => setOpen(false)}>
+            <Icon name="book-open" size={15} /> Aprender
           </Link>
           <Link href="/studio" role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="pen-line" size={15} /> Studio

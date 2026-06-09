@@ -25,14 +25,15 @@ describe("vendored extensions / package files", () => {
     expect(VENDORED_VERSION.length).toBeGreaterThan(0);
   });
 
-  it.each(
-    VENDORED_PATHS,
-  )("loads %s as real JS containing Mangayomi entry points", async (relPath) => {
-    const code = await loadMangaExtension(relPath);
-    expect(code.length).toBeGreaterThan(500);
-    // A real Mangayomi extension exports at least one of these functions.
-    expect(code).toMatch(/getPopular|search|getDetail|getPageList/);
-  });
+  it.each(VENDORED_PATHS)(
+    "loads %s as real JS containing Mangayomi entry points",
+    async (relPath) => {
+      const code = await loadMangaExtension(relPath);
+      expect(code.length).toBeGreaterThan(500);
+      // A real Mangayomi extension exports at least one of these functions.
+      expect(code).toMatch(/getPopular|search|getDetail|getPageList/);
+    },
+  );
 
   it("an unknown path throws (no silent fallback to network)", async () => {
     await expect(loadMangaExtension("fake/nonexistent.js")).rejects.toThrow(

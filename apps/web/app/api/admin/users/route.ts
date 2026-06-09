@@ -43,7 +43,8 @@ export async function PATCH(req: Request) {
   const me = await guard();
   if (!me) return NextResponse.json({ error: "forbidden" }, { status: 403 });
   // Only full admins can change roles; staff can ban/unban.
-  const isAdmin = hasRole(me as { role?: string }, "staff") && (me as { role?: string }).role === "admin";
+  const isAdmin =
+    hasRole(me as { role?: string }, "staff") && (me as { role?: string }).role === "admin";
 
   const parsed = PatchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "bad_request" }, { status: 400 });

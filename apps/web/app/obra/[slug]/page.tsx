@@ -20,6 +20,7 @@ async function loadWork(slug: string) {
       coverR2Key: userWorks.coverR2Key,
       status: userWorks.status,
       ownerId: userWorks.ownerId,
+      kind: userWorks.kind,
     })
     .from(userWorks)
     .where(eq(userWorks.slug, slug))
@@ -33,7 +34,12 @@ async function loadWork(slug: string) {
     .limit(1);
 
   const chapters = await db
-    .select({ id: userChapters.id, number: userChapters.number, title: userChapters.title, publishedAt: userChapters.publishedAt })
+    .select({
+      id: userChapters.id,
+      number: userChapters.number,
+      title: userChapters.title,
+      publishedAt: userChapters.publishedAt,
+    })
     .from(userChapters)
     .where(and(eq(userChapters.workId, work.id), eq(userChapters.status, "published")))
     .orderBy(asc(userChapters.number));
@@ -79,7 +85,7 @@ export default async function ObraPage({ params }: { params: Params }) {
         <ul className="obra-chapters">
           {chapters.map((c) => (
             <li key={c.id}>
-              <Link href={`/obra/${slug}/${c.id}`}>
+              <Link href={work.kind === "novel" ? `/learn/${c.id}` : `/obra/${slug}/${c.id}`}>
                 Cap. {c.number}
                 {c.title ? ` — ${c.title}` : ""}
               </Link>

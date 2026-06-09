@@ -110,7 +110,11 @@ export function SettingsView() {
         </label>
         <label className="auth-field">
           <span>@ (handle)</span>
-          <input value={handle} onChange={(e) => setHandle(e.target.value)} placeholder="seu_nome" />
+          <input
+            value={handle}
+            onChange={(e) => setHandle(e.target.value)}
+            placeholder="seu_nome"
+          />
         </label>
         <label className="auth-field">
           <span>Bio</span>

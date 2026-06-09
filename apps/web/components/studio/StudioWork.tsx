@@ -34,7 +34,14 @@ const CH_STATUS: Record<string, string> = {
 /** Manage a single work: chapters lifecycle, uploads, reviews and team. */
 export function StudioWork({ workId }: { workId: number }) {
   const [data, setData] = useState<{
-    work: { title: string; slug: string; status: string; synopsis: string | null };
+    work: {
+      title: string;
+      slug: string;
+      status: string;
+      synopsis: string | null;
+      kind?: string;
+      language?: string | null;
+    };
     chapters: Chapter[];
     members: Member[];
     access: Access;
@@ -64,7 +71,8 @@ export function StudioWork({ workId }: { workId: number }) {
   }
 
   async function review(id: number, decision: "approved" | "changes_requested") {
-    const note = decision === "changes_requested" ? prompt("Nota para o tradutor (opcional):") ?? "" : "";
+    const note =
+      decision === "changes_requested" ? (prompt("Nota para o tradutor (opcional):") ?? "") : "";
     await fetch(`/api/studio/chapters/${id}/review`, {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -112,16 +120,28 @@ export function StudioWork({ workId }: { workId: number }) {
                     Preview
                   </Link>
                   {access.canEditChapters && c.status === "draft" && (
-                    <button type="button" className="comment-link" onClick={() => chapterAction(c.id, { action: "submit" })}>
+                    <button
+                      type="button"
+                      className="comment-link"
+                      onClick={() => chapterAction(c.id, { action: "submit" })}
+                    >
                       Enviar p/ revisão
                     </button>
                   )}
                   {access.canReview && c.status === "in_review" && (
                     <>
-                      <button type="button" className="comment-link" onClick={() => review(c.id, "approved")}>
+                      <button
+                        type="button"
+                        className="comment-link"
+                        onClick={() => review(c.id, "approved")}
+                      >
                         Aprovar
                       </button>
-                      <button type="button" className="comment-link" onClick={() => review(c.id, "changes_requested")}>
+                      <button
+                        type="button"
+                        className="comment-link"
+                        onClick={() => review(c.id, "changes_requested")}
+                      >
                         Pedir alterações
                       </button>
                     </>
@@ -141,13 +161,21 @@ export function StudioWork({ workId }: { workId: number }) {
                       >
                         Agendar
                       </button>
-                      <button type="button" className="comment-link" onClick={() => chapterAction(c.id, { action: "publish" })}>
+                      <button
+                        type="button"
+                        className="comment-link"
+                        onClick={() => chapterAction(c.id, { action: "publish" })}
+                      >
                         Publicar
                       </button>
                     </>
                   )}
                   {access.canPublish && c.status === "published" && (
-                    <button type="button" className="comment-link" onClick={() => chapterAction(c.id, { action: "unpublish" })}>
+                    <button
+                      type="button"
+                      className="comment-link"
+                      onClick={() => chapterAction(c.id, { action: "unpublish" })}
+                    >
                       Despublicar
                     </button>
                   )}
@@ -158,10 +186,80 @@ export function StudioWork({ workId }: { workId: number }) {
         )}
       </section>
 
-      {access.canEditChapters && <ChapterUpload workId={workId} onDone={load} />}
+      {access.canEditChapters &&
+        (work.kind === "novel" ? (
+          <TextChapterUpload workId={workId} onDone={load} />
+        ) : (
+          <ChapterUpload workId={workId} onDone={load} />
+        ))}
 
       {access.canManageTeam && <TeamManager workId={workId} members={members} onChange={load} />}
     </div>
+  );
+}
+
+function TextChapterUpload({ workId, onDone }: { workId: number; onDone: () => void }) {
+  const [number, setNumber] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function save() {
+    if (!number.trim() || !content.trim()) {
+      setMsg("Informe o número e o texto do capítulo.");
+      return;
+    }
+    setBusy(true);
+    setMsg(null);
+    const res = await fetch(`/api/studio/works/${workId}/text-chapters`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ number, title, content }),
+    });
+    setBusy(false);
+    if (res.ok) {
+      const j = await res.json();
+      setNumber("");
+      setTitle("");
+      setContent("");
+      setMsg(
+        `Capítulo salvo e tokenizado (${j.chapter.tokens} tokens, ${j.chapter.lemmas} palavras).`,
+      );
+      onDone();
+    } else {
+      const j = await res.json().catch(() => ({}));
+      setMsg(j.error ?? "Falha ao salvar.");
+    }
+  }
+
+  return (
+    <section className="settings-card">
+      <h2>Novo capítulo (texto)</h2>
+      <div className="studio-upload-row">
+        <label className="auth-field">
+          <span>Número</span>
+          <input value={number} onChange={(e) => setNumber(e.target.value)} placeholder="Ex.: 1" />
+        </label>
+        <label className="auth-field" style={{ flex: 1 }}>
+          <span>Título (opcional)</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} />
+        </label>
+      </div>
+      <label className="auth-field">
+        <span>Texto do capítulo</span>
+        <textarea
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          rows={10}
+          placeholder="Cole aqui o texto da novel…"
+        />
+      </label>
+      {msg && <p className="auth-notice">{msg}</p>}
+      <button type="button" className="auth-submit" onClick={save} disabled={busy}>
+        {busy ? "Salvando…" : "Salvar capítulo"}
+      </button>
+    </section>
   );
 }
 
@@ -193,7 +291,11 @@ function ChapterUpload({ workId, onDone }: { workId: number; onDone: () => void 
       onDone();
     } else {
       const j = await res.json().catch(() => ({}));
-      setMsg(j.error === "storage_unconfigured" ? "Armazenamento R2 não configurado." : "Falha no envio.");
+      setMsg(
+        j.error === "storage_unconfigured"
+          ? "Armazenamento R2 não configurado."
+          : "Falha no envio.",
+      );
     }
   }
 

@@ -10,7 +10,11 @@ type Chapter = { id: string; name: string; lang?: string; dateUpload?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 
 /** Chapters rendered before the "ver todos" link — keeps first paint cheap. */
 const INITIAL = 21;

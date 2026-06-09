@@ -75,7 +75,9 @@ describe("POST /api/comments", () => {
 
   it("400 on invalid body", async () => {
     session = { user: { id: "u1" } };
-    const res = await comments.POST(json(url, "POST", { targetType: "page", targetId: "", body: "" }));
+    const res = await comments.POST(
+      json(url, "POST", { targetType: "page", targetId: "", body: "" }),
+    );
     expect(res.status).toBe(400);
   });
 
@@ -108,7 +110,9 @@ describe("GET /api/comments", () => {
         { id: 2, userId: "u2", body: "secret", deletedAt: "2024-01-01T00:00:00Z", parentId: null },
       ],
     ];
-    const res = await comments.GET(new Request("http://t/api/comments?targetType=work&targetId=m1"));
+    const res = await comments.GET(
+      new Request("http://t/api/comments?targetType=work&targetId=m1"),
+    );
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.comments).toHaveLength(2);

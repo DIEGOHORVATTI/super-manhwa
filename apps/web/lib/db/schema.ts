@@ -77,6 +77,13 @@ export const user = pgTable("user", {
   bio: text("bio"),
   role: text("role").notNull().default("user"), // user | staff | admin
   banned: boolean("banned").notNull().default(false),
+  // Language-learning profile (gamification + plan).
+  xp: integer("xp").notNull().default(0),
+  streakDays: integer("streak_days").notNull().default(0),
+  lastStudyDate: text("last_study_date"), // YYYY-MM-DD (user local day)
+  dailyGoal: integer("daily_goal").notNull().default(20),
+  plan: text("plan").notNull().default("free"), // free | premium
+  premiumUntil: timestamp("premium_until"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -227,9 +234,52 @@ export const userWorks = pgTable(
     synopsis: text("synopsis"),
     coverR2Key: text("cover_r2_key"),
     status: text("status").notNull().default("draft"), // draft | pending | published
+    kind: text("kind").notNull().default("manga"), // manga (image) | novel (text)
+    language: text("language"), // ISO code for novels (pt | en | …) — drives the learning layer
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("user_works_owner_idx").on(t.ownerId)],
+);
+
+/** Raw text of a novel chapter (one row per text chapter). */
+export const chapterTexts = pgTable("chapter_texts", {
+  chapterId: integer("chapter_id")
+    .primaryKey()
+    .references(() => userChapters.id, { onDelete: "cascade" }),
+  language: text("language").notNull(),
+  content: text("content").notNull(),
+});
+
+/** Pre-computed tokenization of a text chapter (cached at save, not at read). */
+export const chapterTokens = pgTable(
+  "chapter_tokens",
+  {
+    id: serial("id").primaryKey(),
+    chapterId: integer("chapter_id")
+      .notNull()
+      .references(() => userChapters.id, { onDelete: "cascade" }),
+    idx: integer("idx").notNull(), // position in the chapter
+    sentenceIdx: integer("sentence_idx").notNull(),
+    surface: text("surface").notNull(), // as displayed
+    lemma: text("lemma"), // dictionary form (null for non-words)
+    reading: text("reading"), // furigana/pinyin (future langs)
+    isWord: boolean("is_word").notNull().default(true), // false = punctuation/space
+  },
+  (t) => [index("chapter_tokens_chapter_idx").on(t.chapterId)],
+);
+
+/** Sentences extracted from a text chapter (for cloze + sentence mining). */
+export const sentences = pgTable(
+  "sentences",
+  {
+    id: serial("id").primaryKey(),
+    chapterId: integer("chapter_id")
+      .notNull()
+      .references(() => userChapters.id, { onDelete: "cascade" }),
+    idx: integer("idx").notNull(),
+    text: text("text").notNull(),
+  },
+  (t) => [uniqueIndex("sentence_chapter_idx_uniq").on(t.chapterId, t.idx)],
 );
 
 export const userChapters = pgTable(
@@ -315,3 +365,132 @@ export const cachedPages = pgTable(
   },
   (t) => [uniqueIndex("cached_page_uniq").on(t.chapterId, t.index)],
 );
+
+/* ───────────────────────── Language learning — vocabulary & SRS ─────────────────────────
+ * Determinístico, sem IA: tokens → dicionário (words) → estado por usuário (userWords, FSRS)
+ * → revisão (srsCards/reviewLogs). Ver docs/language-learning-plan.md.
+ */
+
+/** A dictionary headword for a language (deduped by lemma). */
+export const words = pgTable(
+  "words",
+  {
+    id: serial("id").primaryKey(),
+    language: text("language").notNull(),
+    lemma: text("lemma").notNull(),
+    reading: text("reading"),
+    frequency: integer("frequency"), // rank (lower = more common); null = unknown
+    definition: text("definition"), // gloss/translation (from static dictionary)
+  },
+  (t) => [uniqueIndex("word_lang_lemma_uniq").on(t.language, t.lemma)],
+);
+
+/** Per-user knowledge of a word + FSRS scheduling state. */
+export const userWords = pgTable(
+  "user_words",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    wordId: integer("word_id")
+      .notNull()
+      .references(() => words.id, { onDelete: "cascade" }),
+    status: text("status").notNull().default("new"), // new | learning | known | ignored
+    // FSRS state
+    stability: integer("stability").notNull().default(0), // x1000 (store as int to avoid float)
+    difficulty: integer("difficulty").notNull().default(0), // x1000
+    due: timestamp("due"),
+    reps: integer("reps").notNull().default(0),
+    lapses: integer("lapses").notNull().default(0),
+    lastReviewedAt: timestamp("last_reviewed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_word_uniq").on(t.userId, t.wordId)],
+);
+
+/** A review item (cloze from a real sentence, or a mined sentence). */
+export const srsCards = pgTable(
+  "srs_cards",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    userWordId: integer("user_word_id").references(() => userWords.id, { onDelete: "cascade" }),
+    type: text("type").notNull().default("cloze"), // cloze | sentence
+    sentenceId: integer("sentence_id").references(() => sentences.id, { onDelete: "set null" }),
+    front: text("front").notNull(),
+    back: text("back").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("srs_cards_user_idx").on(t.userId)],
+);
+
+/** Immutable log of each review — the FSRS input history. */
+export const reviewLogs = pgTable("review_logs", {
+  id: serial("id").primaryKey(),
+  cardId: integer("card_id")
+    .notNull()
+    .references(() => srsCards.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  rating: integer("rating").notNull(), // 1 again | 2 hard | 3 good | 4 easy
+  stability: integer("stability").notNull(), // x1000 snapshot
+  difficulty: integer("difficulty").notNull(), // x1000 snapshot
+  reviewedAt: timestamp("reviewed_at").notNull().defaultNow(),
+});
+
+/* ───────────────────────── Gamification, daily limits & plan ───────────────────────── */
+
+/** Per-user-per-day counters — drive streak, daily goal and freemium limits. */
+export const dailyActivity = pgTable(
+  "daily_activity",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    date: text("date").notNull(), // YYYY-MM-DD
+    newWords: integer("new_words").notNull().default(0),
+    reviews: integer("reviews").notNull().default(0),
+    xp: integer("xp").notNull().default(0),
+  },
+  (t) => [uniqueIndex("daily_activity_uniq").on(t.userId, t.date)],
+);
+
+export const achievements = pgTable("achievements", {
+  key: text("key").primaryKey(), // e.g. words_100
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+});
+
+export const userAchievements = pgTable(
+  "user_achievements",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    achievementKey: text("achievement_key")
+      .notNull()
+      .references(() => achievements.key, { onDelete: "cascade" }),
+    unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_achievement_uniq").on(t.userId, t.achievementKey)],
+);
+
+/** Recurring premium subscription (Mercado Pago preapproval). */
+export const subscriptions = pgTable("subscriptions", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  provider: text("provider").notNull().default("mercadopago"),
+  providerSubId: text("provider_sub_id"),
+  status: text("status").notNull().default("pending"), // pending | authorized | paused | cancelled
+  currentPeriodEnd: timestamp("current_period_end"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});

@@ -39,7 +39,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
   // Approved → ready (draft, but reviewedBy stamped); changes → back to draft.
   await db
     .update(userChapters)
-    .set({ status: "draft", reviewedBy: parsed.data.decision === "approved" ? session!.user.id : null })
+    .set({
+      status: "draft",
+      reviewedBy: parsed.data.decision === "approved" ? session!.user.id : null,
+    })
     .where(eq(userChapters.id, id));
 
   return NextResponse.json({ ok: true });

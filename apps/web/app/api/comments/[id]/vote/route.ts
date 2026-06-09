@@ -46,6 +46,9 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
     .from(commentVotes)
     .where(eq(commentVotes.commentId, commentId));
 
-  await db.update(comments).set({ score: Number(score) }).where(eq(comments.id, commentId));
+  await db
+    .update(comments)
+    .set({ score: Number(score) })
+    .where(eq(comments.id, commentId));
   return NextResponse.json({ score: Number(score), value });
 }

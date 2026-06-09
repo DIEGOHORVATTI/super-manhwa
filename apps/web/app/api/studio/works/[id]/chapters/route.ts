@@ -21,7 +21,8 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
 
   const session = await getServerSession();
   const workId = Number((await ctx.params).id);
-  if (!Number.isInteger(workId)) return NextResponse.json({ error: "bad_request" }, { status: 400 });
+  if (!Number.isInteger(workId))
+    return NextResponse.json({ error: "bad_request" }, { status: 400 });
 
   const access = await getWorkAccess(workId, session?.user?.id ?? null);
   if (!access.canEditChapters) return NextResponse.json({ error: "forbidden" }, { status: 403 });

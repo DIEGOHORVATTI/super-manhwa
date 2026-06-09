@@ -8,11 +8,11 @@
     "start": "bun src/index.ts"
   },
   "dependencies": {
-    "@packages/contracts": "workspace:*",
-    "@packages/extension": "workspace:*",
     "@orpc/openapi": "^1.14.3",
     "@orpc/server": "^1.14.3",
     "@orpc/zod": "^1.14.3",
+    "@packages/contracts": "workspace:*",
+    "@packages/extension": "workspace:*",
     "zod": "^4.4.3"
   }
 }

@@ -37,8 +37,10 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   const canSubmit = access.canEditChapters;
   const canManage = access.canPublish; // editor/owner
-  if (action === "submit" && !canSubmit) return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  if (action !== "submit" && !canManage) return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (action === "submit" && !canSubmit)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
+  if (action !== "submit" && !canManage)
+    return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const db = getDb();
   const { userChapters, userWorks } = schema;
@@ -49,7 +51,8 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
 
   if (action === "submit") set.status = "in_review";
   else if (action === "schedule") {
-    if (!parsed.data.scheduledAt) return NextResponse.json({ error: "needs_date" }, { status: 400 });
+    if (!parsed.data.scheduledAt)
+      return NextResponse.json({ error: "needs_date" }, { status: 400 });
     set.status = "scheduled";
     set.scheduledAt = new Date(parsed.data.scheduledAt);
   } else if (action === "publish") {
@@ -61,7 +64,11 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     set.publishedAt = null;
   }
 
-  const [updated] = await db.update(userChapters).set(set).where(eq(userChapters.id, id)).returning();
+  const [updated] = await db
+    .update(userChapters)
+    .set(set)
+    .where(eq(userChapters.id, id))
+    .returning();
 
   if (action === "publish") {
     await db.update(userWorks).set({ status: "published" }).where(eq(userWorks.id, chapter.workId));

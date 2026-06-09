@@ -54,7 +54,9 @@ describe("chapterActionSchema", () => {
 describe("reviewSchema", () => {
   it("accepts the two decisions", () => {
     expect(reviewSchema.safeParse({ decision: "approved" }).success).toBe(true);
-    expect(reviewSchema.safeParse({ decision: "changes_requested", note: "fix" }).success).toBe(true);
+    expect(reviewSchema.safeParse({ decision: "changes_requested", note: "fix" }).success).toBe(
+      true,
+    );
   });
   it("rejects an unknown decision", () => {
     expect(reviewSchema.safeParse({ decision: "maybe" }).success).toBe(false);

@@ -27,7 +27,12 @@ async function loadProfile(handle: string) {
   if (!u) return null;
 
   const works = await db
-    .select({ id: userWorks.id, title: userWorks.title, slug: userWorks.slug, coverR2Key: userWorks.coverR2Key })
+    .select({
+      id: userWorks.id,
+      title: userWorks.title,
+      slug: userWorks.slug,
+      coverR2Key: userWorks.coverR2Key,
+    })
     .from(userWorks)
     .where(and(eq(userWorks.ownerId, u.id), eq(userWorks.status, "published")))
     .orderBy(desc(userWorks.createdAt))

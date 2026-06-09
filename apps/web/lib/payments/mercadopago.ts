@@ -1,5 +1,5 @@
 import "server-only";
-import { MercadoPagoConfig, Payment } from "mercadopago";
+import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
 
 /**
  * Mercado Pago Pix integration for donations. Gated on `MP_ACCESS_TOKEN` —
@@ -65,5 +65,53 @@ export async function createPixPayment(opts: {
 
 export async function getPaymentStatus(id: string): Promise<string> {
   const res = await client().get({ id });
+  return res.status ?? "pending";
+}
+
+/* ───────────────────────── Recurring subscription (preapproval) ───────────────────────── */
+
+let preapproval: PreApproval | null = null;
+function preapprovalClient(): PreApproval {
+  if (!accessToken) throw new Error("MP_ACCESS_TOKEN is not set");
+  if (!preapproval) preapproval = new PreApproval(new MercadoPagoConfig({ accessToken }));
+  return preapproval;
+}
+
+export interface Subscription {
+  id: string;
+  status: string;
+  initPoint: string | null; // checkout URL to send the user to
+}
+
+/** Create a monthly BRL premium subscription; returns the checkout init point. */
+export async function createSubscription(opts: {
+  email: string;
+  amount: number; // BRL/month
+  reason: string;
+  backUrl: string;
+}): Promise<Subscription> {
+  const res = await preapprovalClient().create({
+    body: {
+      reason: opts.reason,
+      payer_email: opts.email,
+      back_url: opts.backUrl,
+      auto_recurring: {
+        frequency: 1,
+        frequency_type: "months",
+        transaction_amount: opts.amount,
+        currency_id: "BRL",
+      },
+      status: "pending",
+    },
+  });
+  return {
+    id: String(res.id),
+    status: res.status ?? "pending",
+    initPoint: res.init_point ?? null,
+  };
+}
+
+export async function getSubscriptionStatus(id: string): Promise<string> {
+  const res = await preapprovalClient().get({ id });
   return res.status ?? "pending";
 }
