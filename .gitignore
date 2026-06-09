@@ -4,6 +4,8 @@ dist/
 .DS_Store
 .env
 .env.*
+!.env.example
+!**/.env.example
 
 # build artifacts (no leading slash → match at any depth, incl. apps/*/)
 .next
