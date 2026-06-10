@@ -2,11 +2,8 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
-import { AdblockModal } from "@/components/AdblockModal";
-import { AdsConsentProvider } from "@/components/AdsConsent";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
-import { Popunder } from "@/components/Popunder";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
@@ -80,19 +77,15 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
           // Trusted, server-built JSON-LD (no user input).
           dangerouslySetInnerHTML={{ __html: JSON.stringify([siteLd, orgLd]) }}
         />
-        <AdsConsentProvider>
-          <Header />
-          <main className="app">
-            {children}
+        <Header />
+        <main className="app">
+          {children}
 
-            <Footer />
-          </main>
-          <Analytics />
-          <SpeedInsights />
-          <ServiceWorkerRegister />
-          <Popunder />
-          <AdblockModal />
-        </AdsConsentProvider>
+          <Footer />
+        </main>
+        <Analytics />
+        <SpeedInsights />
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

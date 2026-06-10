@@ -6,9 +6,7 @@ import { ChapterList } from "@/components/ChapterList";
 import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
 import { Icon } from "@/components/Icon";
-import { NativeAd } from "@/components/NativeAd";
 import { ChaptersGridSkeleton } from "@/components/Skeleton";
-import { adKeys } from "@/lib/ads";
 import { useReadChapters } from "@/lib/library";
 
 type Chapter = { id: string; name: string; lang?: string };
@@ -193,13 +191,10 @@ export function DetailView({
       {/* Sobre */}
       <div hidden={active !== "about"}>{about}</div>
 
-      {/* Comentários — mounted only when open so Disqus doesn't load otherwise. */}
+      {/* Comentários — montados só quando a aba abre. */}
       {comments && (
         <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
       )}
-
-      {/* Publicidade no rodapé da obra — abaixo da lista de capítulos / "ver todos". */}
-      <NativeAd src={adKeys.nativeSrc} />
     </>
   );
 }

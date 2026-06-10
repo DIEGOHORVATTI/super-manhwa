@@ -56,7 +56,6 @@ PORT=8787
 | `MP_ACCESS_TOKEN` | [mercadopago.com.br/developers](https://www.mercadopago.com.br/developers) | doações Pix + assinatura Premium | Crie a aplicação → **Credenciais** → `TEST-…` (sandbox) ou `APP_USR-…` (produção). Webhook de preapproval é configurado no painel do MP. |
 | `NEXT_PUBLIC_ANILIST_CLIENT_ID`, `ANILIST_CLIENT_SECRET` | anilist.co → Settings → Developer | sync de favoritos + vínculo de conta | Create client. Redirect URL: `<SITE_URL>/auth/anilist`. |
 | `NEXT_PUBLIC_DISCORD_URL` | seu servidor Discord | card/botões do Discord | Convidar pessoas → *Nunca expirar* → copie o link. |
-| `NEXT_PUBLIC_ADSTERRA_BANNER_728x90`, `NEXT_PUBLIC_ADSTERRA_BANNER_300x250`, `NEXT_PUBLIC_ADSTERRA_NATIVE_SRC`, `NEXT_PUBLIC_ADSTERRA_DIRECT_LINK` | painel Adsterra | anúncios (opcional) | IDs/URLs dos slots. |
 
 ---
 

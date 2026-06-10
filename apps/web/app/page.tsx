@@ -3,11 +3,9 @@ import type { Metadata } from "next";
 import { ContinueReading } from "@/components/ContinueReading";
 import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
-import { NativeAd } from "@/components/NativeAd";
 import { Pagination } from "@/components/Pagination";
 import { PosterGrid } from "@/components/PosterGrid";
 import { PosterRow } from "@/components/PosterRow";
-import { adKeys } from "@/lib/ads";
 import { api } from "@/lib/orpc.server";
 
 const SHELF_SIZE = 15;
@@ -85,7 +83,6 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
       {isLanding && (
         <>
-          <NativeAd src={adKeys.nativeSrc} />
           <PosterRow
             title="Em tendência"
             icon="flame"
