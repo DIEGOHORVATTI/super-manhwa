@@ -18,6 +18,7 @@
     "@orpc/client": "catalog:",
     "@orpc/contract": "catalog:",
     "@orpc/openapi-client": "catalog:",
+    "@orpc/server": "catalog:",
     "@packages/contracts": "workspace:*",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.0.8",

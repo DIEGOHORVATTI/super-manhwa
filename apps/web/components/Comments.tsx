@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Native threaded comments (replaces Disqus). Lists a work's or chapter's
@@ -14,24 +15,10 @@ import { buildCommentTree } from "@/lib/comment-tree";
  */
 type Target = "work" | "chapter";
 
-interface Comment {
-  id: number;
-  parentId: number | null;
-  body: string | null;
-  score: number;
-  createdAt: string;
-  editedAt: string | null;
-  deletedAt: string | null;
-  userId: string;
-  authorName: string | null;
-  authorImage: string | null;
-  authorHandle: string | null;
-  authorRole: string | null;
-  authorPlan: string | null;
-  mine: boolean;
-}
+/** Shape comes straight from the procedure — no hand-kept duplicate. */
+type Comment = Awaited<ReturnType<typeof rpc.comments.list>>["comments"][number];
 
-function timeAgo(iso: string): string {
+function timeAgo(iso: string | Date): string {
   const d = new Date(iso).getTime();
   const s = Math.floor((Date.now() - d) / 1000);
   if (s < 60) return "agora";
@@ -50,10 +37,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
   const [editing, setEditing] = useState<number | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch(
-      `/api/comments?targetType=${targetType}&targetId=${encodeURIComponent(targetId)}`,
-    );
-    const json = await res.json();
+    const json = await rpc.comments.list({ targetType, targetId });
     setItems(json.comments ?? []);
   }, [targetType, targetId]);
 
@@ -67,11 +51,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
     if (!text.trim()) return;
     setBusy(true);
     try {
-      await fetch("/api/comments", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ targetType, targetId, parentId, body: text }),
-      });
+      await rpc.comments.create({ targetType, targetId, parentId, body: text });
       setBody("");
       setReplyTo(null);
       await load();
@@ -81,27 +61,19 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
   }
 
   async function saveEdit(id: number, text: string) {
-    await fetch(`/api/comments/${id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ body: text }),
-    });
+    await rpc.comments.edit({ id, body: text });
     setEditing(null);
     await load();
   }
 
   async function remove(id: number) {
-    await fetch(`/api/comments/${id}`, { method: "DELETE" });
+    await rpc.comments.remove({ id });
     await load();
   }
 
   async function vote(id: number, value: number) {
     if (!me) return;
-    await fetch(`/api/comments/${id}/vote`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ value }),
-    });
+    await rpc.comments.vote({ id, value });
     await load();
   }
 

@@ -7,7 +7,7 @@
 export interface CommentNode {
   id: number;
   parentId: number | null;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 export type WithReplies<T extends CommentNode> = T & { replies: T[] };

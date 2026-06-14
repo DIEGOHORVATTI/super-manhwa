@@ -45,7 +45,6 @@ mock.module("@/lib/payments/mercadopago", () => ({
   getPaymentStatus: async () => "approved",
 }));
 
-const comments = await import("../app/api/comments/route");
 const profile = await import("../app/api/profile/route");
 const adminUsers = await import("../app/api/admin/users/route");
 const donations = await import("../app/api/donations/create/route");
@@ -64,62 +63,7 @@ beforeEach(() => {
   dbResults = [];
 });
 
-describe("POST /api/comments", () => {
-  const url = "http://t/api/comments";
-  const good = { targetType: "work", targetId: "m1", body: "olá" };
-
-  it("401 when anonymous", async () => {
-    const res = await comments.POST(json(url, "POST", good));
-    expect(res.status).toBe(401);
-  });
-
-  it("400 on invalid body", async () => {
-    session = { user: { id: "u1" } };
-    const res = await comments.POST(
-      json(url, "POST", { targetType: "page", targetId: "", body: "" }),
-    );
-    expect(res.status).toBe(400);
-  });
-
-  it("403 when the user is banned", async () => {
-    session = { user: { id: "u1", banned: true } };
-    const res = await comments.POST(json(url, "POST", good));
-    expect(res.status).toBe(403);
-  });
-
-  it("201 and echoes the created comment on success", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[{ id: 7, body: "olá", targetType: "work", targetId: "m1" }]];
-    const res = await comments.POST(json(url, "POST", good));
-    expect(res.status).toBe(201);
-    expect((await res.json()).comment.id).toBe(7);
-  });
-});
-
-describe("GET /api/comments", () => {
-  it("400 without targetType/targetId", async () => {
-    const res = await comments.GET(new Request("http://t/api/comments"));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns the thread and hides soft-deleted bodies", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [
-      [
-        { id: 1, userId: "u1", body: "mine", deletedAt: null, parentId: null },
-        { id: 2, userId: "u2", body: "secret", deletedAt: "2024-01-01T00:00:00Z", parentId: null },
-      ],
-    ];
-    const res = await comments.GET(
-      new Request("http://t/api/comments?targetType=work&targetId=m1"),
-    );
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.comments).toHaveLength(2);
-    expect(data.comments.find((c: { id: number }) => c.id === 1).mine).toBe(true);
-    expect(data.comments.find((c: { id: number }) => c.id === 2).body).toBeNull(); // hidden
-  });
-});
+// Comments moved to the oRPC router — see tests/rpc.comments.test.ts.
 
 describe("PATCH /api/profile", () => {
   const url = "http://t/api/profile";
