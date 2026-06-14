@@ -18,6 +18,8 @@ export type MangaSummary = {
   genres?: string[];
   /** Chapter count, when the source exposes a cheap probe (suggest route only). */
   chapters?: number;
+  /** Short plain-text teaser for listing hover (AniList-backed listings). */
+  description?: string;
 };
 
 export type Chapter = {

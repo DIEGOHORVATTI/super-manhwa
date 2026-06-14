@@ -44,6 +44,11 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
               {/* Stretched link makes the whole cover clickable; the heart sits above it. */}
               <Link className="poster-hit" href={href} aria-label={m.name} tabIndex={-1} />
               <FavoriteButton compact id={m.id} name={m.name} imageUrl={m.imageUrl} />
+              {m.description && (
+                <div className="poster-desc" aria-hidden="true">
+                  <p>{m.description}</p>
+                </div>
+              )}
             </div>
             <Link className="poster-name" href={href}>
               {m.name}

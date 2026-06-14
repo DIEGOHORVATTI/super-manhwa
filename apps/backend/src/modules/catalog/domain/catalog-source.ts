@@ -19,6 +19,8 @@ export type CatalogItem = {
   score?: number;
   /** Total chapter count when the catalog knows it (often null while ongoing). */
   chapters?: number;
+  /** Short plain-text teaser for listing hover; undefined when unavailable. */
+  description?: string;
 };
 
 /** A work's full catalog record — drives the detail page's non-chapter content. */

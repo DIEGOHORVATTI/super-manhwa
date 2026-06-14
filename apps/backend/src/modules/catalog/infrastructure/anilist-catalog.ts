@@ -29,6 +29,7 @@ const MEDIA_FIELDS = `
   averageScore
   status
   chapters
+  description(asHtml: false)
 `;
 
 interface MediaNode {
@@ -68,6 +69,17 @@ interface GenreResponse {
 const displayTitle = (m: MediaNode): string =>
   m.title?.english ?? m.title?.romaji ?? m.title?.userPreferred ?? m.title?.native ?? `#${m.id}`;
 
+/** Short plain-text teaser for listing hover (strips tags/newlines, clamps). */
+const shortDesc = (raw?: string | null): string | undefined => {
+  if (!raw) return undefined;
+  const text = raw
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  if (!text) return undefined;
+  return text.length > 220 ? `${text.slice(0, 220).trimEnd()}…` : text;
+};
+
 const toItem = (m: MediaNode): CatalogItem => ({
   id: String(m.id),
   title: displayTitle(m),
@@ -76,6 +88,7 @@ const toItem = (m: MediaNode): CatalogItem => ({
   genres: (m.genres ?? []).filter((g): g is string => !!g),
   score: m.averageScore ?? undefined,
   chapters: m.chapters ?? undefined,
+  description: shortDesc(m.description),
 });
 
 const post = async <T>(query: string, variables: Record<string, unknown>): Promise<T | null> => {
@@ -161,7 +174,6 @@ const DETAIL_QUERY = `query ($id: Int) {
   Media(id: $id, type: MANGA) {
     ${MEDIA_FIELDS}
     bannerImage
-    description(asHtml: false)
     synonyms
   }
 }`;

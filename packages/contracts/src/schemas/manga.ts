@@ -35,6 +35,9 @@ export const mangaSummarySchema = z.object({
   /** Chapter count, when a source can answer cheaply (e.g. MangaDex /aggregate).
    *  Populated only by the suggest route; undefined elsewhere. */
   chapters: z.number().optional(),
+  /** Short plain-text teaser shown on listing hover. Present on AniList-backed
+   *  listings (popular/search/trending/newest); undefined for connector lists. */
+  description: z.string().optional(),
 });
 export type MangaSummary = z.infer<typeof mangaSummarySchema>;
 

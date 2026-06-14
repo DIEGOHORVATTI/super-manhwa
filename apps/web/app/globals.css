@@ -4003,3 +4003,38 @@ a:hover {
     display: none;
   }
 }
+
+/* ───────────────────────── Poster hover description (desktop) ───────────────────────── */
+.poster-desc {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+  border-radius: inherit;
+  background: linear-gradient(
+    to top,
+    rgba(8, 10, 14, 0.96) 30%,
+    rgba(8, 10, 14, 0.4) 75%,
+    transparent
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+.poster-desc p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #e7e9f0;
+  display: -webkit-box;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Only on devices with a real hover (desktop) — avoids covering taps on mobile. */
+@media (hover: hover) and (pointer: fine) {
+  .poster:hover .poster-desc {
+    opacity: 1;
+  }
+}
