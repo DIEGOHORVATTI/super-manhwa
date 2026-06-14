@@ -509,3 +509,51 @@ export const readingEvents = pgTable(
   },
   (t) => [uniqueIndex("reading_event_uniq").on(t.userId, t.chapterId)],
 );
+
+/* ───────────────────────────── Affiliates (recurring 20%) ─────────────────────────────
+ * A user becomes an affiliate (unique code/link). First-touch attribution writes a
+ * `referrals` row at signup; each authorized monthly subscription of a referred user
+ * accrues an `affiliateCommissions` row (one per affiliate+referred+period).
+ */
+export const affiliates = pgTable("affiliates", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  code: text("code").notNull().unique(),
+  ratePct: integer("rate_pct").notNull().default(20),
+  pixKey: text("pix_key"), // for manual payouts
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const referrals = pgTable("referrals", {
+  id: serial("id").primaryKey(),
+  affiliateId: integer("affiliate_id")
+    .notNull()
+    .references(() => affiliates.id, { onDelete: "cascade" }),
+  referredUserId: text("referred_user_id")
+    .notNull()
+    .unique()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const affiliateCommissions = pgTable(
+  "affiliate_commissions",
+  {
+    id: serial("id").primaryKey(),
+    affiliateId: integer("affiliate_id")
+      .notNull()
+      .references(() => affiliates.id, { onDelete: "cascade" }),
+    referredUserId: text("referred_user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    amountCents: integer("amount_cents").notNull(),
+    period: text("period").notNull(), // YYYY-MM
+    status: text("status").notNull().default("pending"), // pending | paid
+    paidAt: timestamp("paid_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("commission_uniq").on(t.affiliateId, t.referredUserId, t.period)],
+);

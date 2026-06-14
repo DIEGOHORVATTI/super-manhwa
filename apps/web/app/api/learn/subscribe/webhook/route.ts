@@ -1,7 +1,9 @@
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 
+import { commissionCents, periodKey } from "@/lib/affiliate";
 import { dbEnabled, getDb, schema } from "@/lib/db";
+import { PREMIUM_PRICE_CENTS } from "@/lib/learn-pricing";
 import { getSubscriptionStatus, mpEnabled } from "@/lib/payments/mercadopago";
 
 /**
@@ -49,10 +51,47 @@ export async function POST(req: Request) {
         .update(user)
         .set({ plan: "premium", premiumUntil: periodEnd, updatedAt: now })
         .where(eq(user.id, sub.userId));
+      await accrueAffiliateCommission(db, sub.userId, now);
     } else if (status === "cancelled" || status === "paused") {
       await db.update(user).set({ plan: "free", updatedAt: now }).where(eq(user.id, sub.userId));
     }
   }
 
   return NextResponse.json({ ok: true });
+}
+
+/**
+ * If the subscriber was referred, accrue this period's affiliate commission
+ * (one row per affiliate+referred+month). Recurring monthly payments call this
+ * each cycle; the unique index makes re-deliveries idempotent.
+ */
+async function accrueAffiliateCommission(
+  db: ReturnType<typeof getDb>,
+  referredUserId: string,
+  now: Date,
+) {
+  const { referrals, affiliates, affiliateCommissions } = schema;
+  const [ref] = await db
+    .select({ affiliateId: referrals.affiliateId })
+    .from(referrals)
+    .where(eq(referrals.referredUserId, referredUserId))
+    .limit(1);
+  if (!ref) return;
+
+  const [aff] = await db
+    .select({ ratePct: affiliates.ratePct })
+    .from(affiliates)
+    .where(eq(affiliates.id, ref.affiliateId))
+    .limit(1);
+  if (!aff) return;
+
+  await db
+    .insert(affiliateCommissions)
+    .values({
+      affiliateId: ref.affiliateId,
+      referredUserId,
+      amountCents: commissionCents(PREMIUM_PRICE_CENTS, aff.ratePct),
+      period: periodKey(now),
+    })
+    .onConflictDoNothing();
 }

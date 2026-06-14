@@ -85,6 +85,9 @@ export function UserMenu() {
           <Link href="/studio" role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="pen-line" size={15} /> Studio
           </Link>
+          <Link href="/affiliate" role="menuitem" onClick={() => setOpen(false)}>
+            <Icon name="sparkles" size={15} /> Afiliados
+          </Link>
           <Link href="/settings" role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="settings" size={15} /> Configurações
           </Link>

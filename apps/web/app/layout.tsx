@@ -2,6 +2,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
+import { AffiliateAttributor } from "@/components/AffiliateAttributor";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
         <Analytics />
         <SpeedInsights />
         <ServiceWorkerRegister />
+        <AffiliateAttributor />
       </body>
     </html>
   );

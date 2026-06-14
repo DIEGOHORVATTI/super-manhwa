@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
+import { PREMIUM_PRICE_BRL } from "@/lib/learn-pricing";
 import { createSubscription, mpEnabled } from "@/lib/payments/mercadopago";
 
 /** Start a premium subscription (Mercado Pago preapproval). Returns the checkout URL. */
-export const PREMIUM_PRICE_BRL = Number(process.env.LEARN_PREMIUM_PRICE ?? 14.9);
 
 export async function POST(req: Request) {
   if (!dbEnabled || !mpEnabled)
