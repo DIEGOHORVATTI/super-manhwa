@@ -2,6 +2,7 @@
 import { useEffect, useRef } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Fires affiliate attribution once after a user is authenticated (covers email +
@@ -15,7 +16,7 @@ export function AffiliateAttributor() {
   useEffect(() => {
     if (done.current || !data?.user) return;
     done.current = true;
-    void fetch("/api/affiliate/attribute", { method: "POST" }).catch(() => {});
+    void rpc.affiliate.attribute().catch(() => {});
   }, [data?.user]);
 
   return null;

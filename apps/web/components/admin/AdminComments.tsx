@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Row {
   id: number;
   body: string | null;
   targetType: string;
   targetId: string;
-  deletedAt: string | null;
+  deletedAt: string | Date | null;
   authorName: string | null;
   authorHandle: string | null;
 }
@@ -16,15 +18,23 @@ export function AdminComments() {
   const [rows, setRows] = useState<Row[] | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/comments");
-    if (res.ok) setRows((await res.json()).comments ?? []);
+    try {
+      const { comments } = await rpc.admin.comments.list();
+      setRows(comments ?? []);
+    } catch {
+      /* leave previous state */
+    }
   }
   useEffect(() => {
     void load();
   }, []);
 
   async function remove(id: number) {
-    await fetch(`/api/comments/${id}`, { method: "DELETE" });
+    try {
+      await rpc.comments.remove({ id });
+    } catch {
+      /* ignore — load() refreshes truth */
+    }
     await load();
   }
 

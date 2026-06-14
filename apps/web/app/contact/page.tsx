@@ -33,7 +33,7 @@ export default function ContatoPage() {
 
       <h2>Enviar mensagem</h2>
       <LegalForm
-        endpoint="/api/legal/contact"
+        kind="contact"
         submitLabel="Enviar"
         fallbackEmail="contato@supermanhwa.app"
         fields={[

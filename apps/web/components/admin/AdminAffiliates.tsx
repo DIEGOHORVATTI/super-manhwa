@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Row {
   id: number;
   code: string;
@@ -17,19 +19,18 @@ export function AdminAffiliates() {
   const [rows, setRows] = useState<Row[] | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/affiliates");
-    if (res.ok) setRows((await res.json()).affiliates ?? []);
+    try {
+      setRows((await rpc.affiliate.adminList()).affiliates ?? []);
+    } catch {
+      setRows([]);
+    }
   }
   useEffect(() => {
     void load();
   }, []);
 
   async function pay(affiliateId: number) {
-    await fetch("/api/admin/affiliates", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ affiliateId }),
-    });
+    await rpc.affiliate.markPaid({ affiliateId });
     await load();
   }
 

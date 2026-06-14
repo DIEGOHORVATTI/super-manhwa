@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { markChapterRead, recordProgress } from "@/lib/library";
+import { rpc } from "@/lib/rpc/client";
 
 const PRELOAD_AHEAD = 4;
 
@@ -43,12 +44,8 @@ export function ReaderPages({
       chapterName,
       chapterNo,
     });
-    // Server-side reading tracker (badges). Fire-and-forget; 401 for anon is fine.
-    void fetch("/api/reading/track", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ workId: mangaId, chapterId }),
-    }).catch(() => {});
+    // Server-side reading tracker (badges). Fire-and-forget; auth errors for anon are fine.
+    void rpc.reading.track({ workId: mangaId, chapterId }).catch(() => {});
   }, [mangaId, mangaName, cover, chapterId, chapterName, chapterNo]);
 
   // Preload-ahead + mark-read when the last page is seen.

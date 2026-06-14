@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Block {
   id: number;
   x: number;
@@ -17,19 +19,23 @@ export function AdminPixels() {
   const [blocks, setBlocks] = useState<Block[] | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/pixels");
-    if (res.ok) setBlocks((await res.json()).blocks ?? []);
+    try {
+      const { blocks } = await rpc.admin.pixels.list();
+      setBlocks(blocks ?? []);
+    } catch {
+      /* leave previous state */
+    }
   }
   useEffect(() => {
     void load();
   }, []);
 
   async function moderate(id: number, action: "approve" | "reject") {
-    await fetch("/api/admin/pixels", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ id, action }),
-    });
+    try {
+      await rpc.admin.pixels.moderate({ id, action });
+    } catch {
+      /* ignore — load() refreshes truth */
+    }
     await load();
   }
 

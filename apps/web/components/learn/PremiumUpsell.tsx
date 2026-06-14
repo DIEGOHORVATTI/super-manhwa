@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 const PERKS = [
   "Palavras novas e cards ilimitados",
@@ -23,20 +24,16 @@ export function PremiumUpsell() {
     setBusy(true);
     setError(null);
     try {
-      const res = await fetch("/api/learn/subscribe", { method: "POST" });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(
-          j.error === "unconfigured"
-            ? "Assinatura ainda não configurada."
-            : "Erro ao iniciar a assinatura.",
-        );
-      }
-      const data = await res.json();
+      const data = await rpc.learn.subscribe();
       if (data.initPoint) window.location.href = data.initPoint;
       else throw new Error("Checkout indisponível.");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro inesperado.");
+      const err = e as { code?: string };
+      setError(
+        err?.code === "SERVICE_UNAVAILABLE"
+          ? "Assinatura ainda não configurada."
+          : "Erro ao iniciar a assinatura.",
+      );
       setBusy(false);
     }
   }

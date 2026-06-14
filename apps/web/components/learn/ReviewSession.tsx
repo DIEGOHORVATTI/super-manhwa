@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Card {
   cardId: number;
   front: string;
@@ -27,9 +29,10 @@ export function ReviewSession() {
   const [done, setDone] = useState(0);
 
   useEffect(() => {
-    void fetch("/api/learn/review")
-      .then((r) => (r.ok ? r.json() : { cards: [] }))
-      .then((d) => setCards(d.cards ?? []));
+    rpc.learn
+      .reviewQueue()
+      .then((d) => setCards(d.cards ?? []))
+      .catch(() => setCards([]));
   }, []);
 
   if (!cards) return <p className="muted studio-wrap">Carregando…</p>;
@@ -48,11 +51,11 @@ export function ReviewSession() {
   }
 
   async function grade(rating: 1 | 2 | 3 | 4) {
-    await fetch("/api/learn/review", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ cardId: card.cardId, rating }),
-    });
+    try {
+      await rpc.learn.gradeReview({ cardId: card.cardId, rating });
+    } catch {
+      // best-effort; advance regardless so the session keeps flowing
+    }
     setDone((d) => d + 1);
     setRevealed(false);
     setI((n) => n + 1);

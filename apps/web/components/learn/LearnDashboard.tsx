@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 interface Stats {
   xp: number;
@@ -31,9 +32,10 @@ export function LearnDashboard() {
 
   useEffect(() => {
     if (!session) return;
-    void fetch("/api/learn/stats")
-      .then((r) => (r.ok ? r.json() : null))
-      .then(setStats);
+    rpc.learn
+      .stats()
+      .then((s) => setStats(s as Stats))
+      .catch(() => setStats(null));
   }, [session]);
 
   if (isPending) return <p className="muted studio-wrap">Carregando…</p>;

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 interface Tok {
   idx: number;
@@ -34,9 +35,12 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
   const [limitMsg, setLimitMsg] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/learn/chapters/${chapterId}`);
-    if (res.ok) setData(await res.json());
-    else setErr("Capítulo indisponível.");
+    try {
+      const d = await rpc.learn.chapter({ id: chapterId });
+      setData(d as typeof data);
+    } catch {
+      setErr("Capítulo indisponível.");
+    }
   }, [chapterId]);
   useEffect(() => {
     void load();
@@ -63,30 +67,32 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
   async function setStatus(lemma: string, status: Status) {
     if (!session?.user) return;
     setLimitMsg(null);
-    const res = await fetch("/api/learn/words", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ language: data!.language, lemma, status }),
-    });
-    if (res.status === 402) {
-      const j = await res.json().catch(() => ({}));
-      setLimitMsg(j.message ?? "Limite diário atingido.");
+    try {
+      await rpc.learn.setWord({
+        language: data!.language as "pt" | "en",
+        lemma,
+        status,
+      });
+    } catch (e) {
+      // Freemium cap → PAYMENT_REQUIRED: show the upsell instead of updating.
+      const err = e as { code?: string; message?: string; data?: { reason?: string } };
+      if (err?.code === "PAYMENT_REQUIRED" || err?.data?.reason === "daily_limit") {
+        setLimitMsg(err.message ?? "Limite diário atingido.");
+      }
       return;
     }
-    if (res.ok) {
-      // optimistic local update + recount
-      setData((d) => {
-        if (!d) return d;
-        const statuses = { ...d.statuses, [lemma]: status };
-        let known = 0;
-        let learning = 0;
-        for (const s of Object.values(statuses)) {
-          if (s === "known") known++;
-          else if (s === "learning") learning++;
-        }
-        return { ...d, statuses, counts: { known, learning } };
-      });
-    }
+    // optimistic local update + recount
+    setData((d) => {
+      if (!d) return d;
+      const statuses = { ...d.statuses, [lemma]: status };
+      let known = 0;
+      let learning = 0;
+      for (const s of Object.values(statuses)) {
+        if (s === "known") known++;
+        else if (s === "learning") learning++;
+      }
+      return { ...d, statuses, counts: { known, learning } };
+    });
   }
 
   return (

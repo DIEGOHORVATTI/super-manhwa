@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 interface Work {
   id: number;
@@ -28,8 +29,12 @@ export function StudioDashboard() {
   const [creating, setCreating] = useState(false);
 
   async function load() {
-    const res = await fetch("/api/studio/works");
-    if (res.ok) setWorks((await res.json()).works ?? []);
+    try {
+      const { works } = await rpc.studio.works.list();
+      setWorks(works ?? []);
+    } catch {
+      setWorks([]);
+    }
   }
   useEffect(() => {
     if (session) void load();
@@ -55,21 +60,17 @@ export function StudioDashboard() {
         .map((c) => c.trim())
         .filter(Boolean)
         .slice(0, 8);
-      const res = await fetch("/api/studio/works", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          title,
-          kind,
-          language: kind === "novel" ? language : undefined,
-          categories: cats.length ? cats : undefined,
-        }),
+      await rpc.studio.works.create({
+        title,
+        kind,
+        language: kind === "novel" ? language : undefined,
+        categories: cats.length ? cats : undefined,
       });
-      if (res.ok) {
-        setTitle("");
-        setCategories("");
-        await load();
-      }
+      setTitle("");
+      setCategories("");
+      await load();
+    } catch {
+      // creation failed — leave the form as-is so the user can retry.
     } finally {
       setCreating(false);
     }

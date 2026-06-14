@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 interface Data {
   affiliate: { code: string; ratePct: number; pixKey: string | null } | null;
@@ -24,11 +25,12 @@ export function AffiliateView() {
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
 
   const load = async () => {
-    const res = await fetch("/api/affiliate");
-    if (res.ok) {
-      const d: Data = await res.json();
+    try {
+      const d: Data = await rpc.affiliate.get();
       setData(d);
       setPixKey(d.affiliate?.pixKey ?? "");
+    } catch {
+      // leave dashboard in its loading state on failure
     }
   };
   useEffect(() => {
@@ -50,11 +52,7 @@ export function AffiliateView() {
   async function join() {
     setBusy(true);
     try {
-      await fetch("/api/affiliate", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({}),
-      });
+      await rpc.affiliate.upsertPixKey({});
       await load();
     } finally {
       setBusy(false);
@@ -63,11 +61,7 @@ export function AffiliateView() {
 
   async function savePix() {
     setSavedMsg(null);
-    await fetch("/api/affiliate", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ pixKey }),
-    });
+    await rpc.affiliate.upsertPixKey({ pixKey });
     setSavedMsg("Chave Pix salva.");
   }
 

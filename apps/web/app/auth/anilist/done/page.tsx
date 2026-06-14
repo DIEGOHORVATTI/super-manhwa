@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { completeAuthFromHash, consumeReturnPath } from "@/lib/anilist";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Final hop of the AniList login: the server callback redirected here with the
@@ -21,11 +22,7 @@ export default function AniListDone() {
         // If the visitor is signed in, also persist the AniList link to their
         // account (multiple AniList accounts allowed). No-op / 401 when anon.
         try {
-          await fetch("/api/anilist/link", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ token }),
-          });
+          await rpc.anilist.link({ token });
         } catch {
           /* favourites sync still works from localStorage even if linking fails */
         }

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
 import { GRID, isFree, isValidRect, priceCents, type Rect, toPixelBox } from "@/lib/pixels";
+import { rpc } from "@/lib/rpc/client";
 
 interface Ad {
   id: number;
@@ -41,11 +42,12 @@ export function PixelBoard() {
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const load = async () => {
-    const res = await fetch("/api/pixels");
-    if (res.ok) {
-      const d = await res.json();
+    try {
+      const d = await rpc.pixels.grid();
       setAds(d.ads ?? []);
       setTaken(d.taken ?? []);
+    } catch {
+      /* leave previous state */
     }
   };
   useEffect(() => {
@@ -85,34 +87,32 @@ export function PixelBoard() {
     setBusy(true);
     setErr(null);
     try {
-      const fd = new FormData();
-      fd.set("x", String(sel.x));
-      fd.set("y", String(sel.y));
-      fd.set("w", String(sel.w));
-      fd.set("h", String(sel.h));
-      fd.set("linkUrl", link);
-      fd.set("title", title);
-      fd.set("image", file);
-      const res = await fetch("/api/pixels/reserve", { method: "POST", body: fd });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(
-          j.error === "taken" ? "Alguém pegou esse espaço. Escolha outro." : "Falha ao reservar.",
-        );
-      }
-      const data = await res.json();
-      setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 });
+      const data = await rpc.pixels.reserve({
+        x: sel.x,
+        y: sel.y,
+        w: sel.w,
+        h: sel.h,
+        linkUrl: link,
+        title,
+        image: file,
+      });
+      setPix({ id: data.id, qrCode: data.qrCode ?? "", qrCodeBase64: data.qrCodeBase64 ?? "" });
       setStage("pay");
       pollRef.current = setInterval(async () => {
-        const s = await fetch(`/api/pixels/${data.id}/status`).then((r) => r.json());
-        if (s.status === "pending" || s.status === "approved") {
-          if (pollRef.current) clearInterval(pollRef.current);
-          setStage("done");
-          void load();
+        try {
+          const s = await rpc.pixels.status({ id: String(data.id) });
+          if (s.status === "pending" || s.status === "approved") {
+            if (pollRef.current) clearInterval(pollRef.current);
+            setStage("done");
+            void load();
+          }
+        } catch {
+          /* keep polling */
         }
       }, 4000);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Erro inesperado.");
+      const code = (e as { message?: string })?.message;
+      setErr(code === "taken" ? "Alguém pegou esse espaço. Escolha outro." : "Falha ao reservar.");
     } finally {
       setBusy(false);
     }

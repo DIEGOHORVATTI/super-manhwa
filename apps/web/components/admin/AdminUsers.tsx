@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Row {
   id: string;
   name: string;
@@ -15,19 +17,26 @@ export function AdminUsers() {
   const [users, setUsers] = useState<Row[] | null>(null);
 
   async function load() {
-    const res = await fetch("/api/admin/users");
-    if (res.ok) setUsers((await res.json()).users ?? []);
+    try {
+      const { users } = await rpc.admin.users.list();
+      setUsers(users ?? []);
+    } catch {
+      /* leave previous state */
+    }
   }
   useEffect(() => {
     void load();
   }, []);
 
-  async function patch(userId: string, body: Record<string, unknown>) {
-    await fetch("/api/admin/users", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ userId, ...body }),
-    });
+  async function patch(
+    userId: string,
+    body: { role?: "user" | "staff" | "admin"; banned?: boolean },
+  ) {
+    try {
+      await rpc.admin.users.update({ userId, ...body });
+    } catch {
+      /* ignore — load() refreshes truth */
+    }
     await load();
   }
 
@@ -48,7 +57,9 @@ export function AdminUsers() {
               <select
                 className="select"
                 value={u.role}
-                onChange={(e) => patch(u.id, { role: e.target.value })}
+                onChange={(e) =>
+                  patch(u.id, { role: e.target.value as "user" | "staff" | "admin" })
+                }
               >
                 <option value="user">user</option>
                 <option value="staff">staff</option>

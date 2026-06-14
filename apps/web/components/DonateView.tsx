@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Pix donation flow. Pick an amount → create a Mercado Pago Pix payment → show
@@ -38,30 +39,22 @@ export function DonateView() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/donations/create", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ amountCents: cents, message: message || undefined }),
+      const data = await rpc.donations.create({
+        amountCents: cents,
+        message: message || undefined,
       });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(
-          j.error === "unconfigured" ? "Doações ainda não configuradas." : "Erro ao gerar o Pix.",
-        );
-      }
-      const data = await res.json();
       if (!data.qrCode) throw new Error("Pix indisponível no momento.");
-      setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 });
+      setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 ?? "" });
       setStage("pix");
       pollRef.current = setInterval(async () => {
-        const s = await fetch(`/api/donations/${data.id}/status`).then((r) => r.json());
+        const s = await rpc.donations.status({ id: String(data.id) });
         if (s.status === "approved") {
           if (pollRef.current) clearInterval(pollRef.current);
           setStage("done");
         }
       }, 4000);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Erro inesperado.");
+      setError(e instanceof Error ? e.message : "Erro ao gerar o Pix.");
     } finally {
       setBusy(false);
     }

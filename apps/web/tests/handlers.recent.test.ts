@@ -1,3 +1,4 @@
+import { call } from "@orpc/server";
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import * as dbSchema from "../lib/db/schema";
@@ -5,9 +6,10 @@ import { hasRole } from "../lib/roles";
 import { makeFakeDb } from "./helpers/fake-db";
 
 /**
- * Handler integration ("e2e") tests for the routes added in the recent feature
- * round (infinite scroll, reading tracker, affiliates, pixel board, cover
- * upload). Side-effecting deps are mocked via closures read at call time.
+ * Integration tests for the recent feature round. Migrated platform features are
+ * oRPC procedures invoked via `call()` with a fake context; routes that stay
+ * native (the catalog `/api/list` proxy, the Pix webhook, multipart cover upload)
+ * are exercised through their real handlers with the side-effecting deps mocked.
  */
 let session: { user: Record<string, unknown> } | null = null;
 let dbResults: unknown[] = [];
@@ -71,16 +73,10 @@ mock.module("next/headers", () => ({
   }),
 }));
 
+const { appRouter } = await import("../lib/rpc/router");
+const { fakeContext } = await import("./helpers/rpc-context");
 const list = await import("../app/api/list/route");
-const track = await import("../app/api/reading/track/route");
-const affiliate = await import("../app/api/affiliate/route");
-const attribute = await import("../app/api/affiliate/attribute/route");
-const adminAff = await import("../app/api/admin/affiliates/route");
-const pixels = await import("../app/api/pixels/route");
-const reserve = await import("../app/api/pixels/reserve/route");
-const pixelStatus = await import("../app/api/pixels/[id]/status/route");
 const pixelWebhook = await import("../app/api/pixels/webhook/route");
-const adminPixels = await import("../app/api/admin/pixels/route");
 const cover = await import("../app/api/studio/works/[id]/cover/route");
 
 const get = (url: string) => new Request(url);
@@ -98,6 +94,7 @@ function multipart(fields: Record<string, string>, withImage = true) {
     fd.set("image", new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" }));
   return new Request("http://t/x", { method: "POST", body: fd });
 }
+const pngFile = () => new File([new Uint8Array([1, 2, 3])], "a.png", { type: "image/png" });
 
 beforeEach(() => {
   session = null;
@@ -109,7 +106,7 @@ beforeEach(() => {
   readingUnlocked = [];
 });
 
-describe("GET /api/list", () => {
+describe("GET /api/list (native catalog proxy)", () => {
   it("routes feed=latest to the latest feed", async () => {
     const res = await list.GET(get("http://t/api/list?feed=latest&page=2"));
     expect((await res.json()).list[0].id).toBe("latest");
@@ -124,138 +121,180 @@ describe("GET /api/list", () => {
   });
 });
 
-describe("POST /api/reading/track", () => {
-  it("401 when anonymous", async () => {
-    const res = await track.POST(json("http://t", "POST", { workId: "m", chapterId: "c" }));
-    expect(res.status).toBe(401);
+describe("rpc.reading.track", () => {
+  it("UNAUTHORIZED when anonymous", async () => {
+    await expect(
+      call(appRouter.reading.track, { workId: "m", chapterId: "c" }, { context: fakeContext() }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
   it("records a new chapter and reports unlocked badges", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[{ id: 1 }]]; // insert returning → new row
     readingUnlocked = ["read_10_works"];
-    const res = await track.POST(json("http://t", "POST", { workId: "m", chapterId: "c" }));
-    expect(res.status).toBe(200);
-    expect((await res.json()).unlocked).toEqual(["read_10_works"]);
+    const res = await call(
+      appRouter.reading.track,
+      { workId: "m", chapterId: "c" },
+      {
+        context: fakeContext({ user: { id: "u1" }, results: [[{ id: 1 }]] }),
+      },
+    );
+    expect(res.unlocked).toEqual(["read_10_works"]);
   });
 });
 
-describe("/api/affiliate", () => {
-  it("GET → null when not an affiliate", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[]];
-    expect((await (await affiliate.GET()).json()).affiliate).toBeNull();
+describe("rpc.affiliate", () => {
+  it("get → null when not an affiliate", async () => {
+    const res = await call(appRouter.affiliate.get, undefined as never, {
+      context: fakeContext({ user: { id: "u1" }, results: [[]] }),
+    });
+    expect(res.affiliate).toBeNull();
   });
-  it("GET → stats when an affiliate", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [
-      [{ id: 1, code: "abc123", ratePct: 20, pixKey: null }],
-      [{ n: 3 }],
-      [{ status: "pending", cents: 600 }],
-    ];
-    const data = await (await affiliate.GET()).json();
-    expect(data.affiliate.code).toBe("abc123");
-    expect(data.stats.referrals).toBe(3);
-    expect(data.stats.pendingCents).toBe(600);
+  it("get → stats when an affiliate", async () => {
+    const res = await call(appRouter.affiliate.get, undefined as never, {
+      context: fakeContext({
+        user: { id: "u1" },
+        results: [
+          [{ id: 1, code: "abc123", ratePct: 20, pixKey: null }],
+          [{ n: 3 }],
+          [{ status: "pending", cents: 600 }],
+        ],
+      }),
+    });
+    expect(res.affiliate?.code).toBe("abc123");
+    expect(res.stats?.referrals).toBe(3);
+    expect(res.stats?.pendingCents).toBe(600);
   });
-  it("POST join creates a code (201)", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[], [], []]; // no existing, no clash, insert
-    const res = await affiliate.POST(json("http://t", "POST", {}));
-    expect(res.status).toBe(201);
-    expect((await res.json()).code).toMatch(/^[a-z0-9]{8}$/);
+  it("upsertPixKey join creates a code", async () => {
+    const res = await call(
+      appRouter.affiliate.upsertPixKey,
+      {},
+      {
+        context: fakeContext({ user: { id: "u1" }, results: [[], [], []] }),
+      },
+    );
+    expect(res.code).toMatch(/^[a-z0-9]{8}$/);
   });
 });
 
-describe("POST /api/affiliate/attribute", () => {
+describe("rpc.affiliate.attribute", () => {
   it("no-op without a ref cookie", async () => {
-    session = { user: { id: "u1" } };
-    expect((await (await attribute.POST()).json()).ok).toBe(false);
+    const res = await call(appRouter.affiliate.attribute, undefined as never, {
+      context: fakeContext({ user: { id: "u1" } }),
+    });
+    expect(res.ok).toBe(false);
   });
   it("creates a referral for a valid non-self code", async () => {
-    session = { user: { id: "u1" } };
     refCookie = "abc123";
-    dbResults = [[{ id: 7, userId: "other" }], []]; // affiliate lookup, insert
-    expect((await (await attribute.POST()).json()).ok).toBe(true);
+    const res = await call(appRouter.affiliate.attribute, undefined as never, {
+      context: fakeContext({ user: { id: "u1" }, results: [[{ id: 7, userId: "other" }], []] }),
+    });
+    expect(res.ok).toBe(true);
   });
 });
 
-describe("/api/admin/affiliates", () => {
-  it("GET 403 for non-staff", async () => {
-    session = { user: { id: "u1", role: "user" } };
-    expect((await adminAff.GET()).status).toBe(403);
+describe("rpc.affiliate admin (staff)", () => {
+  it("adminList FORBIDDEN for non-staff", async () => {
+    await expect(
+      call(appRouter.affiliate.adminList, undefined as never, {
+        context: fakeContext({ user: { id: "u1", role: "user" } }),
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
-  it("GET lists for staff", async () => {
-    session = { user: { id: "u1", role: "staff" } };
-    dbResults = [
-      [{ id: 1, code: "abc123", pixKey: null, name: "A", handle: "a", pendingCents: 600 }],
-    ];
-    const data = await (await adminAff.GET()).json();
-    expect(data.affiliates[0].pendingCents).toBe(600);
+  it("adminList lists for staff", async () => {
+    const res = await call(appRouter.affiliate.adminList, undefined as never, {
+      context: fakeContext({
+        user: { id: "u1", role: "staff" },
+        results: [
+          [{ id: 1, code: "abc123", pixKey: null, name: "A", handle: "a", pendingCents: 600 }],
+        ],
+      }),
+    });
+    expect(res.affiliates[0]?.pendingCents).toBe(600);
   });
-  it("POST marks paid (staff)", async () => {
-    session = { user: { id: "u1", role: "admin" } };
-    dbResults = [[]];
-    const res = await adminAff.POST(json("http://t", "POST", { affiliateId: 1 }));
-    expect(res.status).toBe(200);
+  it("markPaid for staff", async () => {
+    const res = await call(
+      appRouter.affiliate.markPaid,
+      { affiliateId: 1 },
+      {
+        context: fakeContext({ user: { id: "u1", role: "staff" }, results: [[]] }),
+      },
+    );
+    expect(res.ok).toBe(true);
   });
 });
 
-describe("/api/pixels", () => {
-  it("GET returns approved ads + taken rects", async () => {
-    dbResults = [
-      [
-        {
-          id: 1,
-          x: 0,
-          y: 0,
-          w: 2,
-          h: 2,
-          status: "approved",
-          imageR2Key: "k",
-          reservedUntil: null,
-          linkUrl: "https://x",
-          title: "t",
-        },
-      ],
-    ];
-    const data = await (await pixels.GET()).json();
-    expect(data.ads).toHaveLength(1);
-    expect(data.ads[0].imageUrl).toContain("/k");
-    expect(data.taken).toHaveLength(1);
-    expect(data.grid.cols).toBe(100);
+describe("rpc.pixels", () => {
+  it("grid returns approved ads + taken rects", async () => {
+    const res = await call(appRouter.pixels.grid, undefined as never, {
+      context: fakeContext({
+        results: [
+          [
+            {
+              id: 1,
+              x: 0,
+              y: 0,
+              w: 2,
+              h: 2,
+              status: "approved",
+              imageR2Key: "k",
+              reservedUntil: null,
+              linkUrl: "https://x",
+              title: "t",
+            },
+          ],
+        ],
+      }),
+    });
+    expect(res.ads).toHaveLength(1);
+    expect(res.ads[0]?.imageUrl).toContain("/k");
+    expect(res.taken).toHaveLength(1);
+    expect(res.grid.cols).toBe(100);
   });
 
-  it("reserve: 401 anon, 400 bad rect, 201 success", async () => {
-    // anon
-    expect(
-      (await reserve.POST(multipart({ x: "0", y: "0", w: "2", h: "2", linkUrl: "https://x" })))
-        .status,
-    ).toBe(401);
-    // bad rect (oversize)
-    session = { user: { id: "u1", email: "u@x" } };
-    expect(
-      (await reserve.POST(multipart({ x: "0", y: "0", w: "99", h: "2", linkUrl: "https://x" })))
-        .status,
-    ).toBe(400);
-    // success
-    dbResults = [[], [{ id: 5 }], []]; // no collision, insert, update
-    const res = await reserve.POST(
-      multipart({ x: "0", y: "0", w: "2", h: "2", linkUrl: "https://x" }),
+  it("reserve: UNAUTHORIZED anon, BAD_REQUEST bad rect, success", async () => {
+    await expect(
+      call(
+        appRouter.pixels.reserve,
+        { x: 0, y: 0, w: 2, h: 2, linkUrl: "https://x", image: pngFile() },
+        { context: fakeContext() },
+      ),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+
+    await expect(
+      call(
+        appRouter.pixels.reserve,
+        { x: 0, y: 0, w: 99, h: 2, linkUrl: "https://x", image: pngFile() },
+        { context: fakeContext({ user: { id: "u1", email: "u@x" } }) },
+      ),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+
+    const res = await call(
+      appRouter.pixels.reserve,
+      { x: 0, y: 0, w: 2, h: 2, linkUrl: "https://x", image: pngFile() },
+      {
+        context: fakeContext({
+          user: { id: "u1", email: "u@x" },
+          results: [[], [{ id: 5 }], []], // no collision, insert returning, update
+        }),
+      },
     );
-    expect(res.status).toBe(200);
-    expect((await res.json()).qrCode).toBe("QR");
+    expect(res.qrCode).toBe("QR");
   });
 
-  it("status: 404 when missing, value when present", async () => {
-    dbResults = [[]];
-    expect((await pixelStatus.GET(get("http://t"), params("9"))).status).toBe(404);
-    dbResults = [[{ status: "approved" }]];
-    expect((await (await pixelStatus.GET(get("http://t"), params("9"))).json()).status).toBe(
-      "approved",
+  it("status: NOT_FOUND when missing, value when present", async () => {
+    await expect(
+      call(appRouter.pixels.status, { id: "9" }, { context: fakeContext({ results: [[]] }) }),
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
+
+    const res = await call(
+      appRouter.pixels.status,
+      { id: "9" },
+      {
+        context: fakeContext({ results: [[{ status: "approved" }]] }),
+      },
     );
+    expect(res.status).toBe("approved");
   });
 
-  it("webhook flips reserved → pending only on approval", async () => {
+  it("webhook (native) flips reserved → pending only on approval", async () => {
     dbResults = [[]]; // the update
     mpPaymentStatus = "approved";
     const res = await pixelWebhook.POST(
@@ -265,26 +304,37 @@ describe("/api/pixels", () => {
   });
 });
 
-describe("/api/admin/pixels", () => {
-  it("GET 403 non-staff; lists pending for staff", async () => {
-    session = { user: { id: "u1", role: "user" } };
-    expect((await adminPixels.GET()).status).toBe(403);
-    session = { user: { id: "u1", role: "staff" } };
-    dbResults = [
-      [{ id: 1, x: 0, y: 0, w: 2, h: 2, linkUrl: "https://x", title: "t", imageR2Key: "k" }],
-    ];
-    const data = await (await adminPixels.GET()).json();
-    expect(data.blocks[0].imageUrl).toContain("/k");
+describe("rpc.admin.pixels (staff)", () => {
+  it("list FORBIDDEN non-staff; lists pending for staff", async () => {
+    await expect(
+      call(appRouter.admin.pixels.list, undefined as never, {
+        context: fakeContext({ user: { id: "u1", role: "user" } }),
+      }),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+
+    const res = await call(appRouter.admin.pixels.list, undefined as never, {
+      context: fakeContext({
+        user: { id: "u1", role: "staff" },
+        results: [
+          [{ id: 1, x: 0, y: 0, w: 2, h: 2, linkUrl: "https://x", title: "t", imageR2Key: "k" }],
+        ],
+      }),
+    });
+    expect(res.blocks[0]?.imageUrl).toContain("/k");
   });
-  it("POST approve", async () => {
-    session = { user: { id: "u1", role: "admin" } };
-    dbResults = [[]];
-    const res = await adminPixels.POST(json("http://t", "POST", { id: 1, action: "approve" }));
-    expect(res.status).toBe(200);
+  it("moderate approve", async () => {
+    const res = await call(
+      appRouter.admin.pixels.moderate,
+      { id: 1, action: "approve" },
+      {
+        context: fakeContext({ user: { id: "u1", role: "staff" }, results: [[]] }),
+      },
+    );
+    expect(res.ok).toBe(true);
   });
 });
 
-describe("POST /api/studio/works/[id]/cover", () => {
+describe("POST /api/studio/works/[id]/cover (native upload)", () => {
   it("403 without canEditWork", async () => {
     session = { user: { id: "u1" } };
     workAccess = { canEditWork: false };

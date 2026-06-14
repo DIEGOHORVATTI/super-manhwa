@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Chapter {
   id: number;
   number: string;
@@ -50,9 +52,12 @@ export function StudioWork({ workId }: { workId: number }) {
   const [err, setErr] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const res = await fetch(`/api/studio/works/${workId}`);
-    if (res.ok) setData(await res.json());
-    else setErr("Sem acesso a esta obra.");
+    try {
+      const res = await rpc.studio.work.get({ id: workId });
+      setData(res as NonNullable<typeof data>);
+    } catch {
+      setErr("Sem acesso a esta obra.");
+    }
   }, [workId]);
   useEffect(() => {
     void load();
@@ -62,23 +67,26 @@ export function StudioWork({ workId }: { workId: number }) {
   if (!data) return <p className="muted studio-wrap">Carregando…</p>;
   const { work, chapters, members, access } = data;
 
-  async function chapterAction(id: number, body: Record<string, unknown>) {
-    await fetch(`/api/studio/chapters/${id}`, {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(body),
-    });
+  async function chapterAction(
+    id: number,
+    body: { action: "submit" | "schedule" | "publish" | "unpublish"; scheduledAt?: string },
+  ) {
+    try {
+      await rpc.studio.chapter.action({ id, ...body });
+    } catch {
+      // surface nothing; the lifecycle buttons stay available to retry.
+    }
     await load();
   }
 
   async function review(id: number, decision: "approved" | "changes_requested") {
     const note =
       decision === "changes_requested" ? (prompt("Nota para o tradutor (opcional):") ?? "") : "";
-    await fetch(`/api/studio/chapters/${id}/review`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ decision, note }),
-    });
+    try {
+      await rpc.studio.chapter.review({ id, decision, note });
+    } catch {
+      // ignore — reload reflects whatever state persisted.
+    }
     await load();
   }
 
@@ -259,24 +267,17 @@ function TextChapterUpload({ workId, onDone }: { workId: number; onDone: () => v
     }
     setBusy(true);
     setMsg(null);
-    const res = await fetch(`/api/studio/works/${workId}/text-chapters`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ number, title, content }),
-    });
-    setBusy(false);
-    if (res.ok) {
-      const j = await res.json();
+    try {
+      const { chapter } = await rpc.studio.textChapter.add({ id: workId, number, title, content });
       setNumber("");
       setTitle("");
       setContent("");
-      setMsg(
-        `Capítulo salvo e tokenizado (${j.chapter.tokens} tokens, ${j.chapter.lemmas} palavras).`,
-      );
+      setMsg(`Capítulo salvo e tokenizado (${chapter.tokens} tokens, ${chapter.lemmas} palavras).`);
       onDone();
-    } else {
-      const j = await res.json().catch(() => ({}));
-      setMsg(j.error ?? "Falha ao salvar.");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Falha ao salvar.");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -385,20 +386,24 @@ function TeamManager({
 
   async function add() {
     if (!handle.trim()) return;
-    await fetch(`/api/studio/works/${workId}/team`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ handle, role }),
-    });
-    setHandle("");
+    try {
+      await rpc.studio.team.add({
+        id: workId,
+        handle,
+        role: role as "editor" | "translator" | "reviewer",
+      });
+      setHandle("");
+    } catch {
+      // ignore — onChange reload reflects the unchanged roster.
+    }
     onChange();
   }
   async function remove(userId: string) {
-    await fetch(`/api/studio/works/${workId}/team`, {
-      method: "DELETE",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ userId }),
-    });
+    try {
+      await rpc.studio.team.remove({ id: workId, userId });
+    } catch {
+      // ignore — onChange reload reflects the unchanged roster.
+    }
     onChange();
   }
 

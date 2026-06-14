@@ -11,6 +11,7 @@ import { dbEnabled, getDb } from "@/lib/db";
 export type RpcUser = {
   id: string;
   name?: string | null;
+  email?: string | null;
   image?: string | null;
   role?: string | null;
   plan?: string | null;

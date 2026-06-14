@@ -1,12 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 interface Row {
   id: number;
   amountCents: number;
   status: string;
   message: string | null;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 const brl = (cents: number) => `R$${(cents / 100).toFixed(2)}`;
@@ -17,8 +19,12 @@ export function AdminDonations() {
 
   useEffect(() => {
     (async () => {
-      const res = await fetch("/api/admin/donations");
-      if (res.ok) setData(await res.json());
+      try {
+        const res = await rpc.admin.donations.list();
+        setData(res);
+      } catch {
+        /* leave loading state */
+      }
     })();
   }, []);
 

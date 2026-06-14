@@ -1,3 +1,4 @@
+import { call } from "@orpc/server";
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
 import * as dbSchema from "../lib/db/schema";
@@ -5,13 +6,13 @@ import { hasRole } from "../lib/roles";
 import { makeFakeDb } from "./helpers/fake-db";
 
 /**
- * Handler-level integration ("e2e") tests. Each route is exercised through its
- * real GET/POST with a Request, while the side-effecting deps (auth/session, db,
- * r2, mercadopago) are mocked via closures read at call time — so a single
- * import of each route serves every case and there's no cross-file mock leakage.
+ * Integration tests. Migrated platform features are oRPC procedures, invoked via
+ * `call()` with a fake context (`fakeContext`) — no HTTP. The routes that remain
+ * native (cron) are still exercised through their real GET with the side-effecting
+ * modules mocked below.
  */
 
-// Mutable test state, set per-test and read inside the mock factories.
+// Mutable test state for the still-native routes (read inside the mock factories).
 let session: { user: Record<string, unknown> } | null = null;
 let dbResults: unknown[] = [];
 
@@ -45,95 +46,144 @@ mock.module("@/lib/payments/mercadopago", () => ({
   getPaymentStatus: async () => "approved",
 }));
 
-const profile = await import("../app/api/profile/route");
-const adminUsers = await import("../app/api/admin/users/route");
-const donations = await import("../app/api/donations/create/route");
+const { appRouter } = await import("../lib/rpc/router");
+const { fakeContext } = await import("./helpers/rpc-context");
 const cron = await import("../app/api/cron/publish-scheduled/route");
-const studioWorks = await import("../app/api/studio/works/route");
-
-const json = (url: string, method: string, body?: unknown, headers?: Record<string, string>) =>
-  new Request(url, {
-    method,
-    headers: { "content-type": "application/json", ...headers },
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
 
 beforeEach(() => {
   session = null;
   dbResults = [];
 });
 
-// Comments moved to the oRPC router — see tests/rpc.comments.test.ts.
-
-describe("PATCH /api/profile", () => {
-  const url = "http://t/api/profile";
-
-  it("401 when anonymous", async () => {
-    const res = await profile.PATCH(json(url, "PATCH", { name: "X" }));
-    expect(res.status).toBe(401);
+describe("rpc.profile.update", () => {
+  it("UNAUTHORIZED when anonymous", async () => {
+    await expect(
+      call(appRouter.profile.update, { name: "X" }, { context: fakeContext() }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
   });
 
-  it("400 on an invalid handle", async () => {
-    session = { user: { id: "u1" } };
-    const res = await profile.PATCH(json(url, "PATCH", { handle: "no spaces" }));
-    expect(res.status).toBe(400);
+  it("BAD_REQUEST on an invalid handle", async () => {
+    await expect(
+      call(
+        appRouter.profile.update,
+        { handle: "no spaces" },
+        {
+          context: fakeContext({ user: { id: "u1" } }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
   });
 
-  it("409 when the handle is already taken", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[{ id: "other" }]]; // uniqueness probe finds a row
-    const res = await profile.PATCH(json(url, "PATCH", { handle: "taken" }));
-    expect(res.status).toBe(409);
+  it("CONFLICT when the handle is already taken", async () => {
+    await expect(
+      call(
+        appRouter.profile.update,
+        { handle: "taken" },
+        {
+          context: fakeContext({ user: { id: "u1" }, results: [[{ id: "other" }]] }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: "CONFLICT" });
   });
 
-  it("200 and returns the updated profile", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [[], [{ name: "Novo", handle: "novo", bio: null }]];
-    const res = await profile.PATCH(json(url, "PATCH", { name: "Novo", handle: "novo" }));
-    expect(res.status).toBe(200);
-    expect((await res.json()).profile.handle).toBe("novo");
-  });
-});
-
-describe("PATCH /api/admin/users", () => {
-  const url = "http://t/api/admin/users";
-
-  it("403 for non-staff", async () => {
-    session = { user: { id: "u1", role: "user" } };
-    const res = await adminUsers.PATCH(json(url, "PATCH", { userId: "x", banned: true }));
-    expect(res.status).toBe(403);
-  });
-
-  it("403 when staff (non-admin) tries to change a role", async () => {
-    session = { user: { id: "u1", role: "staff" } };
-    const res = await adminUsers.PATCH(json(url, "PATCH", { userId: "x", role: "admin" }));
-    expect(res.status).toBe(403);
-  });
-
-  it("200 when admin bans a user", async () => {
-    session = { user: { id: "u1", role: "admin" } };
-    dbResults = [[{ id: "x", role: "user", banned: true }]];
-    const res = await adminUsers.PATCH(json(url, "PATCH", { userId: "x", banned: true }));
-    expect(res.status).toBe(200);
-    expect((await res.json()).user.banned).toBe(true);
+  it("returns the updated profile", async () => {
+    const res = await call(
+      appRouter.profile.update,
+      { name: "Novo", handle: "novo" },
+      {
+        context: fakeContext({
+          user: { id: "u1" },
+          results: [[], [{ name: "Novo", handle: "novo", bio: null }]],
+        }),
+      },
+    );
+    expect(res.profile?.handle).toBe("novo");
   });
 });
 
-describe("POST /api/donations/create", () => {
-  const url = "http://t/api/donations/create";
-
-  it("400 on an out-of-range amount", async () => {
-    const res = await donations.POST(json(url, "POST", { amountCents: 5 }));
-    expect(res.status).toBe(400);
+describe("rpc.admin.users.update", () => {
+  it("FORBIDDEN for non-staff", async () => {
+    await expect(
+      call(
+        appRouter.admin.users.update,
+        { userId: "x", banned: true },
+        {
+          context: fakeContext({ user: { id: "u1", role: "user" } }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
   });
 
-  it("201 with QR data on a valid amount", async () => {
-    dbResults = [[{ id: 42 }]];
-    const res = await donations.POST(json(url, "POST", { amountCents: 1000 }));
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.id).toBe(42);
-    expect(data.qrCode).toBe("QR");
+  it("FORBIDDEN for staff (admin panel is admin-only)", async () => {
+    await expect(
+      call(
+        appRouter.admin.users.update,
+        { userId: "x", role: "admin" },
+        {
+          context: fakeContext({ user: { id: "u1", role: "staff" } }),
+        },
+      ),
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("bans a user when admin", async () => {
+    const res = await call(
+      appRouter.admin.users.update,
+      { userId: "x", banned: true },
+      {
+        context: fakeContext({
+          user: { id: "u1", role: "admin" },
+          results: [[{ id: "x", role: "user", banned: true }]],
+        }),
+      },
+    );
+    expect(res.user?.banned).toBe(true);
+  });
+});
+
+describe("rpc.donations.create", () => {
+  it("BAD_REQUEST on an out-of-range amount", async () => {
+    await expect(
+      call(appRouter.donations.create, { amountCents: 5 }, { context: fakeContext() }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+  });
+
+  it("returns QR data on a valid amount", async () => {
+    const res = await call(
+      appRouter.donations.create,
+      { amountCents: 1000 },
+      {
+        context: fakeContext({ results: [[{ id: 42 }]] }),
+      },
+    );
+    expect(res.id).toBe(42);
+    expect(res.qrCode).toBe("QR");
+  });
+});
+
+describe("rpc.studio.works.create", () => {
+  it("UNAUTHORIZED when anonymous", async () => {
+    await expect(
+      call(appRouter.studio.works.create, { title: "Obra" }, { context: fakeContext() }),
+    ).rejects.toMatchObject({ code: "UNAUTHORIZED" });
+  });
+
+  it("creates the work and its backing team", async () => {
+    const res = await call(
+      appRouter.studio.works.create,
+      { title: "Obra" },
+      {
+        context: fakeContext({
+          user: { id: "u1" },
+          results: [
+            [{ id: 10 }], // teams insert returning
+            [], // teamMembers insert
+            [{ id: 5, slug: "obra-10" }], // userWorks insert returning
+          ],
+        }),
+      },
+    );
+    expect(res.work?.slug).toBe("obra-10");
   });
 });
 
@@ -154,26 +204,5 @@ describe("GET /api/cron/publish-scheduled", () => {
     expect(res.status).toBe(200);
     expect((await res.json()).published).toBe(0);
     process.env.CRON_SECRET = undefined;
-  });
-});
-
-describe("POST /api/studio/works", () => {
-  const url = "http://t/api/studio/works";
-
-  it("401 when anonymous", async () => {
-    const res = await studioWorks.POST(json(url, "POST", { title: "Obra" }));
-    expect(res.status).toBe(401);
-  });
-
-  it("201 creating the work and its backing team", async () => {
-    session = { user: { id: "u1" } };
-    dbResults = [
-      [{ id: 10 }], // teams insert returning
-      [], // teamMembers insert
-      [{ id: 5, slug: "obra-10" }], // userWorks insert returning
-    ];
-    const res = await studioWorks.POST(json(url, "POST", { title: "Obra" }));
-    expect(res.status).toBe(201);
-    expect((await res.json()).work.slug).toBe("obra-10");
   });
 });

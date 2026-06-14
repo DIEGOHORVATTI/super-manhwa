@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { anilistConfigured } from "@/lib/anilist";
 import { authClient, useSession } from "@/lib/auth/client";
+import { rpc } from "@/lib/rpc/client";
 
 interface AniListLink {
   id: string;
@@ -42,8 +43,12 @@ export function SettingsView() {
   }, [user]);
 
   const loadLinks = async () => {
-    const res = await fetch("/api/anilist/link");
-    if (res.ok) setLinks((await res.json()).accounts ?? []);
+    try {
+      const { accounts } = await rpc.anilist.list();
+      setLinks(accounts ?? []);
+    } catch {
+      /* not signed in / unconfigured — leave the list empty */
+    }
   };
   useEffect(() => {
     if (session) void loadLinks();
@@ -63,13 +68,12 @@ export function SettingsView() {
   async function saveProfile() {
     setErr(null);
     setSavedMsg(null);
-    const res = await fetch("/api/profile", {
-      method: "PATCH",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name, handle, bio }),
-    });
-    if (res.ok) setSavedMsg("Perfil salvo.");
-    else setErr((await res.json()).error ?? "Erro ao salvar.");
+    try {
+      await rpc.profile.update({ name, handle, bio });
+      setSavedMsg("Perfil salvo.");
+    } catch (e) {
+      setErr((e as { message?: string }).message ?? "Erro ao salvar.");
+    }
   }
 
   async function changePassword() {
@@ -87,7 +91,11 @@ export function SettingsView() {
   }
 
   async function unlink(id: string) {
-    await fetch(`/api/anilist/link/${id}`, { method: "DELETE" });
+    try {
+      await rpc.anilist.unlink({ accountId: id });
+    } catch {
+      /* ignore — refresh reflects the real state below */
+    }
     await loadLinks();
   }
 

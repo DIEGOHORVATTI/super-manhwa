@@ -42,7 +42,7 @@ export default function DmcaPage() {
 
       <h2>Enviar pedido de remoção</h2>
       <LegalForm
-        endpoint="/api/legal/dmca"
+        kind="dmca"
         submitLabel="Enviar pedido"
         fallbackEmail="dmca@supermanhwa.app"
         fields={[
