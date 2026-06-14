@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { Pagination } from "@/components/Pagination";
-import { PosterGrid } from "@/components/PosterGrid";
+import { InfiniteList } from "@/components/InfiniteList";
 import { api } from "@/lib/orpc.server";
 
 type P = Promise<{ genre: string }>;
@@ -36,8 +35,6 @@ export default async function GenrePage({ params, searchParams }: { params: P; s
   }));
   const error = "_error" in result ? result._error : null;
 
-  const buildHref = (p: number) => (p > 1 ? `/g/${genre}?page=${p}` : `/g/${genre}`);
-
   return (
     <>
       <Link className="back" href="/">
@@ -48,8 +45,12 @@ export default async function GenrePage({ params, searchParams }: { params: P; s
       </h1>
       <p className="muted">{page > 1 ? `página ${page}` : `${result.list.length} obras`}</p>
       {error && <p className="notice">{error}</p>}
-      <PosterGrid items={result.list} />
-      <Pagination page={page} hasNextPage={result.hasNextPage} buildHref={buildHref} />
+      <InfiniteList
+        initial={result.list}
+        initialPage={page}
+        hasNextPage={result.hasNextPage}
+        params={{ feed: "browse", genre }}
+      />
     </>
   );
 }

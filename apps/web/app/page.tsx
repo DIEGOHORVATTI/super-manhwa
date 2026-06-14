@@ -3,9 +3,8 @@ import type { Metadata } from "next";
 import { ContinueReading } from "@/components/ContinueReading";
 import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
+import { InfiniteList } from "@/components/InfiniteList";
 import { LearnCta } from "@/components/LearnCta";
-import { Pagination } from "@/components/Pagination";
-import { PosterGrid } from "@/components/PosterGrid";
 import { PosterRow } from "@/components/PosterRow";
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { api } from "@/lib/orpc.server";
@@ -55,16 +54,12 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       : Promise.resolve({ list: [] }),
   ]);
 
-  const buildHref = (p: number) => {
-    const params = new URLSearchParams();
-    if (q) params.set("q", q);
-    if (genre) params.set("genre", genre);
-    if (status) params.set("status", status);
-    if (sort !== "popular") params.set("sort", sort);
-    if (p > 1) params.set("page", String(p));
-    const qs = params.toString();
-    return qs ? `/?${qs}` : "/";
-  };
+  // Params for the infinite-scroll endpoint (no `page` — InfiniteList adds it).
+  const listParams: Record<string, string> = { feed: "browse" };
+  if (q) listParams.q = q;
+  if (genre) listParams.genre = genre;
+  if (status) listParams.status = status;
+  if (sort !== "popular") listParams.sort = sort;
 
   return (
     <>
@@ -105,10 +100,12 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       ) : result.list.length === 0 ? (
         <p className="muted">Nenhuma obra encontrada com esses filtros.</p>
       ) : (
-        <>
-          <PosterGrid items={result.list} />
-          <Pagination page={page} hasNextPage={result.hasNextPage} buildHref={buildHref} />
-        </>
+        <InfiniteList
+          initial={result.list}
+          initialPage={page}
+          hasNextPage={result.hasNextPage}
+          params={listParams}
+        />
       )}
     </>
   );

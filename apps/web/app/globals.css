@@ -4038,3 +4038,10 @@ a:hover {
     opacity: 1;
   }
 }
+
+/* Infinite scroll footer (sentinel + load-more fallback) */
+.infinite-foot {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0;
+}
