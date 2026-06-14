@@ -3,9 +3,11 @@ import type { Metadata } from "next";
 import { ContinueReading } from "@/components/ContinueReading";
 import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
+import { LearnCta } from "@/components/LearnCta";
 import { Pagination } from "@/components/Pagination";
 import { PosterGrid } from "@/components/PosterGrid";
 import { PosterRow } from "@/components/PosterRow";
+import { PremiumBanner } from "@/components/PremiumBanner";
 import { api } from "@/lib/orpc.server";
 
 const SHELF_SIZE = 15;
@@ -66,12 +68,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
   return (
     <>
-      {isLanding && (
-        <>
-          <ContinueReading />
-          <DiscordCard />
-        </>
-      )}
+      {isLanding && <DiscordCard />}
 
       <ExploreFilters
         genres={genresRes.genres}
@@ -83,6 +80,10 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
       {isLanding && (
         <>
+          {/* Continue reading now sits below the search/filters. */}
+          <ContinueReading />
+          <LearnCta />
+          <PremiumBanner compact />
           <PosterRow
             title="Em tendência"
             icon="flame"

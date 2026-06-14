@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { PremiumBanner } from "@/components/PremiumBanner";
 import { useSession } from "@/lib/auth/client";
 
 interface Tok {
@@ -153,7 +154,12 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
                   </button>
                 ))}
               </div>
-              {limitMsg && <p className="auth-error">{limitMsg}</p>}
+              {limitMsg && (
+                <>
+                  <p className="auth-error">{limitMsg}</p>
+                  <PremiumBanner compact />
+                </>
+              )}
             </>
           ) : (
             <Link href="/login" className="novel-status-btn">
