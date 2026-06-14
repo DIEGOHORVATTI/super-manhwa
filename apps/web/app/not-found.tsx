@@ -10,7 +10,7 @@ export default function NotFound() {
         <Link className="pager-btn" href="/">
           <Icon name="house" size={16} /> Início
         </Link>
-        <Link className="pager-btn" href="/explorar">
+        <Link className="pager-btn" href="/">
           <Icon name="search" size={16} /> Explorar o catálogo
         </Link>
       </div>

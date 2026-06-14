@@ -48,7 +48,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
-    { url: `${base}/explorar`, lastModified: now, changeFrequency: "daily", priority: 0.8 },
     { url: `${base}/atualizacoes`, lastModified: now, changeFrequency: "hourly", priority: 0.7 },
     ...["/about", "/contact", "/dmca", "/terms", "/privacy", "/cookies"].map((p) => ({
       url: `${base}${p}`,

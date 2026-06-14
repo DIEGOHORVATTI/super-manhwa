@@ -8,7 +8,7 @@ import { ShelfScroller } from "./ShelfScroller";
 import { StatusBadge } from "./StatusBadge";
 
 /**
- * Horizontal "shelf" of works (Asura-style discovery row). Used on /explorar for
+ * Horizontal "shelf" of works (Asura-style discovery row). Used on the home for
  * the trending/newest carousels so those views don't need their own page or nav
  * slot. Optional `moreHref` exposes the full paginated grid for that ordering.
  */

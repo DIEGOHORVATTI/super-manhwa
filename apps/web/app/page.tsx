@@ -21,7 +21,7 @@ type SP = Promise<{ q?: string; genre?: string; status?: string; sort?: string; 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 /**
- * Home — unified discovery (the former /explorar, now the landing page). A text
+ * Home — unified discovery (the landing page (formerly /explorar)). A text
  * query runs search; without one it browses by sort. Genre + status refine
  * either; all state lives in the URL so results are shareable. The landing state
  * (no filters) tops the page with the continue-reading rail, a Discord CTA and

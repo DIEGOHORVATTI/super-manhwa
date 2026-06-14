@@ -239,7 +239,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
             {meta.relations.map((r, i) => (
               <li key={`${r.relation}-${r.title}-${i}`}>
                 <span className="relation-kind">{r.relation}</span>{" "}
-                <Link href={`/explorar?q=${encodeURIComponent(r.title)}`} className="relation-link">
+                <Link href={`/?q=${encodeURIComponent(r.title)}`} className="relation-link">
                   {r.title}
                 </Link>
               </li>
@@ -284,8 +284,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     "@type": "BreadcrumbList",
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Início", item: base },
-      { "@type": "ListItem", position: 2, name: "Explorar", item: `${base}/explorar` },
-      { "@type": "ListItem", position: 3, name: title, item: canonicalUrl },
+      { "@type": "ListItem", position: 2, name: title, item: canonicalUrl },
     ],
   };
 

@@ -49,7 +49,7 @@ export async function GET(req: Request): Promise<Response> {
         NewsletterEmail({
           trending: trendingItems,
           newest: newestItems,
-          browseUrl: `${base}/explorar`,
+          browseUrl: `${base}/`,
           unsubscribeUrl: `${base}/api/newsletter/unsubscribe?token=${sub.token}`,
         }),
       );
