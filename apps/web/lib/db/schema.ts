@@ -494,3 +494,18 @@ export const subscriptions = pgTable("subscriptions", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+/** A user read a chapter — drives reading badges (distinct works + chapters). */
+export const readingEvents = pgTable(
+  "reading_events",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    workId: text("work_id").notNull(), // opaque catalog/manga id
+    chapterId: text("chapter_id").notNull(),
+    readAt: timestamp("read_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("reading_event_uniq").on(t.userId, t.chapterId)],
+);

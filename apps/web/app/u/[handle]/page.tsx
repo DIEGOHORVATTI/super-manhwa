@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { badgesFor } from "@/lib/badges";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 
 type Params = Promise<{ handle: string }>;
@@ -10,7 +11,7 @@ type Params = Promise<{ handle: string }>;
 async function loadProfile(handle: string) {
   if (!dbEnabled) return null;
   const db = getDb();
-  const { user, userWorks } = schema;
+  const { user, userWorks, userAchievements } = schema;
   const [u] = await db
     .select({
       id: user.id,
@@ -19,6 +20,9 @@ async function loadProfile(handle: string) {
       bio: user.bio,
       image: user.image,
       role: user.role,
+      plan: user.plan,
+      xp: user.xp,
+      streakDays: user.streakDays,
       createdAt: user.createdAt,
     })
     .from(user)
@@ -37,7 +41,13 @@ async function loadProfile(handle: string) {
     .where(and(eq(userWorks.ownerId, u.id), eq(userWorks.status, "published")))
     .orderBy(desc(userWorks.createdAt))
     .limit(24);
-  return { user: u, works };
+
+  const ach = await db
+    .select({ key: userAchievements.achievementKey })
+    .from(userAchievements)
+    .where(eq(userAchievements.userId, u.id));
+
+  return { user: u, works, achievements: ach.map((a) => a.key) };
 }
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
@@ -49,8 +59,9 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const { handle } = await params;
   const data = await loadProfile(handle);
   if (!data) notFound();
-  const { user, works } = data;
+  const { user, works, achievements } = data;
   const initial = (user.name ?? "?").charAt(0).toUpperCase();
+  const badges = badgesFor({ role: user.role, plan: user.plan, achievements });
 
   return (
     <div className="profile-wrap">
@@ -64,11 +75,17 @@ export default async function ProfilePage({ params }: { params: Params }) {
           )}
         </div>
         <div className="profile-info">
-          <h1 className="profile-name">
-            {user.name}
-            {user.role !== "user" && <span className="profile-badge">{user.role}</span>}
-          </h1>
+          <h1 className="profile-name">{user.name}</h1>
           <p className="profile-handle">@{user.handle}</p>
+          {badges.length > 0 && (
+            <div className="profile-badges">
+              {badges.map((b) => (
+                <span key={b.key} className={`badge badge-${b.tone}`}>
+                  {b.label}
+                </span>
+              ))}
+            </div>
+          )}
           {user.bio && <p className="profile-bio">{user.bio}</p>}
         </div>
       </header>

@@ -15,6 +15,13 @@
       "when": 1781028259845,
       "tag": "0001_true_stephen_strange",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781432687247,
+      "tag": "0002_late_pepper_potts",
+      "breakpoints": true
     }
   ]
 }

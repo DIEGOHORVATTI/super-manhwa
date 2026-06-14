@@ -35,6 +35,8 @@ export async function GET(req: Request) {
       authorName: user.name,
       authorImage: user.image,
       authorHandle: user.handle,
+      authorRole: user.role,
+      authorPlan: user.plan,
     })
     .from(comments)
     .leftJoin(user, eq(comments.userId, user.id))

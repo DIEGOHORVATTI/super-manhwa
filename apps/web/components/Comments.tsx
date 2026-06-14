@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
+import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
 
 /**
@@ -25,6 +26,8 @@ interface Comment {
   authorName: string | null;
   authorImage: string | null;
   authorHandle: string | null;
+  authorRole: string | null;
+  authorPlan: string | null;
   mine: boolean;
 }
 
@@ -121,6 +124,11 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
         <div className="comment-main">
           <div className="comment-head">
             <span className="comment-author">{c.authorName ?? "Usuário"}</span>
+            {chatBadges({ role: c.authorRole, plan: c.authorPlan }).map((b) => (
+              <span key={b.key} className={`badge badge-${b.tone}`}>
+                {b.label}
+              </span>
+            ))}
             <span className="comment-time">{timeAgo(c.createdAt)}</span>
             {c.editedAt && <span className="comment-time">(editado)</span>}
           </div>
