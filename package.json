@@ -2,13 +2,25 @@
   "name": "manga-search-app",
   "version": "0.1.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "apps/*",
+      "packages/*"
+    ],
+    "catalog": {
+      "@orpc/client": "^1.14.3",
+      "@orpc/contract": "^1.14.3",
+      "@orpc/openapi": "^1.14.3",
+      "@orpc/openapi-client": "^1.14.3",
+      "@orpc/server": "^1.14.3",
+      "@orpc/zod": "^1.14.3",
+      "typescript": "^5.5.3",
+      "zod": "^4.4.3"
+    }
+  },
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
+    "dev": "bunx concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
     "dev:web": "cd apps/web && bun run dev",
     "dev:api": "cd apps/backend && bun run --watch dev",
     "start": "cd apps/backend && bun run start",
@@ -26,26 +38,5 @@
     "test:e2e": "cd apps/backend && bun test tests/e2e",
     "test:watch": "cd apps/backend && bun test --watch",
     "extensions:list": "bun -e 'import { CONNECTORS } from \"@packages/extension\"; for (const c of CONNECTORS) console.log(c.id, c.lang, c.hasCloudflare ? \"CF\" : \"\");'"
-  },
-  "dependencies": {
-    "@jitl/quickjs-singlefile-cjs-release-sync": "0.31.0",
-    "@orpc/contract": "^1.14.3",
-    "@orpc/openapi": "^1.14.3",
-    "@orpc/server": "^1.14.3",
-    "@orpc/zod": "^1.14.3",
-    "@packages/contracts": "workspace:*",
-    "@packages/core": "workspace:*",
-    "@packages/extension": "workspace:*",
-    "@types/crypto-js": "^4.2.2",
-    "crypto-js": "^4.2.0",
-    "quickjs-emscripten-core": "0.31.0",
-    "zod": "^4.4.3"
-  },
-  "devDependencies": {
-    "@types/bun": "^1.3.14",
-    "concurrently": "^9.2.1",
-    "oxfmt": "^0.54.0",
-    "oxlint": "^1.69.0",
-    "typescript": "^5.5.3"
   }
 }
