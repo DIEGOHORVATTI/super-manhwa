@@ -24,6 +24,7 @@ export function StudioDashboard() {
   const [title, setTitle] = useState("");
   const [kind, setKind] = useState<"manga" | "novel">("manga");
   const [language, setLanguage] = useState<"pt" | "en">("pt");
+  const [categories, setCategories] = useState("");
   const [creating, setCreating] = useState(false);
 
   async function load() {
@@ -49,13 +50,24 @@ export function StudioDashboard() {
     if (!title.trim()) return;
     setCreating(true);
     try {
+      const cats = categories
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean)
+        .slice(0, 8);
       const res = await fetch("/api/studio/works", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ title, kind, language: kind === "novel" ? language : undefined }),
+        body: JSON.stringify({
+          title,
+          kind,
+          language: kind === "novel" ? language : undefined,
+          categories: cats.length ? cats : undefined,
+        }),
       });
       if (res.ok) {
         setTitle("");
+        setCategories("");
         await load();
       }
     } finally {
@@ -103,6 +115,14 @@ export function StudioDashboard() {
             </label>
           )}
         </div>
+        <label className="auth-field">
+          <span>Categorias (separadas por vírgula)</span>
+          <input
+            value={categories}
+            onChange={(e) => setCategories(e.target.value)}
+            placeholder="Ação, Aventura, Fantasia"
+          />
+        </label>
         <button type="button" className="auth-submit" onClick={create} disabled={creating}>
           {creating ? "Criando…" : "Criar obra"}
         </button>

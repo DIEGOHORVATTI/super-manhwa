@@ -21,6 +21,7 @@ async function loadWork(slug: string) {
       status: userWorks.status,
       ownerId: userWorks.ownerId,
       kind: userWorks.kind,
+      categories: userWorks.categories,
     })
     .from(userWorks)
     .where(eq(userWorks.slug, slug))
@@ -73,6 +74,15 @@ export default async function ObraPage({ params }: { params: Params }) {
               por{" "}
               {owner.handle ? <Link href={`/u/${owner.handle}`}>{owner.name}</Link> : owner.name}
             </p>
+          )}
+          {work.categories && work.categories.length > 0 && (
+            <div className="obra-cats">
+              {work.categories.map((c) => (
+                <span key={c} className="obra-cat">
+                  {c}
+                </span>
+              ))}
+            </div>
           )}
           {work.synopsis && <p className="obra-synopsis">{work.synopsis}</p>}
         </div>

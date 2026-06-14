@@ -4157,3 +4157,19 @@ a:hover {
 .pixels-form {
   margin-top: 16px;
 }
+
+/* Work categories (obra page) */
+.obra-cats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.obra-cat {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  color: var(--muted);
+}

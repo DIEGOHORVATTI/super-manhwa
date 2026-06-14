@@ -18,6 +18,7 @@ interface Member {
 }
 interface Access {
   isOwner: boolean;
+  canEditWork: boolean;
   canManageTeam: boolean;
   canPublish: boolean;
   canReview: boolean;
@@ -94,6 +95,8 @@ export function StudioWork({ workId }: { workId: number }) {
           ← Todas as obras
         </Link>
       </div>
+
+      {access.canEditWork && <CoverUpload workId={workId} onDone={load} />}
 
       <section className="settings-card">
         <div className="studio-section-head">
@@ -195,6 +198,50 @@ export function StudioWork({ workId }: { workId: number }) {
 
       {access.canManageTeam && <TeamManager workId={workId} members={members} onChange={load} />}
     </div>
+  );
+}
+
+function CoverUpload({ workId, onDone }: { workId: number; onDone: () => void }) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+
+  async function upload(file: File) {
+    setBusy(true);
+    setMsg(null);
+    const fd = new FormData();
+    fd.set("image", file);
+    const res = await fetch(`/api/studio/works/${workId}/cover`, { method: "POST", body: fd });
+    setBusy(false);
+    if (res.ok) {
+      setMsg("Capa atualizada.");
+      onDone();
+    } else {
+      const j = await res.json().catch(() => ({}));
+      setMsg(
+        j.error === "storage_unconfigured"
+          ? "Armazenamento R2 não configurado."
+          : "Falha no envio.",
+      );
+    }
+  }
+
+  return (
+    <section className="settings-card">
+      <h2>Capa</h2>
+      <label className="auth-field">
+        <span>Imagem da capa</span>
+        <input
+          type="file"
+          accept="image/*"
+          disabled={busy}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void upload(f);
+          }}
+        />
+      </label>
+      {msg && <p className="auth-notice">{msg}</p>}
+    </section>
   );
 }
 

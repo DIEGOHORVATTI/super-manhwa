@@ -86,6 +86,7 @@ export async function POST(req: Request) {
       status: "draft",
       kind: parsed.data.kind,
       language: parsed.data.kind === "novel" ? (parsed.data.language ?? null) : null,
+      categories: parsed.data.categories ?? null,
     })
     .returning({ id: userWorks.id, slug: userWorks.slug });
 

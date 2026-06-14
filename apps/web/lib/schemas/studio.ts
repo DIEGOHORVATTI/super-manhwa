@@ -3,12 +3,15 @@ import { z } from "zod";
 /** Studio (user-works) validation, shared by routes + tests. */
 export const learnLanguageSchema = z.enum(["pt", "en"]);
 
+export const categoriesSchema = z.array(z.string().trim().min(1).max(30)).max(8).optional();
+
 export const workCreateSchema = z
   .object({
     title: z.string().trim().min(1).max(120),
     synopsis: z.string().trim().max(2000).optional(),
     kind: z.enum(["manga", "novel"]).default("manga"),
     language: learnLanguageSchema.optional(), // required for novels
+    categories: categoriesSchema,
   })
   .refine((d) => d.kind !== "novel" || !!d.language, {
     message: "Novels precisam de um idioma.",
@@ -26,6 +29,7 @@ export const workEditSchema = z.object({
   title: z.string().trim().min(1).max(120).optional(),
   synopsis: z.string().trim().max(2000).optional(),
   coverR2Key: z.string().optional(),
+  categories: categoriesSchema,
 });
 
 export const teamAddSchema = z.object({

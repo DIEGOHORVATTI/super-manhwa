@@ -236,6 +236,7 @@ export const userWorks = pgTable(
     status: text("status").notNull().default("draft"), // draft | pending | published
     kind: text("kind").notNull().default("manga"), // manga (image) | novel (text)
     language: text("language"), // ISO code for novels (pt | en | …) — drives the learning layer
+    categories: text("categories").array(), // genre/category tags
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("user_works_owner_idx").on(t.ownerId)],
