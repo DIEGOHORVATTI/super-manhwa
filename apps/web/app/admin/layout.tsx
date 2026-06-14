@@ -29,6 +29,7 @@ export default async function AdminLayout({ children }: React.PropsWithChildren)
         <Link href="/admin/comments">Comentários</Link>
         <Link href="/admin/donations">Doações</Link>
         <Link href="/admin/affiliates">Afiliados</Link>
+        <Link href="/admin/pixels">Pixels</Link>
       </nav>
       {children}
     </div>

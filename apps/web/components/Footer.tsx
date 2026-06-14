@@ -96,6 +96,8 @@ export function Footer() {
           <Link href="/contact">Contato</Link>
           <Link href="/doar">Doar</Link>
           <Link href="/studio">Studio</Link>
+          <Link href="/affiliate">Afiliados</Link>
+          <Link href="/pixels">Anuncie (pixels)</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Legal">

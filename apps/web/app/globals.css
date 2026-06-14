@@ -4106,3 +4106,54 @@ a:hover {
   background: var(--surface-2);
   font-size: 13px;
 }
+
+/* ───────────────────────── Million-pixel board ───────────────────────── */
+.pixels-wrap {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 24px 0 60px;
+}
+.pixels-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.pixels-price {
+  font-weight: 700;
+  color: var(--accent-hover);
+  padding-bottom: 8px;
+}
+.pixels-scroll {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  max-width: 100%;
+}
+.pixels-board {
+  position: relative;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 10px 10px;
+  cursor: crosshair;
+}
+.pixels-ad {
+  position: absolute;
+  overflow: hidden;
+}
+.pixels-ad img {
+  display: block;
+  object-fit: cover;
+}
+.pixels-sel {
+  position: absolute;
+  border: 2px solid var(--accent);
+  background: rgba(124, 92, 255, 0.25);
+  pointer-events: none;
+}
+.pixels-form {
+  margin-top: 16px;
+}

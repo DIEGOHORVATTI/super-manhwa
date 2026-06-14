@@ -557,3 +557,21 @@ export const affiliateCommissions = pgTable(
   },
   (t) => [uniqueIndex("commission_uniq").on(t.affiliateId, t.referredUserId, t.period)],
 );
+
+/** Advertising blocks on the "million pixel" board (self-serve, admin-moderated). */
+export const pixelBlocks = pgTable("pixel_blocks", {
+  id: serial("id").primaryKey(),
+  ownerUserId: text("owner_user_id").references(() => user.id, { onDelete: "set null" }),
+  x: integer("x").notNull(),
+  y: integer("y").notNull(),
+  w: integer("w").notNull(),
+  h: integer("h").notNull(),
+  imageR2Key: text("image_r2_key"),
+  linkUrl: text("link_url"),
+  title: text("title"),
+  status: text("status").notNull().default("reserved"), // reserved | pending | approved | rejected
+  paymentId: text("payment_id"),
+  reservedUntil: timestamp("reserved_until"),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  approvedAt: timestamp("approved_at"),
+});
