@@ -60,13 +60,24 @@ Actions/route handlers). Regras reais aqui:
 
 - **Dados de leitura/catálogo:** via **client oRPC** para o backend (`lib/orpc.server.ts`,
   `api.manga.*`) — contract-first ponta a ponta. ✅
-- **Features de plataforma** (auth, comentários, doações, studio, admin, cache-on-read):
-  **route handlers Next** (`app/api/**/route.ts`) + **Drizzle/Neon** direto, no Postgres do web.
-  ⚠️ **DIVERGÊNCIA:** essas features **não** passam pelo `contracts` nem pela DDD do backend —
-  são Next-native por decisão (o web dona seu próprio estado: newsletter/legal/push/usuários).
+- **Features de plataforma** (auth, comentários, doações, studio, admin, afiliados, pixels,
+  aprendizado): **oRPC próprio do web** via o **adaptador Next** (`@orpc/server/fetch`). Router em
+  `lib/rpc/` (`base.ts` builders + `routers/<domínio>.ts`), montado em `app/api/rpc/[...rest]`,
+  consumido no browser pelo client tipado `lib/rpc/client.ts` (`rpc.<domínio>.<proc>()`). Schemas
+  vêm de `@packages/contracts`; tipos derivam das procedures (não duplique). Persistência em
+  **Drizzle/Neon** no Postgres do web, com **contexto por request** (sessão Better Auth + `db`)
+  e guardas de auth/role nos builders (`pub`/`authed`/`staff`/`admin`).
+  ⚠️ **DIVERGÊNCIA aceita:** esse router é **separado** do `contracts`/DDD do backend (que segue
+  stateless de catálogo) — o web dona seu próprio estado. É oRPC, mas implementation-first (`os`),
+  não o `implement(contracts)` do backend.
+- **Exceções que continuam route handlers nativos** (`app/api/**/route.ts`): Better Auth
+  (`auth/[...all]`), cron, webhooks do Mercado Pago, links de e-mail (newsletter confirm/unsubscribe),
+  o proxy de catálogo (`list`, `[...path]`), export CSV do learn, e **uploads multipart** (capa de
+  obra, páginas de capítulo, imagem do pixel) — URLs fixas batidas por terceiros ou corpos binários.
 - **Estado:** URL (`searchParams`) para filtros/paginação; dados de servidor via **RSC/fetch**
   (sem TanStack Query); sessão via Better Auth (`useSession`). Sem Zustand/Redux.
-- **Validação:** schemas Zod em `lib/schemas/*` **reusados** pelas route handlers (uma regra).
+- **Validação:** schemas Zod centralizados em **`@packages/contracts`** (movidos de `lib/schemas/*`),
+  reusados pelas procedures oRPC — uma fonte da verdade para schema + tipo.
 - **Componentes** em PascalCase (`Header.tsx`); libs/utilitários em kebab-case (`comment-tree.ts`).
 - **Auth:** Better Auth (`lib/auth/*`); RBAC via `role` (`hasRole` em `lib/roles.ts`).
 - **Degradação graciosa:** features de DB checam `dbEnabled`; R2 checa `r2Enabled`; e-mail `emailEnabled`.
@@ -81,9 +92,10 @@ por rota; não vazar segredo no `.output()`/resposta.
 
 - Schema Drizzle único: `apps/web/lib/db/schema.ts`; migrações em `apps/web/drizzle/`
   (`bun run db:generate` / `db:push`). Cliente lazy em `lib/db/index.ts` (`getDb`, `dbEnabled`).
-- Acesso a dados hoje é **inline nas route handlers**. ⚠️ Existe um padrão de repositório
-  (`lib/repositories/{legal-requests,subscribers}.ts`) — ao crescer, prefira extrair o acesso
-  novo para `lib/repositories/` por consistência (não obrigatório no MVP).
+- Acesso a dados hoje é **inline nas procedures oRPC** (`lib/rpc/routers/*`), usando `context.db`.
+  ⚠️ Existe um padrão de repositório (`lib/repositories/{legal-requests,subscribers}.ts`) — ao
+  crescer, prefira extrair o acesso novo para `lib/repositories/` por consistência (não obrigatório
+  no MVP).
 
 ---
 
@@ -152,5 +164,7 @@ cd apps/web && bun run db:generate | db:push
 | Backend DDD: domain puro, fluxo para dentro, DI por factory, kebab-case | ✅ (travado no lint) |
 | Backend: `application` importa mappers de `infrastructure` | ⚠️ divergência aceita |
 | Web é Next.js App Router (não o Vite SPA do guia) | ⚠️ por design |
-| Features de plataforma são Next-native (route handlers + Drizzle), fora do contrato/DDD | ⚠️ por design |
+| Schemas Zod centralizados em `@packages/contracts` (web importa de lá) | ✅ |
+| Features de plataforma em **oRPC próprio do web** (`lib/rpc/`, adaptador Next), router separado do backend | ✅ contract-ish, ⚠️ separado por design |
+| Exceções nativas: auth/cron/webhooks/email-links/proxy-catálogo/uploads | ⚠️ por design |
 | Tooling oxc (oxlint+oxfmt) verde; Biome/ESLint removidos | ✅ |
