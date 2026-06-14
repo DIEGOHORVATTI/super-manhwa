@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { commentCreateSchema, voteSchema } from "../lib/schemas/community";
+import { commentCreateSchema, voteSchema } from "@packages/contracts";
 
 describe("commentCreateSchema", () => {
   const valid = { targetType: "work" as const, targetId: "abc123", body: "Olá!" };

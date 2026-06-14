@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
-import { voteSchema } from "@/lib/schemas/community";
+import { voteSchema } from "@packages/contracts";
 
 /**
  * Up/down vote a comment. value ∈ {-1,0,1}; 0 clears the vote. The comment's

@@ -1,5 +1,5 @@
 import { handleLegalSubmission, rateLimited } from "@/lib/legal";
-import { contactInputSchema } from "@/lib/schemas/legal";
+import { contactInputSchema } from "@packages/contracts";
 
 export async function POST(req: Request): Promise<Response> {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";

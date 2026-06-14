@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { getWorkAccess } from "@/lib/perms";
-import { workEditSchema } from "@/lib/schemas/studio";
+import { workEditSchema } from "@packages/contracts";
 
 /** Work detail (metadata + chapters + team) and edits, scoped by team role. */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {

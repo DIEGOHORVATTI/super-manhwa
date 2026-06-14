@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { getWorkAccess } from "@/lib/perms";
-import { reviewSchema } from "@/lib/schemas/studio";
+import { reviewSchema } from "@packages/contracts";
 
 /**
  * Submit a review decision for a chapter (reviewer/editor/owner). "approved"

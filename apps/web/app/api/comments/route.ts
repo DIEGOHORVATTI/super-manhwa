@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
-import { commentCreateSchema, targetTypeSchema as TargetType } from "@/lib/schemas/community";
+import { commentCreateSchema, targetTypeSchema as TargetType } from "@packages/contracts";
 
 /**
  * Native comment thread API (replaces Disqus). A comment targets a work or a

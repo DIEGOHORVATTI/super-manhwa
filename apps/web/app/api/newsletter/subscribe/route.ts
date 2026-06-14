@@ -1,5 +1,5 @@
 import { newsletterEnabled, subscribeEmail } from "@/lib/newsletter";
-import { subscribeInputSchema } from "@/lib/schemas/newsletter";
+import { subscribeInputSchema } from "@packages/contracts";
 
 export async function POST(req: Request): Promise<Response> {
   if (!newsletterEnabled()) {

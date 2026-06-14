@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { donationCreateSchema } from "../lib/schemas/donation";
+import { donationCreateSchema } from "@packages/contracts";
 
 describe("donationCreateSchema", () => {
   it("accepts a minimal valid amount (R$1)", () => {

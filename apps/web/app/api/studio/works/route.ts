@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
-import { slugifyWork, workCreateSchema } from "@/lib/schemas/studio";
+import { slugifyWork, workCreateSchema } from "@packages/contracts";
 
 /** List the works I own or collaborate on; create a new work (+ its team). */
 

@@ -6,7 +6,7 @@ import {
   slugifyWork,
   teamAddSchema,
   workCreateSchema,
-} from "../lib/schemas/studio";
+} from "@packages/contracts";
 
 describe("workCreateSchema", () => {
   it("accepts a title (with optional synopsis)", () => {

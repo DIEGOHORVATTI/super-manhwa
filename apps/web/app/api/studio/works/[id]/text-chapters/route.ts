@@ -6,7 +6,7 @@ import { dbEnabled, getDb, schema } from "@/lib/db";
 import { persistChapterText } from "@/lib/learning/persist-chapter";
 import type { LearnLanguage } from "@/lib/learning/tokenize";
 import { getWorkAccess } from "@/lib/perms";
-import { textChapterCreateSchema } from "@/lib/schemas/studio";
+import { textChapterCreateSchema } from "@packages/contracts";
 
 /**
  * Create a TEXT chapter for a novel work. The body text is tokenized and cached

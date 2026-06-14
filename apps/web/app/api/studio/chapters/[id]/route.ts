@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { getWorkAccess } from "@/lib/perms";
-import { chapterActionSchema } from "@/lib/schemas/studio";
+import { chapterActionSchema } from "@packages/contracts";
 
 /**
  * Chapter lifecycle transitions. Allowed actions depend on the work role:

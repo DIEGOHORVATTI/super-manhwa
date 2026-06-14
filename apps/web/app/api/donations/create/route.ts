@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { createPixPayment, mpEnabled } from "@/lib/payments/mercadopago";
-import { donationCreateSchema } from "@/lib/schemas/donation";
+import { donationCreateSchema } from "@packages/contracts";
 
 /**
  * Start a Pix donation. Creates a Mercado Pago Pix payment and a pending

@@ -9,7 +9,7 @@ import { canReview, effectivePlan, entitlementsFor, type Plan } from "@/lib/lear
 import { xpFor } from "@/lib/learning/gamification";
 import { type MemoryState, type Rating, schedule } from "@/lib/learning/fsrs";
 import { awardXpAndStreak, bumpDaily, getDailyUsage, today } from "@/lib/learning/study-day";
-import { reviewGradeSchema } from "@/lib/schemas/learn";
+import { reviewGradeSchema } from "@packages/contracts";
 
 const MAX_QUEUE = 30;
 const KNOWN_INTERVAL_DAYS = 21; // graduate to "known" once intervals get long

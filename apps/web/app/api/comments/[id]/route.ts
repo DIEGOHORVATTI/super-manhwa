@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession, hasRole } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
-import { commentEditSchema } from "@/lib/schemas/community";
+import { commentEditSchema } from "@packages/contracts";
 
 /** Edit / soft-delete a comment. Author may do either; staff/admin may delete. */
 

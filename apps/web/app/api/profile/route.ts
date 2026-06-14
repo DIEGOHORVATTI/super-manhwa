@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
-import { profileSchema } from "@/lib/schemas/profile";
+import { profileSchema } from "@packages/contracts";
 
 /**
  * Update the signed-in user's profile. Handle is the public slug for /u/[handle]

@@ -5,7 +5,7 @@ import { z } from "zod";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { getWorkAccess } from "@/lib/perms";
-import { teamAddSchema } from "@/lib/schemas/studio";
+import { teamAddSchema } from "@packages/contracts";
 
 /** Add/update a team member by @handle (owner only). */
 

@@ -1,5 +1,5 @@
 import { handleLegalSubmission, rateLimited } from "@/lib/legal";
-import { dmcaInputSchema } from "@/lib/schemas/legal";
+import { dmcaInputSchema } from "@packages/contracts";
 
 export async function POST(req: Request): Promise<Response> {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";

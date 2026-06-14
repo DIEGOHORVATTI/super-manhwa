@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { profileSchema } from "../lib/schemas/profile";
+import { profileSchema } from "@packages/contracts";
 
 describe("profileSchema", () => {
   it("accepts valid name/handle/bio", () => {

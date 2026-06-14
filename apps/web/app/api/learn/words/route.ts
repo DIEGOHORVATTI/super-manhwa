@@ -12,7 +12,7 @@ import {
 } from "@/lib/learning/entitlements";
 import { xpFor } from "@/lib/learning/gamification";
 import { awardXpAndStreak, bumpDaily, getDailyUsage, today } from "@/lib/learning/study-day";
-import { wordStatusSchema } from "@/lib/schemas/learn";
+import { wordStatusSchema } from "@packages/contracts";
 
 /**
  * Set a word's per-user status. Moving a word into "learning"/"known" for the

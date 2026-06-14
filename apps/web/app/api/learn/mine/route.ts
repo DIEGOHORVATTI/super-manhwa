@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { effectivePlan, entitlementsFor, type Plan } from "@/lib/learning/entitlements";
-import { mineSentenceSchema } from "@/lib/schemas/learn";
+import { mineSentenceSchema } from "@packages/contracts";
 
 /** Sentence mining — turn a real sentence into a review card. Premium feature. */
 export async function POST(req: Request) {
