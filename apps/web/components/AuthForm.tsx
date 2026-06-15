@@ -88,7 +88,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
       }
       if (mode === "login") {
         const res = await authClient.signIn.email({ email, password });
-        if (res.error) throw new Error(res.error.message);
+        if (res.error) {
+          // Unverified e-mail: Better Auth (sendOnSignIn) just resent the link
+          // — send them to the confirmation screen instead of an error.
+          if (res.error.code === "EMAIL_NOT_VERIFIED" || res.error.status === 403) {
+            router.push("/verify-email");
+            return;
+          }
+          throw new Error(res.error.message);
+        }
         router.push("/");
         router.refresh();
         return;

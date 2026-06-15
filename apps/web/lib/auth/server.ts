@@ -25,6 +25,13 @@ async function deliver(to: string, subject: string, html: string) {
   await sendEmail({ to, subject, html });
 }
 
+// Throttle verification e-mails to one per user every 30 min, so an unverified
+// user hammering the login button (sendOnSignIn resends each attempt) can't spam
+// their own inbox. ponytail: in-memory, per-instance — move to DB/Redis if you
+// run many instances and need a hard global cap.
+const VERIFY_COOLDOWN_MS = 30 * 60 * 1000;
+const lastVerifyAt = new Map<string, number>();
+
 function build() {
   const db = getDb();
   return betterAuth({
@@ -45,8 +52,14 @@ function build() {
     },
     emailVerification: {
       sendOnSignUp: true,
+      // Resend the link when an unverified user tries to sign in…
+      sendOnSignIn: true,
       autoSignInAfterVerification: true,
       async sendVerificationEmail({ user, url }) {
+        // …but at most one e-mail per user every 30 minutes.
+        const now = Date.now();
+        if (now - (lastVerifyAt.get(user.email) ?? 0) < VERIFY_COOLDOWN_MS) return;
+        lastVerifyAt.set(user.email, now);
         await deliver(
           user.email,
           "Confirme seu e-mail — Super Manhwa",
