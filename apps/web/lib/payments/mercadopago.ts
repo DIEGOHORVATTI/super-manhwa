@@ -11,6 +11,18 @@ import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
 const accessToken = env.MP_ACCESS_TOKEN;
 export const mpEnabled = Boolean(accessToken);
 
+/**
+ * Public webhook URL for `path`, or `undefined` when we're not reachable from
+ * the internet (localhost / non-https). Mercado Pago rejects a `notification_url`
+ * that isn't a valid public URL, so in dev we just omit it (the payment is still
+ * created; it simply won't get async webhook callbacks locally).
+ */
+export function publicWebhookUrl(path: string): string | undefined {
+  const base = env.SITE_URL;
+  if (!base || !/^https:\/\//i.test(base) || /localhost|127\.0\.0\.1/.test(base)) return undefined;
+  return `${base.replace(/\/$/, "")}${path}`;
+}
+
 let payment: Payment | null = null;
 
 function client(): Payment {

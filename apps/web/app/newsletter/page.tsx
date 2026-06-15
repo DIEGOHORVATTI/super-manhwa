@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Newsletter",
@@ -34,7 +35,7 @@ export default async function NewsletterPage({
       <h1 className="state-title">{msg.title}</h1>
       <p className="muted">{msg.body}</p>
       <div className="state-actions">
-        <Link className="pager-btn" href="/">
+        <Link className="pager-btn" href={routes.home}>
           <Icon name="house" size={16} /> Início
         </Link>
       </div>

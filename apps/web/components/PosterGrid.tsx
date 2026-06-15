@@ -1,7 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
-import { mangaHref } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 import { Cover } from "./Cover";
 import { FavoriteButton } from "./FavoriteButton";
 import { Flag } from "./Flag";
@@ -23,7 +23,7 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   return (
     <div className="poster-grid">
       {items.map((m, i) => {
-        const href = mangaHref(m.id, m.name);
+        const href = routes.manga(m.id, m.name);
         return (
           <div key={m.id} className="poster">
             <div className="poster-cover">

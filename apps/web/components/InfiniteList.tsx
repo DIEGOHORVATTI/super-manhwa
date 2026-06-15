@@ -3,6 +3,7 @@ import type { MangaSummary } from "@packages/contracts";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { PosterGrid } from "@/components/PosterGrid";
+import { routes } from "@/lib/routes";
 
 /**
  * Infinite-scroll listing. SSR renders the first page (SEO + fast paint) and
@@ -34,7 +35,7 @@ export function InfiniteList({
     try {
       const next = page + 1;
       const sp = new URLSearchParams({ ...params, page: String(next) });
-      const res = await fetch(`/api/list?${sp.toString()}`).then((r) => r.json());
+      const res = await fetch(`${routes.api.list}?${sp.toString()}`).then((r) => r.json());
       const incoming: MangaSummary[] = res.list ?? [];
       setItems((prev) => {
         const seen = new Set(prev.map((m) => m.id));

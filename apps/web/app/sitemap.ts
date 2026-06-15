@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { env } from "@/lib/env";
 import { api } from "@/lib/orpc.server";
-import { slugify } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 
 // Regenerated at most once a day | the catalog is large and changes slowly, and
 // we don't want to hammer the backend per crawl.
@@ -49,8 +49,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const entries: MetadataRoute.Sitemap = [
     { url: base, lastModified: now, changeFrequency: "daily", priority: 1 },
-    { url: `${base}/atualizacoes`, lastModified: now, changeFrequency: "hourly", priority: 0.7 },
-    ...["/about", "/contact", "/dmca", "/terms", "/privacy", "/cookies"].map((p) => ({
+    {
+      url: `${base}${routes.updates}`,
+      lastModified: now,
+      changeFrequency: "hourly",
+      priority: 0.7,
+    },
+    ...[
+      routes.about,
+      routes.contact,
+      routes.dmca,
+      routes.terms,
+      routes.privacy,
+      routes.cookies,
+    ].map((p) => ({
       url: `${base}${p}`,
       lastModified: now,
       changeFrequency: "yearly" as const,
@@ -67,7 +79,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   for (const g of genresRes.genres) {
     entries.push({
-      url: `${base}/g/${slugifyGenre(g)}`,
+      url: `${base}${routes.genre(slugifyGenre(g))}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.5,
@@ -79,7 +91,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     if (seen.has(m.id)) continue;
     seen.add(m.id);
     entries.push({
-      url: `${base}/manga/${m.id}/${slugify(m.name)}`,
+      url: `${base}${routes.manga(m.id, m.name)}`,
       lastModified: now,
       changeFrequency: "weekly",
       priority: 0.6,

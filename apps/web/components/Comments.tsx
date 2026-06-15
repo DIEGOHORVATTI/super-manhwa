@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 /**
@@ -194,7 +195,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
         <div className="comment-signin">
           <Icon name="log-in" size={16} />
           <span>
-            <Link href="/login">Entre</Link> para comentar.
+            <Link href={routes.login}>Entre</Link> para comentar.
           </span>
         </div>
       )}

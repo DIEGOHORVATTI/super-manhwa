@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { routes } from "@/lib/routes";
 import { env } from "@/lib/env";
 
 /**
@@ -23,7 +24,7 @@ export async function GET(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const done = (frag: string) =>
-    NextResponse.redirect(new URL(`/auth/anilist/done${frag}`, url.origin));
+    NextResponse.redirect(new URL(`${routes.authAnilistDone}${frag}`, url.origin));
 
   if (!code) return done("#error=denied");
 

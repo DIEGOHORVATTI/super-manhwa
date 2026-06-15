@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { getCurrentUser, hasRole } from "@/lib/auth/session";
+import { routes } from "@/lib/routes";
 
 /**
  * Admin area guard. Only users with role admin/staff get in; everyone else sees
@@ -15,7 +16,7 @@ export default async function AdminLayout({ children }: React.PropsWithChildren)
       <div className="admin-wrap">
         <h1 className="settings-title">Acesso restrito</h1>
         <p className="muted">
-          Esta área é só para a equipe. <Link href="/">Voltar ao início</Link>.
+          Esta área é só para a equipe. <Link href={routes.home}>Voltar ao início</Link>.
         </p>
       </div>
     );
@@ -24,12 +25,12 @@ export default async function AdminLayout({ children }: React.PropsWithChildren)
   return (
     <div className="admin-wrap">
       <nav className="admin-nav">
-        <Link href="/admin">Visão geral</Link>
-        <Link href="/admin/users">Usuários</Link>
-        <Link href="/admin/comments">Comentários</Link>
-        <Link href="/admin/donations">Doações</Link>
-        <Link href="/admin/affiliates">Afiliados</Link>
-        <Link href="/admin/pixels">Pixels</Link>
+        <Link href={routes.admin.root}>Visão geral</Link>
+        <Link href={routes.admin.users}>Usuários</Link>
+        <Link href={routes.admin.comments}>Comentários</Link>
+        <Link href={routes.admin.donations}>Doações</Link>
+        <Link href={routes.admin.affiliates}>Afiliados</Link>
+        <Link href={routes.admin.pixels}>Pixels</Link>
       </nav>
       {children}
     </div>

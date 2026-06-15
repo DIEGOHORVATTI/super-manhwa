@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Work {
@@ -45,7 +46,7 @@ export function StudioDashboard() {
     return (
       <div className="studio-wrap">
         <p className="muted">
-          <Link href="/login">Entre</Link> para publicar e gerenciar suas obras.
+          <Link href={routes.login}>Entre</Link> para publicar e gerenciar suas obras.
         </p>
       </div>
     );
@@ -137,7 +138,7 @@ export function StudioDashboard() {
       ) : (
         <div className="studio-works">
           {works.map((w) => (
-            <Link key={w.id} href={`/studio/${w.id}`} className="studio-work-card">
+            <Link key={w.id} href={routes.studioWork(w.id)} className="studio-work-card">
               <strong>{w.title}</strong>
               <span className={`status-badge status-${w.status}`}>
                 {STATUS_LABEL[w.status] ?? w.status}

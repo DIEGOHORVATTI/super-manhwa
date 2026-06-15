@@ -9,6 +9,10 @@ export const EmailStyles = {
     accentDark: "#6a4af0",
     background: "#f4f4f7",
     surface: "#ffffff",
+    /** Faixa escura do header/footer — fundo para o logo branco. */
+    band: "#141420",
+    bandText: "#9ca3af",
+    bandLink: "#c7c3d9",
     text: {
       primary: "#15151f",
       secondary: "#374151",
@@ -58,5 +62,15 @@ export const EmailStyles = {
     md: "8px",
     lg: "10px",
     xl: "12px",
+  },
+  shadow: "0 6px 24px rgba(20, 20, 32, 0.08)",
+  /** Tons usados só na versão dark mode (Apple Mail / iOS via prefers-color-scheme). */
+  dark: {
+    background: "#0d0d12",
+    surface: "#1b1b27",
+    border: "#2a2a3d",
+    text: "#ededf2",
+    muted: "#a8a3bd",
+    link: "#a99cff",
   },
 } as const;

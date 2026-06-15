@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { badgesFor } from "@/lib/badges";
 import { dbEnabled, getDb, schema } from "@/lib/db";
+import { routes } from "@/lib/routes";
 
 type Params = Promise<{ handle: string }>;
 
@@ -96,7 +97,7 @@ export default async function ProfilePage({ params }: { params: Params }) {
       ) : (
         <div className="profile-works">
           {works.map((w) => (
-            <Link key={w.id} href={`/obra/${w.slug}`} className="profile-work">
+            <Link key={w.id} href={routes.obra(w.slug)} className="profile-work">
               {w.title}
             </Link>
           ))}

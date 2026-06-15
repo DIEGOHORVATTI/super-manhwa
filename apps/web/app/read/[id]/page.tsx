@@ -8,6 +8,7 @@ import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
 import { signPagePath } from "@/lib/image-sign";
 import { api } from "@/lib/orpc.server";
+import { routes } from "@/lib/routes";
 import { getSessionId } from "@/lib/session";
 
 // Not force-dynamic: reading the session cookie already opts this route into
@@ -64,7 +65,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
-          <Link className="reader-btn reader-btn-series" href="/">
+          <Link className="reader-btn reader-btn-series" href={routes.home}>
             <Icon name="house" size={16} />
             <span className="reader-series-name">Início</span>
           </Link>

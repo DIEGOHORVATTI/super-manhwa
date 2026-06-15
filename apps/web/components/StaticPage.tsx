@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 /**
  * Shared shell for the static/legal pages linked from the footer (sobre,
@@ -13,7 +14,7 @@ export function StaticPage({
 }: React.PropsWithChildren<{ title: string; updated?: string }>) {
   return (
     <article className="static-page">
-      <Link href="/" className="back">
+      <Link href={routes.home} className="back">
         <Icon name="arrow-left" size={16} /> Voltar
       </Link>
       <h1 className="static-title">{title}</h1>

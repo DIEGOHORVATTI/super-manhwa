@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { Autocomplete } from "@/components/Autocomplete";
 import { Icon, type IconName } from "@/components/Icon";
 import { UserMenu } from "@/components/UserMenu";
+import { routes } from "@/lib/routes";
 
 /**
  * Global app bar. Layout: brand → primary tab nav (catalog shortcuts) → global
@@ -18,13 +19,13 @@ import { UserMenu } from "@/components/UserMenu";
  * header) persists across client navigation, the pill animates to the new tab.
  */
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
-  { href: "/", label: "Explorar", icon: "house", sort: null },
-  { href: "/atualizacoes", label: "Recentes", icon: "clock", sort: null },
-  { href: "/library", label: "Biblioteca", icon: "heart", sort: null },
+  { href: routes.home, label: "Explorar", icon: "house", sort: null },
+  { href: routes.updates, label: "Recentes", icon: "clock", sort: null },
+  { href: routes.library, label: "Biblioteca", icon: "heart", sort: null },
 ];
 
 /** A NAV entry is a home catalog filter (`/`, `/?sort=`) or a standalone page. */
-const isHomeItem = (href: string) => href === "/" || href.startsWith("/?");
+const isHomeItem = (href: string) => href === routes.home || href.startsWith("/?");
 
 /** Active when: a home filter matches the current `?sort=` on `/`, or a page
  *  entry matches the current pathname. */
@@ -147,7 +148,7 @@ export function Header() {
     <>
       <header className={`app-header${isReader ? " is-static" : scrolled ? " is-scrolled" : ""}`}>
         <div className="app-header-inner">
-          <Link href="/" className="brand">
+          <Link href={routes.home} className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="brand-name">

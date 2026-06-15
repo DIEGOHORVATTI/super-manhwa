@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Stats {
@@ -43,7 +44,7 @@ export function LearnDashboard() {
     return (
       <div className="studio-wrap">
         <p className="muted">
-          <Link href="/login">Entre</Link> para aprender idiomas lendo novels.
+          <Link href={routes.login}>Entre</Link> para aprender idiomas lendo novels.
         </p>
       </div>
     );
@@ -99,7 +100,7 @@ export function LearnDashboard() {
       <section className="settings-card">
         <h2>Revisão</h2>
         <p className="muted">{stats.dueCount} cards prontos para revisar.</p>
-        <Link href="/learn/review" className="auth-submit" style={{ alignSelf: "flex-start" }}>
+        <Link href={routes.learnReview} className="auth-submit" style={{ alignSelf: "flex-start" }}>
           Revisar agora
         </Link>
       </section>
@@ -122,7 +123,11 @@ export function LearnDashboard() {
       {stats.entitlements.canExportAnki && (
         <section className="settings-card">
           <h2>Ferramentas Premium</h2>
-          <a href="/api/learn/export" className="auth-google" style={{ alignSelf: "flex-start" }}>
+          <a
+            href={routes.api.learnExport}
+            className="auth-google"
+            style={{ alignSelf: "flex-start" }}
+          >
             Exportar cards pro Anki (.tsv)
           </a>
         </section>
@@ -134,7 +139,11 @@ export function LearnDashboard() {
           <p className="muted">
             Palavras e cards ilimitados, sentence mining, estatísticas e export pro Anki.
           </p>
-          <Link href="/learn/premium" className="auth-submit" style={{ alignSelf: "flex-start" }}>
+          <Link
+            href={routes.learnPremium}
+            className="auth-submit"
+            style={{ alignSelf: "flex-start" }}
+          >
             Assinar Premium
           </Link>
         </section>

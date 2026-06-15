@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Chapter {
@@ -99,7 +100,7 @@ export function StudioWork({ workId }: { workId: number }) {
           </h1>
           <span className={`status-badge status-${work.status}`}>{work.status}</span>
         </div>
-        <Link href="/studio" className="comment-link">
+        <Link href={routes.studio} className="comment-link">
           ← Todas as obras
         </Link>
       </div>
@@ -127,7 +128,7 @@ export function StudioWork({ workId }: { workId: number }) {
                   </span>
                 </div>
                 <div className="studio-chapter-actions">
-                  <Link href={`/studio/${workId}/preview/${c.id}`} className="comment-link">
+                  <Link href={routes.studioPreview(workId, c.id)} className="comment-link">
                     Preview
                   </Link>
                   {access.canEditChapters && c.status === "draft" && (
@@ -218,7 +219,7 @@ function CoverUpload({ workId, onDone }: { workId: number; onDone: () => void })
     setMsg(null);
     const fd = new FormData();
     fd.set("image", file);
-    const res = await fetch(`/api/studio/works/${workId}/cover`, { method: "POST", body: fd });
+    const res = await fetch(routes.api.studio.cover(workId), { method: "POST", body: fd });
     setBusy(false);
     if (res.ok) {
       setMsg("Capa atualizada.");
@@ -329,7 +330,7 @@ function ChapterUpload({ workId, onDone }: { workId: number; onDone: () => void 
     form.set("number", number);
     form.set("title", title);
     for (const f of Array.from(files)) form.append("pages", f);
-    const res = await fetch(`/api/studio/works/${workId}/chapters`, { method: "POST", body: form });
+    const res = await fetch(routes.api.studio.chapters(workId), { method: "POST", body: form });
     setBusy(false);
     if (res.ok) {
       setNumber("");

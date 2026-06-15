@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
 import { GRID, isFree, isValidRect, priceCents, type Rect, toPercentBox } from "@/lib/pixels";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Ad {
@@ -233,7 +234,7 @@ export function PixelBoard() {
           </h2>
           {!session?.user ? (
             <p className="muted">
-              <Link href="/login">Entre</Link> para comprar.
+              <Link href={routes.login}>Entre</Link> para comprar.
             </p>
           ) : (
             <>

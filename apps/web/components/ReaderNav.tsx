@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { chapterHref, chapterNav } from "@/lib/reader";
-import { mangaHref } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 
 /**
  * Sticky reader toolbar. Server fetches the manga detail once, hands us the full
@@ -108,7 +108,7 @@ export function ReaderNav({
 
         <Link
           className="reader-btn reader-btn-series"
-          href={mangaHref(mangaId, mangaName)}
+          href={routes.manga(mangaId, mangaName)}
           title={`Voltar para ${mangaName}`}
         >
           <Icon name="book-open" size={16} />

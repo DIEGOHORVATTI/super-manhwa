@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { InfiniteList } from "@/components/InfiniteList";
 import { api } from "@/lib/orpc.server";
+import { routes } from "@/lib/routes";
 
 type P = Promise<{ genre: string }>;
 type SP = Promise<{ page?: string }>;
@@ -37,7 +38,7 @@ export default async function GenrePage({ params, searchParams }: { params: P; s
 
   return (
     <>
-      <Link className="back" href="/">
+      <Link className="back" href={routes.home}>
         <Icon name="arrow-left" size={16} /> voltar
       </Link>
       <h1 className="detail-title" style={{ marginBottom: 4 }}>

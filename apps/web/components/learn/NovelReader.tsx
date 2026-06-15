@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Tok {
@@ -98,7 +99,7 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
   return (
     <div className="novel-reader">
       <header className="novel-head">
-        <Link href="/" className="comment-link">
+        <Link href={routes.home} className="comment-link">
           ← Início
         </Link>
         <h1>{data.title}</h1>
@@ -110,7 +111,7 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
 
       {!session?.user && (
         <p className="comment-signin">
-          <Link href="/login">Entre</Link> para marcar palavras e salvar seu progresso.
+          <Link href={routes.login}>Entre</Link> para marcar palavras e salvar seu progresso.
         </p>
       )}
 
@@ -168,7 +169,7 @@ export function NovelReader({ chapterId }: { chapterId: number }) {
               )}
             </>
           ) : (
-            <Link href="/login" className="novel-status-btn">
+            <Link href={routes.login} className="novel-status-btn">
               Entrar para salvar
             </Link>
           )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 export default function NotFound() {
   return (
@@ -7,10 +8,10 @@ export default function NotFound() {
       <h1 className="state-title">404</h1>
       <p className="muted">Esta página não existe ou a obra saiu do catálogo.</p>
       <div className="state-actions">
-        <Link className="pager-btn" href="/">
+        <Link className="pager-btn" href={routes.home}>
           <Icon name="house" size={16} /> Início
         </Link>
-        <Link className="pager-btn" href="/">
+        <Link className="pager-btn" href={routes.home}>
           <Icon name="search" size={16} /> Explorar o catálogo
         </Link>
       </div>

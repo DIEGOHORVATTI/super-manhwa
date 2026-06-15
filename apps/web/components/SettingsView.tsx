@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { anilistConfigured } from "@/lib/anilist";
 import { authClient, useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface AniListLink {
@@ -59,7 +60,7 @@ export function SettingsView() {
     return (
       <div className="settings-wrap">
         <p className="muted">
-          <Link href="/login">Entre</Link> para acessar suas configurações.
+          <Link href={routes.login}>Entre</Link> para acessar suas configurações.
         </p>
       </div>
     );

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Data {
@@ -42,7 +43,7 @@ export function AffiliateView() {
     return (
       <div className="studio-wrap">
         <p className="muted">
-          <Link href="/login">Entre</Link> para participar do programa de afiliados.
+          <Link href={routes.login}>Entre</Link> para participar do programa de afiliados.
         </p>
       </div>
     );

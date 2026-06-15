@@ -14,18 +14,18 @@ trazem o mesmo conteúdo comentado | copie-os para `.env` / `.env.local` e preen
 Gere e cole no arquivo indicado. **Em produção, gere valores novos.**
 
 ```bash
-openssl rand -base64 32   # BETTER_AUTH_SECRET
+openssl rand -base64 32   # BETTER_AUTH_API_KEY
 openssl rand -hex 32      # CRON_SECRET, IMAGE_TOKEN_SECRET, IMAGE_SIGN_SECRET
 openssl rand -hex 24      # API_KEY
 ```
 
-| Variável             | Arquivo(s)                                   | Observação                       |
-| -------------------- | -------------------------------------------- | -------------------------------- | ------------------------ |
-| `BETTER_AUTH_SECRET` | `apps/web/.env.local`                        | assina as sessões do Better Auth |
-| `CRON_SECRET`        | `apps/web/.env.local` (+ Vercel)             | protege `/api/cron/*`            |
-| `IMAGE_TOKEN_SECRET` | root `.env` + `apps/backend/.env`            | AES do id-store de imagens       |
-| `IMAGE_SIGN_SECRET`  | **os 3**: root + `apps/backend` + `apps/web` | HMAC de capas                    | **mesmo valor nos três** |
-| `API_KEY`            | **os 3**                                     | X-API-KEY web↔backend            | **mesmo valor nos três** |
+| Variável              | Arquivo(s)                                   | Observação                       |
+| --------------------- | -------------------------------------------- | -------------------------------- | ------------------------ |
+| `BETTER_AUTH_API_KEY` | `apps/web/.env.local`                        | assina as sessões do Better Auth |
+| `CRON_SECRET`         | `apps/web/.env.local` (+ Vercel)             | protege `/api/cron/*`            |
+| `IMAGE_TOKEN_SECRET`  | root `.env` + `apps/backend/.env`            | AES do id-store de imagens       |
+| `IMAGE_SIGN_SECRET`   | **os 3**: root + `apps/backend` + `apps/web` | HMAC de capas                    | **mesmo valor nos três** |
+| `API_KEY`             | **os 3**                                     | X-API-KEY web↔backend            | **mesmo valor nos três** |
 
 > ⚠️ `IMAGE_SIGN_SECRET` e `API_KEY` precisam ser **idênticos** entre web e backend.
 
@@ -77,7 +77,7 @@ PORT=8787
 ```bash
 # apps/web/.env.local
 DATABASE_URL=...                 # Neon
-BETTER_AUTH_SECRET=...           # openssl rand -base64 32
+BETTER_AUTH_API_KEY=...           # openssl rand -base64 32
 BETTER_AUTH_URL=http://localhost:3000
 
 cd apps/web && bun run db:push   # cria as tabelas + migração 0001
@@ -92,14 +92,14 @@ Incrementais: **R2** → uploads de capítulo; **Mercado Pago** → doações/as
 
 ## 6. Por feature | o que cada uma exige
 
-| Feature                                 | Vars necessárias                                                                            |
-| --------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Login / contas / verificação            | `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` (+ `RESEND_API_KEY` p/ e-mail real) |
-| Login com Google                        | + `GOOGLE_CLIENT_ID/SECRET`                                                                 |
-| Comentários, perfil, admin              | `DATABASE_URL`                                                                              |
-| Doações Pix                             | `DATABASE_URL`, `MP_ACCESS_TOKEN`                                                           |
-| Obras de usuário (Studio) + cache R2    | `DATABASE_URL`, `R2_*`                                                                      |
-| Aprendizado (novels/SRS)                | `DATABASE_URL` (+ `R2_*` se a novel tiver capa)                                             |
-| Premium (assinatura)                    | `MP_ACCESS_TOKEN` (+ `LEARN_PREMIUM_PRICE`)                                                 |
-| Card do Discord                         | `NEXT_PUBLIC_DISCORD_URL`                                                                   |
-| Cron (newsletter + publicação agendada) | `CRON_SECRET`                                                                               |
+| Feature                                 | Vars necessárias                                                                             |
+| --------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Login / contas / verificação            | `DATABASE_URL`, `BETTER_AUTH_API_KEY`, `BETTER_AUTH_URL` (+ `RESEND_API_KEY` p/ e-mail real) |
+| Login com Google                        | + `GOOGLE_CLIENT_ID/SECRET`                                                                  |
+| Comentários, perfil, admin              | `DATABASE_URL`                                                                               |
+| Doações Pix                             | `DATABASE_URL`, `MP_ACCESS_TOKEN`                                                            |
+| Obras de usuário (Studio) + cache R2    | `DATABASE_URL`, `R2_*`                                                                       |
+| Aprendizado (novels/SRS)                | `DATABASE_URL` (+ `R2_*` se a novel tiver capa)                                              |
+| Premium (assinatura)                    | `MP_ACCESS_TOKEN` (+ `LEARN_PREMIUM_PRICE`)                                                  |
+| Card do Discord                         | `NEXT_PUBLIC_DISCORD_URL`                                                                    |
+| Cron (newsletter + publicação agendada) | `CRON_SECRET`                                                                                |

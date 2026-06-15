@@ -6,6 +6,7 @@ import { ContinueReading } from "@/components/ContinueReading";
 import { Icon } from "@/components/Icon";
 import { PosterGrid } from "@/components/PosterGrid";
 import { useFavorites } from "@/lib/library";
+import { routes } from "@/lib/routes";
 
 /**
  * The local library screen | favorites grid + the continue-reading rail, both
@@ -32,7 +33,8 @@ export function LibraryView() {
       {items.length === 0 ? (
         <p className="muted">
           Nenhuma obra salva ainda. Toque em <Icon name="heart" size={13} /> numa obra para
-          adicioná-la | fica salvo só neste navegador. <Link href="/">Explorar o catálogo</Link>.
+          adicioná-la | fica salvo só neste navegador.{" "}
+          <Link href={routes.home}>Explorar o catálogo</Link>.
         </p>
       ) : (
         <PosterGrid items={items} />

@@ -3,6 +3,7 @@ import { RPCHandler } from "@orpc/server/fetch";
 
 import { createRpcContext } from "@/lib/rpc/context";
 import { appRouter } from "@/lib/rpc/router";
+import { routes } from "@/lib/routes";
 
 /**
  * Single mount point for the web platform oRPC router (Next adapter). Every
@@ -13,7 +14,7 @@ const handler = new RPCHandler(appRouter);
 
 async function handle(req: Request): Promise<Response> {
   const { response } = await handler.handle(req, {
-    prefix: "/api/rpc",
+    prefix: routes.api.rpc,
     context: await createRpcContext(req),
   });
   return response ?? new Response("Not Found", { status: 404 });

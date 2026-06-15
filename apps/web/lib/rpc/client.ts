@@ -2,6 +2,8 @@ import { createORPCClient } from "@orpc/client";
 import { RPCLink } from "@orpc/client/fetch";
 import type { RouterClient } from "@orpc/server";
 
+import { routes } from "@/lib/routes";
+
 import type { AppRouter } from "./router";
 
 /**
@@ -12,8 +14,8 @@ import type { AppRouter } from "./router";
 const link = new RPCLink({
   url:
     typeof window === "undefined"
-      ? "http://localhost/api/rpc"
-      : `${window.location.origin}/api/rpc`,
+      ? `http://localhost${routes.api.rpc}`
+      : `${window.location.origin}${routes.api.rpc}`,
 });
 
 export const rpc: RouterClient<AppRouter> = createORPCClient(link);

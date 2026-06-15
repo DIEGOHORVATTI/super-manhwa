@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 
 const PERKS = ["Palavras ilimitadas", "Sentence mining", "Estatísticas", "Export pro Anki"];
 
@@ -18,7 +19,7 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
 
   if (compact) {
     return (
-      <Link className="premium-strip" href="/learn/premium">
+      <Link className="premium-strip" href={routes.learnPremium}>
         <Icon name="sparkles" size={18} />
         <span>
           <strong>Vire Premium</strong> | aprenda sem limites e apoie o site.
@@ -29,7 +30,7 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <Link className="premium-banner" href="/learn/premium">
+    <Link className="premium-banner" href={routes.learnPremium}>
       <div className="premium-banner-head">
         <Icon name="sparkles" size={22} />
         <strong>Super Manhwa Premium</strong>

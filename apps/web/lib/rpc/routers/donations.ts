@@ -4,7 +4,8 @@ import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
-import { createPixPayment, mpEnabled } from "@/lib/payments/mercadopago";
+import { createPixPayment, mpEnabled, publicWebhookUrl } from "@/lib/payments/mercadopago";
+import { routes } from "@/lib/routes";
 import { base, pub } from "../base";
 
 /**
@@ -20,14 +21,23 @@ export const donationsRouter = {
 
     const userId = context.session?.user?.id ?? null;
     const email = input.email ?? "doador@supermanhwa.app";
-    const origin = new URL(context.headers.get("origin") ?? "http://localhost").origin;
 
-    const pix = await createPixPayment({
-      amount: input.amountCents / 100,
-      description: "Doação | Super Manhwa",
-      email,
-      notificationUrl: `${origin}/api/donations/webhook`,
-    });
+    let pix: Awaited<ReturnType<typeof createPixPayment>>;
+    try {
+      pix = await createPixPayment({
+        amount: input.amountCents / 100,
+        description: "Doação | Super Manhwa",
+        email,
+        notificationUrl: publicWebhookUrl(routes.api.webhooks.donations),
+      });
+    } catch (e) {
+      // MP rejected the charge (e.g. sandbox test-user rules, invalid payer).
+      // Log the raw reason server-side; show the user a friendly message.
+      console.error("[donations] Pix create failed:", (e as Error).message);
+      throw new ORPCError("BAD_GATEWAY", {
+        message: "Não foi possível gerar o Pix agora. Tente novamente em instantes. 🙏",
+      });
+    }
 
     const { donations } = schema;
     const [row] = await context.db

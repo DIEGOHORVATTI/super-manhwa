@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/StaticPage";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
@@ -28,7 +29,7 @@ export default function PrivacidadePage() {
       <h2>Cookies</h2>
       <p>
         Usamos cookies essenciais para o funcionamento do site. Detalhes na{" "}
-        <a href="/cookies">Política de Cookies</a>.
+        <a href={routes.cookies}>Política de Cookies</a>.
       </p>
       <h2>Compartilhamento</h2>
       <p>
@@ -37,7 +38,7 @@ export default function PrivacidadePage() {
       <h2>Seus direitos</h2>
       <p>
         Você pode solicitar acesso, correção ou exclusão de eventuais dados entrando em contato pela
-        página de <a href="/contact">Contato</a>.
+        página de <a href={routes.contact}>Contato</a>.
       </p>
     </StaticPage>
   );

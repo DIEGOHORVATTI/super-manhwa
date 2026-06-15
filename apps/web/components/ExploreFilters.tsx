@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 /** Status options that map to a real AniList filter (see backend ANILIST_STATUS). */
 const STATUS_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
@@ -29,7 +30,7 @@ export function ExploreFilters({
   genre,
   status,
   sort,
-  basePath = "/",
+  basePath = routes.home,
 }: {
   genres: string[];
   q: string;

@@ -3,8 +3,9 @@ import { eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
-import { createPixPayment, mpEnabled } from "@/lib/payments/mercadopago";
+import { createPixPayment, mpEnabled, publicWebhookUrl } from "@/lib/payments/mercadopago";
 import { GRID, isFree, isValidRect, priceCents, type Rect } from "@/lib/pixels";
+import { routes } from "@/lib/routes";
 import { publicUrlFor, putObject, r2Enabled } from "@/lib/r2";
 import { authed, base } from "../base";
 
@@ -129,14 +130,21 @@ export const pixelsRouter = {
     const key = `pixels/${block.id}.${ext}`;
     await putObject(key, new Uint8Array(await image.arrayBuffer()), image.type || "image/png");
 
-    const origin = new URL(context.headers.get("origin") ?? "http://localhost").origin;
     const email = (context.user as { email?: string }).email ?? "anunciante@supermanhwa.app";
-    const pix = await createPixPayment({
-      amount: priceCents(rect) / 100,
-      description: `Espaço publicitário ${rect.w}x${rect.h} | Super Manhwa`,
-      email,
-      notificationUrl: `${origin}/api/pixels/webhook`,
-    });
+    let pix: Awaited<ReturnType<typeof createPixPayment>>;
+    try {
+      pix = await createPixPayment({
+        amount: priceCents(rect) / 100,
+        description: `Espaço publicitário ${rect.w}x${rect.h} | Super Manhwa`,
+        email,
+        notificationUrl: publicWebhookUrl(routes.api.webhooks.pixels),
+      });
+    } catch (e) {
+      console.error("[pixels] Pix create failed:", (e as Error).message);
+      throw new ORPCError("BAD_GATEWAY", {
+        message: "Não foi possível gerar o Pix agora. Tente novamente em instantes. 🙏",
+      });
+    }
 
     await context.db
       .update(pixelBlocks)

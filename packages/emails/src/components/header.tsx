@@ -1,20 +1,26 @@
-import { Text } from "@react-email/components";
+import { Img, Section } from "@react-email/components";
 
+import { Brand } from "../constants/brand";
 import { EmailStyles } from "../constants/styles";
 
 export default function Header() {
-  const { colors, typography } = EmailStyles;
+  const { colors, spacing } = EmailStyles;
 
   return (
-    <Text
+    <Section
       style={{
-        fontSize: typography.fontSize["2xl"],
-        fontWeight: typography.fontWeight.bold,
-        color: colors.text.primary,
-        margin: "0 0 18px",
+        backgroundColor: colors.band,
+        padding: `${spacing["2xl"]} ${spacing.xl}`,
+        textAlign: "center",
+        borderBottom: `3px solid ${colors.accent}`,
       }}
     >
-      Super Manhwa<span style={{ color: colors.accent }}>.</span>
-    </Text>
+      <Img
+        src={Brand.logoUrl}
+        alt="Super Manhwa"
+        height="40"
+        style={{ height: "40px", width: "auto", margin: "0 auto" }}
+      />
+    </Section>
   );
 }

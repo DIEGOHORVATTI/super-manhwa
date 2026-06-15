@@ -1,5 +1,7 @@
 import type { Chapter } from "@packages/contracts";
 
+import { routes } from "@/lib/routes";
+
 /**
  * Reader chapter navigation helpers, shared by the sticky top toolbar
  * (ReaderNav) and the end-of-chapter footer (ReaderChapterEnd) so both compute
@@ -16,5 +18,5 @@ export function chapterNav(chapters: Chapter[], currentId: string) {
 }
 
 export function chapterHref(c: Chapter, mangaId: string, mangaName: string) {
-  return `/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(mangaName)}&n=${encodeURIComponent(c.name)}`;
+  return routes.read(c.id, { m: mangaId, mn: mangaName, n: c.name });
 }

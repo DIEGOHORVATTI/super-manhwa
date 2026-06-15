@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { authClient } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 
 type Mode = "login" | "signup" | "forgot" | "reset";
 
@@ -83,7 +84,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       if (mode === "signup") {
         const res = await authClient.signUp.email({ email, password, name });
         if (res.error) throw new Error(res.error.message);
-        router.push("/verify-email");
+        router.push(routes.verifyEmail);
         return;
       }
       if (mode === "login") {
@@ -92,19 +93,19 @@ export function AuthForm({ mode }: { mode: Mode }) {
           // Unverified e-mail: Better Auth (sendOnSignIn) just resent the link
           // | send them to the confirmation screen instead of an error.
           if (res.error.code === "EMAIL_NOT_VERIFIED" || res.error.status === 403) {
-            router.push("/verify-email");
+            router.push(routes.verifyEmail);
             return;
           }
           throw new Error(res.error.message);
         }
-        router.push("/");
+        router.push(routes.home);
         router.refresh();
         return;
       }
       if (mode === "forgot") {
         const res = await authClient.requestPasswordReset({
           email,
-          redirectTo: "/reset-password",
+          redirectTo: routes.resetPassword,
         });
         if (res.error) throw new Error(res.error.message);
         setNotice("Se o e-mail existir, enviamos um link para redefinir a senha.");
@@ -116,7 +117,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       const res = await authClient.resetPassword({ newPassword: password, token });
       if (res.error) throw new Error(res.error.message);
       setNotice("Senha alterada! Você já pode entrar.");
-      setTimeout(() => router.push("/login"), 1200);
+      setTimeout(() => router.push(routes.login), 1200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Algo deu errado. Tente novamente.");
     } finally {
@@ -128,7 +129,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     setBusy(true);
     setError(null);
     try {
-      await authClient.signIn.social({ provider: "google", callbackURL: "/" });
+      await authClient.signIn.social({ provider: "google", callbackURL: routes.home });
     } catch {
       setError("Não foi possível entrar com o Google.");
       setBusy(false);
@@ -279,12 +280,14 @@ export function AuthForm({ mode }: { mode: Mode }) {
           <div className="auth-links">
             {mode === "login" && (
               <>
-                <Link href="/forgot-password">Esqueci minha senha</Link>
-                <Link href="/signup">Criar uma conta</Link>
+                <Link href={routes.forgotPassword}>Esqueci minha senha</Link>
+                <Link href={routes.signup}>Criar uma conta</Link>
               </>
             )}
-            {mode === "signup" && <Link href="/login">Já tenho conta</Link>}
-            {(mode === "forgot" || mode === "reset") && <Link href="/login">Voltar ao login</Link>}
+            {mode === "signup" && <Link href={routes.login}>Já tenho conta</Link>}
+            {(mode === "forgot" || mode === "reset") && (
+              <Link href={routes.login}>Voltar ao login</Link>
+            )}
           </div>
 
           <p className="auth-foot">

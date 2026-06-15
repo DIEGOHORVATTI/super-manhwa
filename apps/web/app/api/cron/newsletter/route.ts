@@ -6,7 +6,7 @@ import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { api } from "@/lib/orpc.server";
 import { subscribersRepo } from "@/lib/repositories/subscribers";
-import { mangaHref } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -22,7 +22,8 @@ const base = env.SITE_URL;
 const toItem = (m: MangaSummary): DigestItem => ({
   title: m.name,
   imageUrl: m.imageUrl ? `${base}${m.imageUrl}` : undefined,
-  link: `${base}${mangaHref(m.id, m.name)}`,
+  link: `${base}${routes.manga(m.id, m.name)}`,
+  description: m.description,
 });
 
 export async function GET(req: Request): Promise<Response> {
@@ -50,8 +51,8 @@ export async function GET(req: Request): Promise<Response> {
         NewsletterDigestEmail({
           trending: trendingItems,
           newest: newestItems,
-          browseUrl: `${base}/`,
-          unsubscribeUrl: `${base}/api/newsletter/unsubscribe?token=${sub.token}`,
+          browseUrl: `${base}${routes.home}`,
+          unsubscribeUrl: `${base}${routes.api.newsletter.unsubscribe}?token=${sub.token}`,
         }),
       );
       await sendEmail({ to: sub.email, subject: "Super Manhwa | destaques da semana", html });

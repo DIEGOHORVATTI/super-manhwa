@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { authClient, useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 
 /**
  * Header account control. Anonymous → "Entrar" link. Signed-in → avatar button
@@ -40,7 +41,7 @@ export function UserMenu() {
 
   if (!user) {
     return (
-      <Link href="/login" className="user-login-btn">
+      <Link href={routes.login} className="user-login-btn">
         <Icon name="log-in" size={16} />
         <span>Entrar</span>
       </Link>
@@ -73,26 +74,30 @@ export function UserMenu() {
             <strong>{user.name || "Usuário"}</strong>
             <span className="user-menu-email">{user.email}</span>
           </div>
-          <Link href={`/u/${user.handle || ""}`} role="menuitem" onClick={() => setOpen(false)}>
+          <Link
+            href={routes.user(user.handle || "")}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+          >
             <Icon name="user" size={15} /> Meu perfil
           </Link>
-          <Link href="/library" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href={routes.library} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="heart" size={15} /> Biblioteca
           </Link>
-          <Link href="/learn" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href={routes.learn} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="book-open" size={15} /> Aprender
           </Link>
-          <Link href="/studio" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href={routes.studio} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="pen-line" size={15} /> Studio
           </Link>
-          <Link href="/affiliate" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href={routes.affiliate} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="sparkles" size={15} /> Afiliados
           </Link>
-          <Link href="/settings" role="menuitem" onClick={() => setOpen(false)}>
+          <Link href={routes.settings} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="settings" size={15} /> Configurações
           </Link>
           {isAdmin && (
-            <Link href="/admin" role="menuitem" onClick={() => setOpen(false)}>
+            <Link href={routes.admin.root} role="menuitem" onClick={() => setOpen(false)}>
               <Icon name="shield" size={15} /> Admin
             </Link>
           )}

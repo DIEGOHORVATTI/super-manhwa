@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 const PERKS = [
@@ -57,7 +58,7 @@ export function PremiumUpsell() {
             {busy ? "Redirecionando…" : "Assinar via Pix/cartão"}
           </button>
         ) : (
-          <Link href="/login" className="auth-submit" style={{ alignSelf: "flex-start" }}>
+          <Link href={routes.login} className="auth-submit" style={{ alignSelf: "flex-start" }}>
             Entrar para assinar
           </Link>
         )}

@@ -15,6 +15,7 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { buildAltTitles } from "@/lib/alt-titles";
 import { cacheChaptersOnRead, cacheWorkOnRead, getCachedWork } from "@/lib/cache-works";
 import { api } from "@/lib/orpc.server";
+import { routes } from "@/lib/routes";
 import { deslugify, slugify } from "@/lib/slug";
 import { translatePt } from "@/lib/translate";
 
@@ -70,7 +71,7 @@ export async function generateMetadata({
   // The cover is public (signed `?k=`), so it's safe as the share/OG image.
   const images = core?.imageUrl ? [core.imageUrl] : undefined;
   // Canonical fixes the duplicate URLs the old `?n=` query and slug-less paths created.
-  const canonical = `/manga/${id}/${slugify(title)}`;
+  const canonical = routes.manga(id, title);
   // Every name the work is known by (official variants + machine pt-BR title), so
   // it surfaces for searches in Portuguese and any other language.
   const altTitles = await buildAltTitles(title, core?.aliases ?? []);
@@ -110,7 +111,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   if (error) {
     return (
       <>
-        <Link className="back" href="/">
+        <Link className="back" href={routes.home}>
           <Icon name="arrow-left" size={16} /> voltar
         </Link>
         <p className="notice">
@@ -132,7 +133,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // Send slug-less or stale-slug visits (and old `?n=` links) to the canonical
   // path with a 308, so search engines consolidate on one keyword-rich URL.
   const canonicalSlug = slugify(title);
-  if (slug?.[0] !== canonicalSlug) permanentRedirect(`/manga/${id}/${canonicalSlug}`);
+  if (slug?.[0] !== canonicalSlug) permanentRedirect(routes.manga(id, title));
 
   // Slow half: cross-source chapter fan-out | streamed, NOT awaited. The promise
   // is handed to the client components, which suspend behind skeletons while it
@@ -257,7 +258,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // Structured data so search engines render a rich book result (cover, rating,
   // genres). Image/URL absolute via SITE_URL; relative paths confuse some crawlers.
   const base = env.SITE_URL ?? "http://localhost:3000";
-  const canonicalUrl = `${base}/manga/${id}/${canonicalSlug}`;
+  const canonicalUrl = `${base}${routes.manga(id, title)}`;
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Book",
@@ -345,7 +346,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
           core.genre && core.genre.length > 0 ? (
             <div key="genres" className="genres">
               {core.genre.slice(0, 16).map((g) => (
-                <Link key={g} href={`/g/${slugifyGenre(g)}`} className="tag tag-link">
+                <Link key={g} href={routes.genre(slugifyGenre(g))} className="tag tag-link">
                   {g}
                 </Link>
               ))}

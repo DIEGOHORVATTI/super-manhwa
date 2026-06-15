@@ -1,6 +1,7 @@
 "use client";
 import { useSyncExternalStore } from "react";
 import { env } from "@/lib/env";
+import { routes } from "@/lib/routes";
 
 import type { LibEntry } from "./library";
 
@@ -103,10 +104,10 @@ function login(): void {
 
 /** Where to send the user back to after a successful callback. */
 export function consumeReturnPath(): string {
-  if (!isClient) return "/library";
+  if (!isClient) return routes.library;
   const p = window.sessionStorage.getItem(RETURN_KEY);
   window.sessionStorage.removeItem(RETURN_KEY);
-  return p || "/library";
+  return p || routes.library;
 }
 
 /**

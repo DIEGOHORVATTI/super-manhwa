@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { LegalForm } from "@/components/LegalForm";
 import { StaticPage } from "@/components/StaticPage";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Contato",
@@ -28,7 +29,7 @@ export default function ContatoPage() {
       </ul>
       <p>
         Para pedidos de remoção de conteúdo protegido por direitos autorais, use o procedimento
-        descrito na página de <a href="/dmca">DMCA</a>.
+        descrito na página de <a href={routes.dmca}>DMCA</a>.
       </p>
 
       <h2>Enviar mensagem</h2>

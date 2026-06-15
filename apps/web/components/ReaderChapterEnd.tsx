@@ -2,7 +2,7 @@ import type { Chapter } from "@packages/contracts";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { chapterHref, chapterNav } from "@/lib/reader";
-import { mangaHref } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 
 /**
  * End-of-chapter navigation rendered after the page images. Big prev/next CTAs so
@@ -43,7 +43,7 @@ export function ReaderChapterEnd({
         </span>
       )}
 
-      <Link className="reader-end-series" href={mangaHref(mangaId, mangaName)} title={mangaName}>
+      <Link className="reader-end-series" href={routes.manga(mangaId, mangaName)} title={mangaName}>
         <Icon name="book-open" size={18} />
         <span>Todos os capítulos</span>
       </Link>

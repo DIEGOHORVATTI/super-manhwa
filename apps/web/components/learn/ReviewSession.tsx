@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
 interface Card {
@@ -43,7 +44,7 @@ export function ReviewSession() {
       <div className="studio-wrap review-done">
         <h1 className="settings-title">Sessão concluída 🎉</h1>
         <p className="muted">{done} cards revisados.</p>
-        <Link href="/learn" className="auth-submit" style={{ alignSelf: "center" }}>
+        <Link href={routes.learn} className="auth-submit" style={{ alignSelf: "center" }}>
           Voltar ao painel
         </Link>
       </div>

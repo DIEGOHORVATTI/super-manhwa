@@ -29,7 +29,7 @@ const EnvSchema = z.object({
 
   // Auth
   BETTER_AUTH_URL: opt,
-  BETTER_AUTH_SECRET: opt,
+  BETTER_AUTH_API_KEY: opt,
   GOOGLE_CLIENT_ID: opt,
   GOOGLE_CLIENT_SECRET: opt,
   ANILIST_CLIENT_SECRET: opt,
@@ -66,7 +66,7 @@ export const env = EnvSchema.parse({
   CRON_SECRET: process.env.CRON_SECRET,
   IMAGE_SIGN_SECRET: process.env.IMAGE_SIGN_SECRET,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
-  BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+  BETTER_AUTH_API_KEY: process.env.BETTER_AUTH_API_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   ANILIST_CLIENT_SECRET: process.env.ANILIST_CLIENT_SECRET,

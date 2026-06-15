@@ -1,7 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
-import { mangaHref } from "@/lib/slug";
+import { routes } from "@/lib/routes";
 import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
 import { ShelfScroller } from "./ShelfScroller";
@@ -40,7 +40,7 @@ export function PosterRow({
       <ShelfScroller>
         {items.map((m) => (
           <li key={m.id} className="shelf-card">
-            <Link className="poster" href={mangaHref(m.id, m.name)}>
+            <Link className="poster" href={routes.manga(m.id, m.name)}>
               <div className="poster-cover">
                 <Cover src={m.imageUrl} alt={m.name} sizes="150px" />
                 {m.status && (

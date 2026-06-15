@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { publicUrlFor } from "@/lib/r2";
+import { routes } from "@/lib/routes";
 
 type Params = Promise<{ slug: string }>;
 
@@ -72,7 +73,11 @@ export default async function ObraPage({ params }: { params: Params }) {
           {owner && (
             <p className="muted">
               por{" "}
-              {owner.handle ? <Link href={`/u/${owner.handle}`}>{owner.name}</Link> : owner.name}
+              {owner.handle ? (
+                <Link href={routes.user(owner.handle)}>{owner.name}</Link>
+              ) : (
+                owner.name
+              )}
             </p>
           )}
           {work.categories && work.categories.length > 0 && (
@@ -95,7 +100,11 @@ export default async function ObraPage({ params }: { params: Params }) {
         <ul className="obra-chapters">
           {chapters.map((c) => (
             <li key={c.id}>
-              <Link href={work.kind === "novel" ? `/learn/${c.id}` : `/obra/${slug}/${c.id}`}>
+              <Link
+                href={
+                  work.kind === "novel" ? routes.learnChapter(c.id) : routes.obraChapter(slug, c.id)
+                }
+              >
                 Cap. {c.number}
                 {c.title ? ` | ${c.title}` : ""}
               </Link>

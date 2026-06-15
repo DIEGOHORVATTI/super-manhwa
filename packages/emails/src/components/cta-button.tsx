@@ -9,6 +9,7 @@ export default function CtaButton({ href, children }: { href: string; children: 
   return (
     <Button
       href={href}
+      className="em-btn"
       style={{
         backgroundColor: colors.accent,
         color: colors.text.white,

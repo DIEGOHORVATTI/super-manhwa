@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { routes } from "@/lib/routes";
+
 export const metadata: Metadata = { title: "Confirme seu e-mail" };
 
 /**
@@ -41,7 +43,7 @@ export default function VerifyEmailPage() {
             dá uma olhada na caixa de spam, vai que.
           </p>
 
-          <Link href="/login" className="auth-submit">
+          <Link href={routes.login} className="auth-submit">
             Voltar para o login
           </Link>
 

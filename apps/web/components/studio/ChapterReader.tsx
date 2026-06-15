@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { routes } from "@/lib/routes";
+
 interface PageData {
   index: number;
   url: string;
@@ -28,7 +30,7 @@ export function ChapterReader({
 
   useEffect(() => {
     (async () => {
-      const res = await fetch(`/api/studio/chapters/${chapterId}/pages`);
+      const res = await fetch(routes.api.studio.pages(chapterId));
       if (res.ok) setData(await res.json());
       else setErr(true);
     })();

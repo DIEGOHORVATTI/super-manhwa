@@ -40,7 +40,7 @@ function build() {
   return betterAuth({
     appName: "Super Manhwa",
     baseURL: env.BETTER_AUTH_URL,
-    secret: env.BETTER_AUTH_SECRET,
+    secret: env.BETTER_AUTH_API_KEY,
     database: drizzleAdapter(db, { provider: "pg", schema }),
     emailAndPassword: {
       enabled: true,

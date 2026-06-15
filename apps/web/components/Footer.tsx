@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { routes } from "@/lib/routes";
 
 const YEAR = new Date().getFullYear();
 
@@ -46,7 +47,7 @@ export function Footer() {
     <footer className="footer">
       <div className="footer-grid">
         <div className="footer-brand">
-          <Link href="/" className="brand">
+          <Link href={routes.home} className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="brand-name brand-name-lg">
@@ -74,7 +75,7 @@ export function Footer() {
             ))}
           </div>
           <NewsletterSignup />
-          <Link href="/doar" className="footer-donate">
+          <Link href={routes.donate} className="footer-donate">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
               <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2.2 5 5.5 5c1.9 0 3.3 1 4.5 2.4C11.2 6 12.6 5 14.5 5 17.8 5 19.5 8.4 22 11.8 19.5 16.4 12 21 12 21Z" />
             </svg>
@@ -84,28 +85,28 @@ export function Footer() {
 
         <nav className="footer-col" aria-label="Explorar">
           <h3>Explorar</h3>
-          <Link href="/">Início</Link>
-          <Link href="/?sort=trending">Tendência</Link>
-          <Link href="/?sort=newest">Mais novos</Link>
-          <Link href="/library">Biblioteca</Link>
+          <Link href={routes.home}>Início</Link>
+          <Link href={`${routes.home}?sort=trending`}>Tendência</Link>
+          <Link href={`${routes.home}?sort=newest`}>Mais novos</Link>
+          <Link href={routes.library}>Biblioteca</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Comunidade">
           <h3>Comunidade</h3>
-          <Link href="/about">Sobre nós</Link>
-          <Link href="/contact">Contato</Link>
-          <Link href="/doar">Doar</Link>
-          <Link href="/studio">Studio</Link>
-          <Link href="/affiliate">Afiliados</Link>
-          <Link href="/pixels">Anuncie (pixels)</Link>
+          <Link href={routes.about}>Sobre nós</Link>
+          <Link href={routes.contact}>Contato</Link>
+          <Link href={routes.donate}>Doar</Link>
+          <Link href={routes.studio}>Studio</Link>
+          <Link href={routes.affiliate}>Afiliados</Link>
+          <Link href={routes.pixels}>Anuncie (pixels)</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Legal">
           <h3>Legal</h3>
-          <Link href="/privacy">Política de Privacidade</Link>
-          <Link href="/terms">Termos de Serviço</Link>
-          <Link href="/dmca">DMCA</Link>
-          <Link href="/cookies">Política de Cookies</Link>
+          <Link href={routes.privacy}>Política de Privacidade</Link>
+          <Link href={routes.terms}>Termos de Serviço</Link>
+          <Link href={routes.dmca}>DMCA</Link>
+          <Link href={routes.cookies}>Política de Cookies</Link>
         </nav>
       </div>
 
