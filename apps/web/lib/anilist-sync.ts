@@ -1,8 +1,8 @@
 /**
- * Pure two-way merge for the AniList favourites sync — no window/network, so it
+ * Pure two-way merge for the AniList favourites sync | no window/network, so it
  * can be unit-tested. `ToggleFavourite` is a *toggle* (not idempotent add), so we
  * must only push locals that AniList doesn't already have, and only pull remotes
- * the local library is missing — otherwise a re-sync would flip things off.
+ * the local library is missing | otherwise a re-sync would flip things off.
  */
 export type FavRef = { id: string };
 

@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
 
 /**
- * Mercado Pago Pix integration for donations. Gated on `MP_ACCESS_TOKEN` —
+ * Mercado Pago Pix integration for donations. Gated on `MP_ACCESS_TOKEN` |
  * `mpEnabled` lets the donation routes 503 gracefully when unconfigured. We
  * create a Pix payment and return the copy-paste code + QR image so the UI can
  * render it; confirmation arrives asynchronously via the webhook.
@@ -35,7 +35,7 @@ export interface MpPaymentResponse {
   };
 }
 
-/** Pure mapper from the MP response to our PixPayment — unit-testable. */
+/** Pure mapper from the MP response to our PixPayment | unit-testable. */
 export function mapPixResponse(res: MpPaymentResponse): PixPayment {
   const tx = res.point_of_interaction?.transaction_data;
   return {

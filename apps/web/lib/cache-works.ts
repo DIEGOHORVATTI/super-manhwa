@@ -10,7 +10,7 @@ import { publicUrlFor, putObject, r2Enabled } from "@/lib/r2";
  * merged metadata/chapters to Postgres and mirrors the cover to R2, so repeat
  * visits can be served instantly and survive the upstream source going down.
  *
- * All writes are best-effort and idempotent — failures never affect the live
+ * All writes are best-effort and idempotent | failures never affect the live
  * page (callers run these inside `after()`), and a fresh row (<24h) short-
  * circuits the work so we don't re-hit R2 on every visit.
  */
@@ -30,7 +30,7 @@ export async function cacheWorkOnRead(catalogId: string, core: Core): Promise<vo
     const fresh = existing && !isStale(existing.refreshedAt);
     if (fresh && existing.coverR2Key) return; // nothing to do
 
-    // Mirror the cover to R2 once (only for absolute upstream URLs — proxy paths
+    // Mirror the cover to R2 once (only for absolute upstream URLs | proxy paths
     // need signing we don't replay here).
     let coverR2Key = existing?.coverR2Key ?? null;
     if (!coverR2Key && r2Enabled && isAbsolute(core.imageUrl)) {

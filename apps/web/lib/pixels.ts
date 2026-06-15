@@ -1,14 +1,14 @@
 import { env } from "@/lib/env";
 
 /**
- * "Million pixel" board geometry + pricing — pure, unit-testable. The board is a
+ * "Million pixel" board geometry + pricing | pure, unit-testable. The board is a
  * COLS×ROWS grid of square blocks (each `BLOCK_PX` pixels). Advertisers buy an
  * axis-aligned rectangle of free blocks and pay per block.
  */
 export const GRID = { cols: 100, rows: 100, blockPx: 10 } as const; // 1000×1000 = 1M px
 
 /**
- * Price per square (the 10×10px block) in cents (env override). Default R$5,00 —
+ * Price per square (the 10×10px block) in cents (env override). Default R$5,00 |
  * the square IS the unit. A full 100×100 board (10.000 squares) sells for
  * R$50.000. Minimum purchase is one square (R$5); drag to buy a bigger region.
  */

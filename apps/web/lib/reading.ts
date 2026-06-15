@@ -1,5 +1,5 @@
 /**
- * Reading-achievement rules — pure, unit-testable. Reading stats are aggregated
+ * Reading-achievement rules | pure, unit-testable. Reading stats are aggregated
  * from the `readingEvents` table (distinct works + total chapters read); the
  * unlock keys match the badge catalog in `lib/badges.ts`.
  */

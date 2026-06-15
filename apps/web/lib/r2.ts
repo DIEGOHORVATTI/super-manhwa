@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
- * Cloudflare R2 (S3-compatible) client. Gated on the full credential set —
+ * Cloudflare R2 (S3-compatible) client. Gated on the full credential set |
  * `r2Enabled` lets callers (cache-on-read, user-work uploads) skip R2 and fall
  * back to the in-memory image proxy when storage isn't configured.
  *

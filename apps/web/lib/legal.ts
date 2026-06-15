@@ -16,7 +16,7 @@ import { legalRequestsRepo } from "@/lib/repositories/legal-requests";
  */
 type Payload = Record<string, unknown>;
 
-// React Email escapes values automatically — só montamos os pares campo/valor.
+// React Email escapes values automatically | só montamos os pares campo/valor.
 const toFields = (payload: Payload): [string, string][] =>
   Object.entries(payload)
     .filter(([k]) => k !== "hp")
@@ -35,7 +35,7 @@ export async function handleLegalSubmission(
   if (emailEnabled && admin) {
     await sendEmail({
       to: admin,
-      subject: `[${type}] nova solicitação — Super Manhwa`,
+      subject: `[${type}] nova solicitação | Super Manhwa`,
       html: await render(LegalRequestEmail({ type, fields: toFields(payload) })),
     });
   }

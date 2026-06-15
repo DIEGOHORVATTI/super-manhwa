@@ -1,5 +1,5 @@
 /**
- * Badge catalog + resolver — pure, no DB/server-only, so it's usable in client
+ * Badge catalog + resolver | pure, no DB/server-only, so it's usable in client
  * components (comment authors, profile) and unit-tested. A user's badges come
  * from their role, plan and unlocked achievement keys.
  *

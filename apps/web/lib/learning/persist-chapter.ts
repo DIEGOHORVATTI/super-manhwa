@@ -7,7 +7,7 @@ import { type LearnLanguage, tokenize } from "@/lib/learning/tokenize";
 /**
  * Pre-tokenizes a novel chapter's text and persists it (raw text + tokens +
  * sentences) plus upserts the distinct lemmas into the `words` dictionary. Runs
- * once at chapter save — never at read time. Re-running replaces prior rows so
+ * once at chapter save | never at read time. Re-running replaces prior rows so
  * an edit re-tokenizes cleanly.
  */
 export async function persistChapterText(

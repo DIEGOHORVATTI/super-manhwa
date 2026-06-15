@@ -1,5 +1,5 @@
 /**
- * Freemium gating — pure policy, unit-testable. Given the user's plan and today's
+ * Freemium gating | pure policy, unit-testable. Given the user's plan and today's
  * usage, decides what's allowed. Free users hit a daily cap on new words and a
  * cap on review cards, and premium-only features (cloze beyond a teaser, sentence
  * mining, Anki export, advanced stats) are locked. Premium = unlimited.

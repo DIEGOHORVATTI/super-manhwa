@@ -1,10 +1,10 @@
 /**
- * Deterministic text tokenizer for the language-learning layer — NO AI/LLM.
+ * Deterministic text tokenizer for the language-learning layer | NO AI/LLM.
  * Splits a chapter into sentences and ordered tokens (words + punctuation/space),
  * and reduces each word to a dictionary "lemma". PT/EN only for now (whitespace
  * languages); CJK segmentation (kuromoji/jieba) is a future language pack.
  *
- * Pre-run once at chapter save and cached in `chapter_tokens`/`sentences` — never
+ * Pre-run once at chapter save and cached in `chapter_tokens`/`sentences` | never
  * at read time. Pure + side-effect-free so it's fully unit-testable.
  */
 export type LearnLanguage = "pt" | "en";
@@ -49,7 +49,7 @@ export function splitSentences(text: string): SentenceSpan[] {
 
 /**
  * Naive MVP lemmatizer. Lowercases and strips a few regular inflections so
- * conjugations/plurals collapse onto one headword. Intentionally conservative —
+ * conjugations/plurals collapse onto one headword. Intentionally conservative |
  * a real lemma dictionary (per language) replaces this in a later phase.
  */
 export function normalizeLemma(surface: string, language: LearnLanguage): string {

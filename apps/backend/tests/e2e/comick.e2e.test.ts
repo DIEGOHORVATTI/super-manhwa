@@ -5,7 +5,7 @@ import { CONNECTORS, type MangaConnector } from "@packages/extension";
 /**
  * Comick native connector (comick.live API). It's registered `hasCloudflare:
  * true` (kept out of the popular pool because its /top isn't language-filtered),
- * but it IS a real working connector — these tests prove the direct-API path
+ * but it IS a real working connector | these tests prove the direct-API path
  * end to end against a known title. Tolerant of upstream/network hiccups so it
  * doesn't flake CI, but asserts hard whenever the site responds.
  */
@@ -30,7 +30,7 @@ describe("comick / native API (comick.live)", () => {
     try {
       detail = await c.getDetail(SOLO_SLUG);
     } catch (e) {
-      // Site/CF hiccup — don't flake; the direct-fetch path is best-effort
+      // Site/CF hiccup | don't flake; the direct-fetch path is best-effort
       // without FlareSolverr in CI.
       console.warn("comick getDetail skipped:", (e as Error).message);
       return;
@@ -65,7 +65,7 @@ describe("comick / native API (comick.live)", () => {
     expect(first).toMatch(/^https?:\/\//);
   }, 60_000);
 
-  it("getPopular returns works (global top — not language filtered)", async () => {
+  it("getPopular returns works (global top | not language filtered)", async () => {
     const c = comick();
     try {
       const r = await c.getPopular(1);

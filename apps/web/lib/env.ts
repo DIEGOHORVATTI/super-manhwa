@@ -2,12 +2,12 @@ import { z } from "zod";
 
 /**
  * Single source of truth for environment variables (web app). Every `process.env`
- * read goes through `env` exported here — call sites never touch `process.env`
+ * read goes through `env` exported here | call sites never touch `process.env`
  * directly. Mirrors the backend's `src/config/env.ts`.
  *
  * Isomorphic by design: each variable is referenced as a literal `process.env.X`
  * (so Next can inline `NEXT_PUBLIC_*` into the client bundle); on the client the
- * server-only vars resolve to `undefined` — never leaked. Secrets are optional
+ * server-only vars resolve to `undefined` | never leaked. Secrets are optional
  * (the app degrades gracefully: `dbEnabled`, `r2Enabled`, `emailEnabled`, …), so
  * parsing never throws when something isn't configured.
  */

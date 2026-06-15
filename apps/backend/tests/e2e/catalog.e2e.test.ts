@@ -8,7 +8,7 @@ describe("catalog / aggregation", () => {
     // AniList catalog returns one page (30/page); more pages via hasNextPage.
     expect(r.list.length).toBeGreaterThanOrEqual(20);
     expect(r.hasNextPage).toBe(true);
-    // Wire is source-agnostic — no leak of source fields anywhere.
+    // Wire is source-agnostic | no leak of source fields anywhere.
     for (const m of r.list.slice(0, 10)) {
       expect(typeof m.id).toBe("string");
       expect(m.id.length).toBeGreaterThan(0); // opaque catalog id (AniList id string)
@@ -100,7 +100,7 @@ describe("catalog / detail + pages flow", () => {
       console.log(`[timing] chapters "${target.name}" → ${ms}ms`);
       const chapters = r.chapters;
       expect(chapters.length).toBeGreaterThan(0);
-      // Chapter shape sanity — id is an opaque AES-GCM token (long base64url),
+      // Chapter shape sanity | id is an opaque AES-GCM token (long base64url),
       // name a string.
       for (const c of chapters.slice(0, 3)) {
         expect(typeof c.id).toBe("string");
@@ -154,7 +154,7 @@ describe("catalog / detail + pages flow", () => {
         expect(p.startsWith("/api/img/")).toBe(true);
       }
 
-      // Fetch first page bytes — confirms end-to-end that the proxy works
+      // Fetch first page bytes | confirms end-to-end that the proxy works
       // for chapter pages on both kinds of titles (direct + fallback).
       const token = pages.pages[0].split("/").pop()!;
       const imgRes = await apiClient.image(token);
@@ -167,7 +167,7 @@ describe("catalog / detail + pages flow", () => {
 
   it("invalid manga id is rejected as not-found", async () => {
     // Manga ids are AniList lookups (not opaque tokens), so an unresolvable id is
-    // a 404 (unknown work) — distinct from a malformed *chapter* token (400 below).
+    // a 404 (unknown work) | distinct from a malformed *chapter* token (400 below).
     const res = await apiClient.rawGet("/api/manga/detail?id=not-a-real-id", {
       headers: { "X-API-KEY": apiClient.apiKey },
     });

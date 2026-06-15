@@ -4,7 +4,7 @@
  * access (e.g. in `lib/env.ts`, `proxy.ts`, `drizzle.config.ts`) typed instead
  * of `string | undefined` with no key checking.
  *
- * Env vars are always `string | undefined` at runtime — coercion to numbers etc.
+ * Env vars are always `string | undefined` at runtime | coercion to numbers etc.
  * happens in `lib/env.ts`.
  */
 declare namespace NodeJS {

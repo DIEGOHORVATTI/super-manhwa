@@ -29,7 +29,7 @@ describe("media / image proxy", () => {
 
   it("rejects invalid tokens", async () => {
     const res = await apiClient.image("definitely-not-a-real-token");
-    // Either 400 (bad token decode) or 404/500 from upstream — but never 200.
+    // Either 400 (bad token decode) or 404/500 from upstream | but never 200.
     expect(res.status).not.toBe(200);
   });
 });

@@ -4,7 +4,7 @@ const norm = (s: string) => s.normalize("NFKC").trim().toLowerCase();
 
 /**
  * Cross-language title set for the detail page. Combines the work's official
- * variants (english / romaji / native / synonyms — which already include
+ * variants (english / romaji / native / synonyms | which already include
  * localized names such as the pt-BR title) with a machine pt-BR translation of
  * the primary title, so the obra is found whether a reader searches its English,
  * native, or Portuguese name. The translation is cached 30d and a no-op for

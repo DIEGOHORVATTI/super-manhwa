@@ -4,7 +4,7 @@ import { apiClient } from "../helpers/api-client";
 
 /**
  * AniList metadata enrichment (/api/manga/meta). Powers the detail page's
- * Characters/About tabs. Best-effort upstream — tolerant of network/rate-limit
+ * Characters/About tabs. Best-effort upstream | tolerant of network/rate-limit
  * hiccups so it doesn't flake, but asserts the shape + proxying when it answers.
  */
 describe("metadata / AniList enrichment", () => {
@@ -24,7 +24,7 @@ describe("metadata / AniList enrichment", () => {
     // On a hit (the common case), assert the rich fields.
     if (meta.characters.length > 0) {
       expect(typeof meta.characters[0].name).toBe("string");
-      // images must be proxied — never the raw AniList CDN
+      // images must be proxied | never the raw AniList CDN
       for (const c of meta.characters) {
         if (c.imageUrl) expect(c.imageUrl.startsWith("/api/img/")).toBe(true);
       }

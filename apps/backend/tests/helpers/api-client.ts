@@ -87,12 +87,12 @@ export const apiClient = {
       getJson<{ genres: string[] }>(`/api/manga/genres${lang ? `?lang=${lang}` : ""}`),
   },
 
-  /** Raw image proxy fetch — returns the Response so the caller can inspect bytes. */
+  /** Raw image proxy fetch | returns the Response so the caller can inspect bytes. */
   image: (token: string, opts: { withKey?: boolean } = { withKey: true }) =>
     fetch(`${BACKEND}/api/img/${token}`, {
       headers: opts.withKey ? headers() : undefined,
     }),
 
-  /** Raw unauthenticated request — used by auth tests. */
+  /** Raw unauthenticated request | used by auth tests. */
   rawGet: (path: string, init?: RequestInit) => fetch(`${BACKEND}${path}`, init),
 };

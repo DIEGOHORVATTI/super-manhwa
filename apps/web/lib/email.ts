@@ -3,7 +3,7 @@ import { env } from "@/lib/env";
 import { Resend } from "resend";
 
 /**
- * Transactional e-mail via Resend. Gated on `RESEND_API_KEY` — `emailEnabled`
+ * Transactional e-mail via Resend. Gated on `RESEND_API_KEY` | `emailEnabled`
  * lets callers (legal forms, newsletter) skip sending when not configured.
  */
 const key = env.RESEND_API_KEY;

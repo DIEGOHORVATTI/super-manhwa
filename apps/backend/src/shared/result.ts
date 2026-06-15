@@ -1,5 +1,5 @@
 /**
- * Functional Result<T, E> — for paths where you want to model failure without
+ * Functional Result<T, E> | for paths where you want to model failure without
  * throwing (e.g. a use case that wants to inspect "primary source error" and
  * "fallback also failed" as two distinct return shapes). Lifted from
  * `novo-horizonte/server/src/shared/result.ts`.
@@ -20,7 +20,7 @@ export const isErr = <T, E>(r: Result<T, E>): r is Err<E> => r.error !== undefin
 
 /**
  * Wrap a Promise and capture errors. Returns `Result<T, E>` instead of
- * propagating throws — convenient at module boundaries.
+ * propagating throws | convenient at module boundaries.
  */
 export const wrapPromiseResult = async <T, E = unknown>(
   promise: Promise<T>,

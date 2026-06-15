@@ -11,7 +11,7 @@ import { useCallback, useSyncExternalStore } from "react";
  * Reads go through `useSyncExternalStore`, so components stay in sync across
  * tabs (the `storage` event) and within a tab (a custom event we dispatch on
  * every write). `getServerSnapshot` returns the empty value, so SSR renders the
- * logged-out/empty state and the client fills it in after hydration — these are
+ * logged-out/empty state and the client fills it in after hydration | these are
  * always rendered inside client islands, never blocking a cached server page.
  */
 
@@ -54,7 +54,7 @@ function writeRaw<T>(key: string, value: T): void {
     window.localStorage.setItem(key, JSON.stringify(value));
     window.dispatchEvent(new CustomEvent(EVENT, { detail: key }));
   } catch {
-    /* quota / private mode — degrade silently */
+    /* quota / private mode | degrade silently */
   }
 }
 
@@ -118,7 +118,7 @@ export function toggleFavorite(entry: Omit<LibEntry, "addedAt">): void {
   writeRaw(K.favorites, next);
 }
 
-/** Idempotent add (used by the AniList import — never removes). */
+/** Idempotent add (used by the AniList import | never removes). */
 export function addFavorite(entry: Omit<LibEntry, "addedAt">): void {
   const list = readRaw<LibEntry[]>(K.favorites, []);
   if (list.some((f) => f.id === entry.id)) return;
@@ -150,7 +150,7 @@ export function removeProgress(id: string): void {
 
 export function useReadChapters(mangaId: string): Set<string> {
   const map = useStore<Record<string, string[]>>(K.read, EMPTY_READ);
-  // New Set per render is fine — callers use it for membership only.
+  // New Set per render is fine | callers use it for membership only.
   return new Set(map[mangaId] ?? []);
 }
 

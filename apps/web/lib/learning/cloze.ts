@@ -1,5 +1,5 @@
 /**
- * Cloze-card construction — pure. Builds the default review card: the real
+ * Cloze-card construction | pure. Builds the default review card: the real
  * sentence from the text with the target word blanked (front) and the answer
  * (back). Always in context, never the word in isolation (Clozemaster-style).
  */

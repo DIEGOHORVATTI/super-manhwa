@@ -135,7 +135,7 @@ export async function completeAuthFromHash(hash: string): Promise<string | null>
     );
     writeSession({ token, expiresAt, name: data.Viewer?.name });
   } catch {
-    /* name is cosmetic — keep the session even if it fails */
+    /* name is cosmetic | keep the session even if it fails */
   }
   return token;
 }

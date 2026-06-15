@@ -1,5 +1,5 @@
 /**
- * Affiliate helpers — pure, unit-testable. The recurring model: an affiliate earns
+ * Affiliate helpers | pure, unit-testable. The recurring model: an affiliate earns
  * `ratePct`% (default 20) of each authorized monthly subscription of a user they
  * referred (first-touch). Attribution window: 30 days (the `ref` cookie's life).
  */
@@ -24,7 +24,7 @@ export function normalizeCode(raw: string | null | undefined): string | null {
   return isValidCode(c) ? c : null;
 }
 
-/** Current billing period key (UTC month) — one commission row per period. */
+/** Current billing period key (UTC month) | one commission row per period. */
 export function periodKey(now: Date): string {
   return now.toISOString().slice(0, 7); // YYYY-MM
 }

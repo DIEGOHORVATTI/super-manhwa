@@ -1,5 +1,5 @@
 /**
- * Gamification math — pure, no DB. XP rewards, daily streak transitions and
+ * Gamification math | pure, no DB. XP rewards, daily streak transitions and
  * achievement checks. Dates are "YYYY-MM-DD" local-day strings so streaks are
  * timezone-stable once the caller picks the user's day.
  */
@@ -37,7 +37,7 @@ export function applyStudyDay(state: StreakState, today: string): StreakState {
   if (state.lastStudyDate == null) return { streakDays: 1, lastStudyDate: today };
   const gap = dayDiff(state.lastStudyDate, today);
   if (gap === 1) return { streakDays: state.streakDays + 1, lastStudyDate: today };
-  if (gap <= 0) return state; // clock skew / out-of-order — keep
+  if (gap <= 0) return state; // clock skew / out-of-order | keep
   return { streakDays: 1, lastStudyDate: today };
 }
 

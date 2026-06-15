@@ -7,10 +7,10 @@ import { getDb, schema } from "@/lib/db";
  * Team/work authorization. A work is owned by a user and optionally bound to a
  * team; collaborators get a scoped role. Capabilities:
  *
- *   owner     — everything (edit work, manage team, publish, delete)
- *   editor    — manage chapters, schedule, publish, edit work metadata
- *   reviewer  — review chapters (approve / request changes)
- *   translator— create/edit chapter drafts, submit for review
+ *   owner     | everything (edit work, manage team, publish, delete)
+ *   editor    | manage chapters, schedule, publish, edit work metadata
+ *   reviewer  | review chapters (approve / request changes)
+ *   translator| create/edit chapter drafts, submit for review
  *
  * The owner of the work always has full rights regardless of team role.
  */

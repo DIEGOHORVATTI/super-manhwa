@@ -9,20 +9,20 @@ import { dbEnabled, getDb, schema } from "../db";
 import { emailEnabled, sendEmail } from "../email";
 
 /**
- * Better Auth instance — email/password (with verification + reset), Google
+ * Better Auth instance | email/password (with verification + reset), Google
  * social login, and the account-linking primitives used to attach multiple
  * AniList identities to one user. Lives in the Next app (which owns the
  * Postgres). Gated on `DATABASE_URL`: when unset, `auth` is null and the route
  * handler 503s, mirroring the graceful-degradation pattern used elsewhere.
  *
  * Table/column names in `schema.ts` already match Better Auth's core model, so
- * the Drizzle adapter needs no field mapping — only the extra `user` columns
+ * the Drizzle adapter needs no field mapping | only the extra `user` columns
  * (role/handle/bio/banned) are declared as additional fields.
  */
 async function deliver(to: string, subject: string, html: string) {
   if (!emailEnabled) {
     // No Resend key in dev: log the action link so flows are still testable.
-    console.warn(`[auth] e-mail disabled — ${subject} for ${to}`);
+    console.warn(`[auth] e-mail disabled | ${subject} for ${to}`);
     return;
   }
   await sendEmail({ to, subject, html });
@@ -31,7 +31,7 @@ async function deliver(to: string, subject: string, html: string) {
 // Throttle verification e-mails to one per user every VERIFY_COOLDOWN_MINUTES
 // (default 30), so an unverified user hammering the login button (sendOnSignIn
 // resends each attempt) can't spam their own inbox. ponytail: in-memory,
-// per-instance — move to DB/Redis if you run many instances and need a hard cap.
+// per-instance | move to DB/Redis if you run many instances and need a hard cap.
 const VERIFY_COOLDOWN_MS = env.VERIFY_COOLDOWN_MINUTES * 60 * 1000;
 const lastVerifyAt = new Map<string, number>();
 
@@ -48,7 +48,7 @@ function build() {
       async sendResetPassword({ user, url }) {
         await deliver(
           user.email,
-          "Redefinir sua senha — Super Manhwa",
+          "Redefinir sua senha | Super Manhwa",
           await render(RecoverPasswordEmail({ url })),
         );
       },
@@ -65,7 +65,7 @@ function build() {
         lastVerifyAt.set(user.email, now);
         await deliver(
           user.email,
-          "Confirme seu e-mail — Super Manhwa",
+          "Confirme seu e-mail | Super Manhwa",
           await render(VerificationEmail({ url })),
         );
       },
@@ -90,7 +90,7 @@ function build() {
         handle: { type: "string", required: false },
         bio: { type: "string", required: false },
         banned: { type: "boolean", defaultValue: false, input: false },
-        // Language-learning profile — surfaced in the session, server-managed.
+        // Language-learning profile | surfaced in the session, server-managed.
         xp: { type: "number", defaultValue: 0, input: false },
         streakDays: { type: "number", defaultValue: 0, input: false },
         dailyGoal: { type: "number", defaultValue: 20, input: false },

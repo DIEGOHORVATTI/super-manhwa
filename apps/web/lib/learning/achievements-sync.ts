@@ -14,7 +14,7 @@ const CATALOG: Record<string, { name: string; description: string }> = {
 };
 
 /**
- * Unlock any achievements the user now qualifies for. Idempotent — seeds the
+ * Unlock any achievements the user now qualifies for. Idempotent | seeds the
  * achievement definition then inserts the user link if missing. Called after
  * study actions (cheap: a count + a small read/insert).
  */

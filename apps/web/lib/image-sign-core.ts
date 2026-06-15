@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
 /**
- * Pure image-URL signing — no env, no `server-only`, so it's unit-testable and
+ * Pure image-URL signing | no env, no `server-only`, so it's unit-testable and
  * shared by the secret-bound wrappers in {@link image-sign}. The cover branch
  * MUST stay byte-identical to the backend's `coverSig`
  * (apps/backend/src/shared/image-sign.ts) so the Next proxy can verify covers

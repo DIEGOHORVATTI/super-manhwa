@@ -31,7 +31,7 @@ export async function subscribeEmail(
     const html = await render(
       ConfirmNewsletterEmail({ confirmUrl: `${base}/api/newsletter/confirm?token=${token}` }),
     );
-    await sendEmail({ to: normalized, subject: "Confirme sua inscrição — Super Manhwa", html });
+    await sendEmail({ to: normalized, subject: "Confirme sua inscrição | Super Manhwa", html });
     return "sent";
   } catch {
     return "error";

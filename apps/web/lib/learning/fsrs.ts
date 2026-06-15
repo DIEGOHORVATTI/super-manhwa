@@ -1,10 +1,10 @@
 /**
- * FSRS (Free Spaced Repetition Scheduler) — compact, dependency-free port of the
+ * FSRS (Free Spaced Repetition Scheduler) | compact, dependency-free port of the
  * FSRS-5 long-term formulas. Pure math, NO AI. Given a card's memory state and a
  * grade (1=again, 2=hard, 3=good, 4=easy) it returns the next state + interval.
  *
  * `stability` is measured in days; `difficulty` in [1,10]. The DB stores both as
- * x1000 integers (see schema) — convert at the persistence boundary, compute here
+ * x1000 integers (see schema) | convert at the persistence boundary, compute here
  * in floats. Same-day "short-term" steps (w17/w18) are intentionally omitted for
  * the MVP; intervals are full-day.
  */

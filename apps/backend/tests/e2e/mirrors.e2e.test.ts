@@ -10,7 +10,7 @@ import {
 import { httpFetch } from "@/shared/http-fetch";
 
 /**
- * Mirror validation suite — exercises each curated connector directly through
+ * Mirror validation suite | exercises each curated connector directly through
  * its typed methods (no QuickJS dispatch, no raw codeUrls). Asserts:
  *
  *   - getPopular() yields ≥ 2 items with the required shape
@@ -27,9 +27,9 @@ const NON_CF_CONNECTORS: readonly MangaConnector[] = CONNECTORS.filter((c) => !c
 /**
  * Connectors that route every request through FlareSolverr even though they
  * carry `hasCloudflare: false` (the flag means "behind an active CF challenge",
- * which these sites are not — yet the connectors fetch defensively via the
+ * which these sites are not | yet the connectors fetch defensively via the
  * solver). A solver round-trip renders a headless Chromium, so the *dynamic*
- * WordPress search route (`/?s=…`, uncached) measures ~18 s end-to-end — well
+ * WordPress search route (`/?s=…`, uncached) measures ~18 s end-to-end | well
  * past the direct-fetch search budget. They get an extended search timeout so
  * the suite reflects real solver latency instead of flaking on a deadline.
  */
@@ -60,7 +60,7 @@ const DETAIL_TIMEOUT_MS = 25_000;
 /**
  * Solver-routed connectors render a headless Chromium for every request, so
  * each call costs ~18 s on its own and more under load (the solver serializes).
- * Their popular/search budgets are widened accordingly — direct-fetch mirrors
+ * Their popular/search budgets are widened accordingly | direct-fetch mirrors
  * keep the tight budgets so a real perf regression there still fails.
  */
 const SOLVER_POPULAR_TIMEOUT_MS = 30_000;
@@ -157,7 +157,7 @@ describe("mirrors / per-connector contract", () => {
 });
 
 /**
- * "Can we add a new mirror?" — the dynamic-resolution path. We don't directly
+ * "Can we add a new mirror?" | the dynamic-resolution path. We don't directly
  * invoke `resolveConnector` here because that would download a fresh JS file
  * per test. Just validate the upstream index is fetchable + well-shaped, the
  * contract a new entry would need to satisfy.
