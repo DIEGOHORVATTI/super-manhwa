@@ -8,7 +8,7 @@ const DEFAULT_UA =
 /**
  * Streams image bytes from the upstream CDN with the headers most hotlinking
  * CDNs check (UA + Referer derived from source.baseUrl). The proxy keeps the
- * response body opaque to the caller via `Response.body` — no buffering. When
+ * response body opaque to the caller via `Response.body` | no buffering. When
  * upstream errors, we surface a same-shaped error response so the caller
  * doesn't have to special-case it.
  */

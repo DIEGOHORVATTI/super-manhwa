@@ -26,8 +26,8 @@ const mapStatus = (n: unknown): MangaStatus | undefined =>
 
 /**
  * Primary reading language assumed for catalog (AniList) listings. Discovery is
- * language-agnostic — we can't probe each work's sources cheaply at listing time
- * — and the curated reading pool is overwhelmingly pt-br today, so covers show
+ * language-agnostic | we can't probe each work's sources cheaply at listing time
+ * | and the curated reading pool is overwhelmingly pt-br today, so covers show
  * the BR flag by default. The detail page computes the *real* per-work language
  * mix from the merged chapters.
  */
@@ -35,7 +35,7 @@ const PRIMARY_LANG = "pt-br";
 
 /**
  * Server-relative URL for the image proxy, built from the same id-store that
- * mints manga/chapter ids — keeps every opaque path on the same trust chain.
+ * mints manga/chapter ids | keeps every opaque path on the same trust chain.
  */
 const imagePath = (idStore: IdStore, source: string, url?: string): string | undefined =>
   url ? signCoverPath(`/api/img/${idStore.encode({ source, url })}`) : undefined;
@@ -44,7 +44,7 @@ export const MangaMapper = {
   /**
    * Catalog (AniList) item → listing summary. The opaque `id` IS the AniList id
    * (no connector behind it); covers are proxied under the synthetic "anilist"
-   * source. `lang` is empty — discovery is language-agnostic now.
+   * source. `lang` is empty | discovery is language-agnostic now.
    */
   catalogSummary(idStore: IdStore, item: CatalogItem): MangaSummary {
     return {

@@ -12,11 +12,11 @@ const PER_CONNECTOR = 12;
 const DEADLINE_MS = 12_000;
 
 /**
- * "Recently updated" feed — sourced from the reading connectors (NOT AniList,
+ * "Recently updated" feed | sourced from the reading connectors (NOT AniList,
  * which only knows a work's start date). Fans out to the connectors that expose
  * `getLatestUpdates`, preferring the request language, bounded by a soft
  * deadline, and round-robin-interleaves their results (deduped by title) so the
- * feed mixes sources rather than grouping them. Cached 10 min — the first cold
+ * feed mixes sources rather than grouping them. Cached 10 min | the first cold
  * load per window absorbs the connector latency.
  *
  * Items carry opaque connector ids; the detail page resolves them by the title

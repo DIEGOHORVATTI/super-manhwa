@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Service health probe. Exposed without auth so Docker / load balancers can
- * poll it — keep this minimal and free of any sensitive state.
+ * poll it | keep this minimal and free of any sensitive state.
  */
 export const healthSchema = z.object({
   ok: z.boolean(),

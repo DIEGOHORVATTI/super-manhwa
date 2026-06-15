@@ -1,5 +1,5 @@
 /**
- * Anonymous session cookie — the only piece of per-visitor state the server
+ * Anonymous session cookie | the only piece of per-visitor state the server
  * keeps. It carries no identity (a random id), exists solely to bind signed
  * chapter-page image URLs to the browser that requested them, and is set by
  * middleware. Shared here (no `server-only`) so middleware (edge) and the RSC

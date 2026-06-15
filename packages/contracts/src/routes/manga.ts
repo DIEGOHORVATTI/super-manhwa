@@ -19,7 +19,7 @@ import {
 const prefix = oc.route({ tags: ["Manga"] });
 
 /**
- * Manga catalog contract — source-agnostic on the wire. The backend mints opaque
+ * Manga catalog contract | source-agnostic on the wire. The backend mints opaque
  * ids and the frontend just forwards them. Filters are limited to language and
  * genre (no source/platform filter, by design).
  */
@@ -64,12 +64,12 @@ export const manga = oc.prefix("/manga").router({
     .route({
       method: "GET",
       path: "/core",
-      summary: "Manga metadata only — fast, no chapters (by opaque id)",
+      summary: "Manga metadata only | fast, no chapters (by opaque id)",
     })
     .input(
       z.object({
         id: z.string(),
-        /** Optional title hint — used as a fallback display name when the
+        /** Optional title hint | used as a fallback display name when the
          *  catalog has no entry for this id. */
         name: z.string().optional(),
       }),
@@ -85,7 +85,7 @@ export const manga = oc.prefix("/manga").router({
     .input(
       z.object({
         id: z.string(),
-        /** Optional title hint — enables cross-source fallback when the primary
+        /** Optional title hint | enables cross-source fallback when the primary
          *  returns zero chapters or an extension-side parse error. */
         name: z.string().optional(),
       }),
@@ -120,7 +120,7 @@ export const manga = oc.prefix("/manga").router({
     .route({
       method: "GET",
       path: "/characters",
-      summary: "Character list by title — heavy, loaded on demand for the tab",
+      summary: "Character list by title | heavy, loaded on demand for the tab",
     })
     .input(z.object({ name: z.string() }))
     .output(charactersResultSchema),

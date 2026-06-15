@@ -1,5 +1,5 @@
 # Delivery service image (ADR-0008). Persistent Bun server running the extension
-# runtime. No build step — Bun runs the TS directly. Build context = repo root
+# runtime. No build step | Bun runs the TS directly. Build context = repo root
 # (so it can see packages/). Frontend is excluded via .dockerignore.
 #   docker build -f apps/backend/Dockerfile -t manga-delivery .
 FROM oven/bun:1.3-slim
@@ -14,7 +14,7 @@ COPY packages/contracts/package.json ./packages/contracts/
 COPY packages/extension/package.json ./packages/extension/
 RUN bun install --frozen-lockfile --production
 
-# Source — only what the delivery service needs.
+# Source | only what the delivery service needs.
 COPY packages ./packages
 COPY apps/backend ./apps/backend
 

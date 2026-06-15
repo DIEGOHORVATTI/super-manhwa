@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Build the delivery-service image locally and push it to GHCR — the manual
+# Build the delivery-service image locally and push it to GHCR | the manual
 # alternative to the GitHub Actions build (.github/workflows/docker-publish.yml).
 # Run from the repo root:  ./scripts/publish-backend.sh
 set -euo pipefail

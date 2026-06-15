@@ -1,5 +1,5 @@
 /**
- * Domain types shared across the manga app — modeled on the Mangayomi extension
+ * Domain types shared across the manga app | modeled on the Mangayomi extension
  * contract (see DECISIONS.md, ADR-0001 / ADR-0004). These are the shapes that
  * extension methods produce and the rest of the app consumes.
  */

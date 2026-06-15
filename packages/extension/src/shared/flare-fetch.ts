@@ -3,7 +3,7 @@
  * Sucuri or other JS-challenge WAFs. When `FLARESOLVERR_URL` is set in the
  * environment the call is proxied through the solver (which spawns a headless
  * Chromium, solves the challenge, returns the rendered HTML). When not set,
- * falls back to plain `fetch()` — useful for local dev without the sidecar.
+ * falls back to plain `fetch()` | useful for local dev without the sidecar.
  *
  * The shape mirrors the host-side fetch the QuickJS sandbox uses, so native
  * connectors and Mangayomi-backed ones share the same bypass infrastructure.
@@ -15,12 +15,12 @@ const DEFAULT_UA =
 export interface FlareFetchOptions {
   /** Standard fetch headers, layered on top of FS-injected ones. */
   headers?: Record<string, string>;
-  /** Solver timeout in ms (default 60s — JS challenges take a while). */
+  /** Solver timeout in ms (default 60s | JS challenges take a while). */
   maxTimeout?: number;
   /**
    * Force a plain `fetch()` even when `FLARESOLVERR_URL` is configured. For
    * endpoints that pass with a browser UA directly and would only be slowed
-   * (and rate-limited) by a needless Chromium render — e.g. paginated JSON
+   * (and rate-limited) by a needless Chromium render | e.g. paginated JSON
    * APIs. The solver is reserved for the routes that actually trip a challenge.
    */
   direct?: boolean;
@@ -37,7 +37,7 @@ export interface FlareFetchResult {
 
 /**
  * Fetch the target URL, routing through FlareSolverr when configured. Returns
- * the rendered body as a string — for binary streams (image proxy) use plain
+ * the rendered body as a string | for binary streams (image proxy) use plain
  * `fetch()` directly; this helper is for HTML/JSON the connectors parse.
  */
 export const flareFetch = async (
@@ -63,7 +63,7 @@ export const flareFetch = async (
   // The solver's `maxTimeout` only bounds the in-browser challenge solve; the
   // POST itself can still hang if the solver is saturated or wedged. Cap the
   // round-trip client-side (solve budget + margin) so a stuck solver surfaces
-  // as a throw the connector/aggregator can fall back from — never a hang.
+  // as a throw the connector/aggregator can fall back from | never a hang.
   const fs = await fetch(solver, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -123,7 +123,7 @@ const unwrapPreJson = (body: string): string => {
 /**
  * Fetch a JSON API endpoint through the same WAF bypass and parse it. Handles
  * the FlareSolverr `<pre>`-wrapping transparently. Throws on non-2xx or parse
- * failure — connectors let it propagate to the aggregator's fallback.
+ * failure | connectors let it propagate to the aggregator's fallback.
  */
 export const flareFetchJson = async <T>(url: string, opts: FlareFetchOptions = {}): Promise<T> => {
   const res = await flareFetch(url, {

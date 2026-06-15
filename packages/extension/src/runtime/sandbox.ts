@@ -9,11 +9,11 @@
  * the host runs the real `fetch()` on its own event loop, then pushes the result
  * back into the VM (`__resolveFetch`/`__rejectFetch`) and pumps the VM job queue.
  * This handles unlimited sequential/parallel fetches and stays in-process (no
- * workers, no subprocesses) — keeping the backend lightweight (ADR-0007).
+ * workers, no subprocesses) | keeping the backend lightweight (ADR-0007).
  */
 
 // Singlefile variant: the WASM is embedded as base64, so there is no separate
-// .wasm file to trace/bundle — reliable on Vercel serverless (ADR-0007).
+// .wasm file to trace/bundle | reliable on Vercel serverless (ADR-0007).
 import variant from "@jitl/quickjs-singlefile-cjs-release-sync";
 import {
   newQuickJSWASMModuleFromVariant,

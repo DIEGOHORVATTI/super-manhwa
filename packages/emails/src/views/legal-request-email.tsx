@@ -14,7 +14,7 @@ export default function LegalRequestEmail({ type, fields }: Props) {
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview={`Nova solicitação (${type}) — Super Manhwa`}>
+    <Main preview={`Nova solicitação (${type}) | Super Manhwa`}>
       <Text
         style={{
           fontSize: typography.fontSize.lg,

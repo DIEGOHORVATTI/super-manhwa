@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 /**
  * Registers the service worker (public/sw.js) once, in the browser, in
- * production only — dev caching would just get in the way. Renders nothing.
+ * production only | dev caching would just get in the way. Renders nothing.
  */
 export function ServiceWorkerRegister() {
   useEffect(() => {

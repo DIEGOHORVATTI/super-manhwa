@@ -4,7 +4,7 @@ import path from "node:path";
  * Mangafire signs every search/detail/chapter request with a `vrf` token,
  * computed by a ~300-line obfuscated crypto routine (RC4 + byte transforms).
  * That routine is bundled in the vendored `all/mangafire.js`. It runs fine in
- * a modern JS engine (Bun) but throws under our QuickJS sandbox — the class
+ * a modern JS engine (Bun) but throws under our QuickJS sandbox | the class
  * uses arrow-function class fields (`add8 = (n) => …`) that QuickJS-emscripten
  * doesn't initialise.
  *
@@ -36,7 +36,7 @@ const loadInstance = async (): Promise<VrfClass> => {
   if (instance) return instance;
   const src = await Bun.file(VENDORED).text();
   const classBody = src.slice(src.indexOf("class DefaultExtension"));
-  // `MProvider` is the runtime base class; an empty stub is enough — we only
+  // `MProvider` is the runtime base class; an empty stub is enough | we only
   // call the self-contained crypto methods, which don't touch the base.
   const factory = new Function(
     `class MProvider {}\n${classBody}\nreturn DefaultExtension;`,

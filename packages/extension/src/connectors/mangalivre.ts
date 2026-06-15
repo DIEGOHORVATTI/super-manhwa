@@ -1,5 +1,5 @@
 /**
- * Manga Livre (pt-br) — native connectors for the two sites the project tracks.
+ * Manga Livre (pt-br) | native connectors for the two sites the project tracks.
  * They share a brand but run completely different stacks, so each gets its own
  * parser:
  *
@@ -50,7 +50,7 @@ const fetchHtml = async (url: string): Promise<string> => {
 };
 
 /* ------------------------------------------------------------------ */
-/* mangalivre.to — Madara (WP-Manga)                                   */
+/* mangalivre.to | Madara (WP-Manga)                                   */
 /* ------------------------------------------------------------------ */
 
 const parseMadaraList = (html: string): RawListPage => {
@@ -160,7 +160,7 @@ const postChaptersHtml = async (mangaUrl: string): Promise<string> => {
 };
 
 /* ------------------------------------------------------------------ */
-/* mangalivre.blog — custom theme "b"                                  */
+/* mangalivre.blog | custom theme "b"                                  */
 /* ------------------------------------------------------------------ */
 
 const parseBlogList = (html: string): RawListPage => {

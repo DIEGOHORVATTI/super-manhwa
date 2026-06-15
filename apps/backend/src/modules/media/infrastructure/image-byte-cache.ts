@@ -2,7 +2,7 @@
  * Shared, in-process image-byte cache for the proxy. Keyed by the opaque token
  * (same token → same upstream URL for every visitor), so a chapter page or cover
  * is fetched from the source CDN once and then served to all sessions from
- * memory — the session/signature check happens upstream in the Next proxy, not
+ * memory | the session/signature check happens upstream in the Next proxy, not
  * here, so caching the bytes is safe and cross-user.
  *
  * Bounded by TOTAL bytes (not entry count) with simple LRU eviction, because

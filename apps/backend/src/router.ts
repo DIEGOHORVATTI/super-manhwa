@@ -3,7 +3,7 @@ import * as systemRoutes from "@/modules/system/presentation/routes/system-route
 
 /**
  * The oRPC router tree. Shape mirrors the contracts router so the implementer
- * type-checks against the contract. Image proxying is NOT here — it's a raw
+ * type-checks against the contract. Image proxying is NOT here | it's a raw
  * binary route handled directly as a customHandler in `index.ts`.
  */
 export const router = {

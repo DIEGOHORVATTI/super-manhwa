@@ -14,7 +14,7 @@ import { weebcentral } from "./weebcentral";
 
 /**
  * Hand-picked, validated connectors we actively aggregate from. Order matters
- * for tie-breaking in the dedupe-by-name aggregator — generic English sources
+ * for tie-breaking in the dedupe-by-name aggregator | generic English sources
  * first, locale-specific after.
  *
  * To add a connector:
@@ -23,7 +23,7 @@ import { weebcentral } from "./weebcentral";
  *   - Native TypeScript → implement `MangaConnector` directly under
  *     `../native/` (see `../native/README.md` for the contract).
  *
- * The backend imports `CONNECTORS` as a typed value — no `codeUrl` strings,
+ * The backend imports `CONNECTORS` as a typed value | no `codeUrl` strings,
  * no remote fetches at startup.
  */
 export const CONNECTORS: readonly MangaConnector[] = [
@@ -38,7 +38,7 @@ export const CONNECTORS: readonly MangaConnector[] = [
   // (mangalivre.to = Madara, mangalivre.blog = custom theme). No Cloudflare.
   mangaLivreTo,
   mangaLivreBlog,
-  // Mangayomi-backed pt-br aggregators — CF-flagged (out of the popular pool)
+  // Mangayomi-backed pt-br aggregators | CF-flagged (out of the popular pool)
   // until validated in a network that reaches their hosts / a vrf that runs
   // under QuickJS. See each connector module for the per-source blocker.
   comickPtBr,

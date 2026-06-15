@@ -41,7 +41,7 @@ export default function RecoverPasswordEmail({ url }: Props) {
           marginTop: spacing.lg,
         }}
       >
-        Se você não solicitou, ignore este e-mail — sua senha continua a mesma.
+        Se você não solicitou, ignore este e-mail | sua senha continua a mesma.
       </Text>
     </Main>
   );

@@ -2,7 +2,7 @@
 # Vercel (supermanhwa.com); this stack runs only the delivery backend + the
 # FlareSolverr sidecar, exposed by Traefik at api.supermanhwa.com.
 #
-# Deploy (image pulled from GHCR — no rebuild needed for Traefik changes):
+# Deploy (image pulled from GHCR | no rebuild needed for Traefik changes):
 #   docker stack deploy -c docker-stack.yml super-manhwa --with-registry-auth
 # Requires: `docker login ghcr.io` first (private image) and the env vars below
 # present in the shell / Portainer stack env (IMAGE_TOKEN_SECRET, API_KEY).
@@ -38,7 +38,7 @@ services:
       NODE_ENV: production
       # Sidecar reached via the overlay network by its service name.
       FLARESOLVERR_URL: 'http://traefik-test-solver:8191/v1'
-      # Never baked into the image — supplied at deploy time.
+      # Never baked into the image | supplied at deploy time.
       IMAGE_TOKEN_SECRET: ${IMAGE_TOKEN_SECRET:?IMAGE_TOKEN_SECRET must be set}
       API_KEY: ${API_KEY:?API_KEY must be set}
     networks:

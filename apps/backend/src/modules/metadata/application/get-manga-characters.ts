@@ -5,7 +5,7 @@ import type { IdStore } from "@/core/domain/id-store";
 import { type LoadMeta, proxyImage } from "./load-meta";
 
 /**
- * Character list for a title (AniList) — the heavy half of the metadata, split
+ * Character list for a title (AniList) | the heavy half of the metadata, split
  * out so the detail page can stream it into the "Personagens" tab instead of
  * blocking the hero on it. Shares {@link makeLoadMeta}'s cache with the meta
  * route, so opening a work costs one AniList lookup, not two.

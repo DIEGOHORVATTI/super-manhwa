@@ -32,7 +32,7 @@ const reqInput = async (req: {
 };
 
 /**
- * Minimal OpenAPI info shape — keeps us off the `openapi-types` dependency
+ * Minimal OpenAPI info shape | keeps us off the `openapi-types` dependency
  * while still feeding the docs page. Same fields the reference plugin reads.
  */
 export type OpenAPIInfo = {
@@ -51,8 +51,8 @@ export type CreateRpcHandlerOptions = {
 };
 
 /**
- * Builds the `OpenAPIHandler` with every plugin we want everywhere — CORS, body
- * coercion, headers, optional docs — and a single interceptor that logs each
+ * Builds the `OpenAPIHandler` with every plugin we want everywhere | CORS, body
+ * coercion, headers, optional docs | and a single interceptor that logs each
  * request with timing. Lifted from `novo-horizonte/server/src/http/create-rpc-randler.ts`
  * (typo "randler" → "handler" intentionally fixed).
  */
@@ -80,7 +80,7 @@ export const createRpcHandler = ({
             new OpenAPIReferencePlugin({
               docsProvider: "scalar",
               docsPath,
-              docsTitle: `${info.title} — Docs`,
+              docsTitle: `${info.title} | Docs`,
               // Brand the docs tab with our favicon (served by the backend at
               // /api/favicon.ico via the customHandler in index.ts).
               docsHead: `<link rel="icon" type="image/png" sizes="32x32" href="/api/favicon-32x32.png" /><link rel="icon" href="/api/favicon.ico" sizes="any" />`,
@@ -100,7 +100,7 @@ export const createRpcHandler = ({
         try {
           const result = await next();
           const ms = Number((performance.now() - startedAt).toFixed(0));
-          // The response body is already a parsed value — no clone/parse needed.
+          // The response body is already a parsed value | no clone/parse needed.
           void reqInput(request).then((input) =>
             logger.http({
               method,

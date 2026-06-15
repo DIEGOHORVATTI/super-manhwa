@@ -4,7 +4,7 @@ import { signCoverPath } from "@/shared/image-sign";
 
 import type { MangaMeta, MetadataProvider } from "../domain/manga-meta";
 
-const META_TTL = 6 * 60 * 60 * 1000; // metadata is stable — cache 6h
+const META_TTL = 6 * 60 * 60 * 1000; // metadata is stable | cache 6h
 
 /**
  * One cached AniList lookup behind a single key, so the `meta` and `characters`

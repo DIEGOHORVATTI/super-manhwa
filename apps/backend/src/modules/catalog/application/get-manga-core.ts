@@ -8,14 +8,14 @@ import { signCoverPath } from "@/shared/image-sign";
 import type { CatalogSource } from "../domain/catalog-source";
 import { loadWork } from "./work-cache";
 
-/** Reading language the page presents chapters in — kept aligned with the
+/** Reading language the page presents chapters in | kept aligned with the
  *  chapters route so both halves agree on a default. */
 const PREFERRED_LANG = "pt-br";
 
 /**
  * Fast half of the obra page: a work's non-chapter metadata (title, cover,
- * description, genres, status). Identity comes from the AniList catalog — the
- * `id` is an AniList id — so this resolves in a single (cached) round-trip and
+ * description, genres, status). Identity comes from the AniList catalog | the
+ * `id` is an AniList id | so this resolves in a single (cached) round-trip and
  * the page can paint its hero immediately while the cross-source chapter fan-out
  * ({@link makeGetMangaChapters}) streams in separately.
  */

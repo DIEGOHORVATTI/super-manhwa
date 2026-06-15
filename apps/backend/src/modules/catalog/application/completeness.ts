@@ -1,11 +1,11 @@
 import type { Chapter } from "../domain/manga";
 
 /**
- * Pure helpers for cross-source chapter completeness — kept side-effect-free so
+ * Pure helpers for cross-source chapter completeness | kept side-effect-free so
  * the merge/dedup/match logic is unit-testable without a live registry.
  *
  * The problem they solve: a single connector often returns only a *partial*
- * chapter list (MangaDex pt-br exposes only pt-br-translated chapters — e.g. 5
+ * chapter list (MangaDex pt-br exposes only pt-br-translated chapters | e.g. 5
  * of ~270 for Solo Leveling). To list every chapter we fan out across several
  * connectors and union their results, preferring the request language per
  * chapter and falling through to other languages to fill the gaps.
@@ -115,7 +115,7 @@ export const priorityOf = (id: string): number => {
 /**
  * Order connectors for a completeness fan-out: same-language sources first
  * (they need no translation match), then by catalog-depth priority. Unlike the
- * popular/search pools this does NOT drop Cloudflare sources — Comick/Mangafire
+ * popular/search pools this does NOT drop Cloudflare sources | Comick/Mangafire
  * hold the deepest pt-br catalogs and are reachable by id via FlareSolverr.
  */
 export const orderCompletenessPool = <T extends { id: string; langs: string[] }>(
@@ -142,7 +142,7 @@ export type ChapterSource = {
 /**
  * Union chapters across sources, deduped by parsed chapter number. For a
  * duplicate number we keep the variant in `primaryLang` first, then the
- * highest-priority source — so the reader opens the request-language chapter
+ * highest-priority source | so the reader opens the request-language chapter
  * when it exists, and a fallback-language one only to fill gaps. Chapters with
  * no parseable number (oneshots) are kept, deduped by name.
  */

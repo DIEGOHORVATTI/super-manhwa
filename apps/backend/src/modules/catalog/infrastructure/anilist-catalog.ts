@@ -20,7 +20,7 @@ const STATUS_MAP: Record<string, MangaStatus> = {
   NOT_YET_RELEASED: "unknown",
 };
 
-// Shared media projection — every list/detail query selects the same fields.
+// Shared media projection | every list/detail query selects the same fields.
 const MEDIA_FIELDS = `
   id
   title { romaji english native userPreferred }
@@ -65,7 +65,7 @@ interface GenreResponse {
   data?: { GenreCollection?: Array<string | null> | null };
 }
 
-/** English-first display title — the app shows works under their English name. */
+/** English-first display title | the app shows works under their English name. */
 const displayTitle = (m: MediaNode): string =>
   m.title?.english ?? m.title?.romaji ?? m.title?.userPreferred ?? m.title?.native ?? `#${m.id}`;
 

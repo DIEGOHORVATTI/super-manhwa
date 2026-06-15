@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Zod input schemas for the legal forms — the single source of truth for the
+ * Zod input schemas for the legal forms | the single source of truth for the
  * route validation (mirrors how the backend validates oRPC inputs). `hp` is the
  * honeypot: present in the shape so it parses, checked separately at the route.
  */

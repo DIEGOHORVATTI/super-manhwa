@@ -1,7 +1,7 @@
 import { createMangayomiConnector } from "../shared/mangayomi-factory";
 
 /**
- * MangaDex serves every language from the same JS bundle — it reads the desired
+ * MangaDex serves every language from the same JS bundle | it reads the desired
  * locale from the source context at run time. So it's a single multi-language
  * connector: the fan-out asks for `pt-br` (Portuguese titles/chapters) or `en`
  * (fallback) per request, no duplicate connector per language.

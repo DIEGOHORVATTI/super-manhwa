@@ -3,7 +3,7 @@
  * extension has no network of its own; these functions are the ONLY way out, so
  * egress is fully controlled here. In production the fetch layer also reads/writes
  * the cookie jar in KV (ADR-0006) and routes Cloudflare sources to an external
- * browser service (ADR-0005) — omitted in the MVP/spike.
+ * browser service (ADR-0005) | omitted in the MVP/spike.
  */
 
 import { type CheerioAPI, load } from "cheerio";
@@ -149,7 +149,7 @@ export function hostPrefGet(_key: string): unknown {
   return undefined;
 }
 
-// ---- Crypto helpers (utils.dart) — CryptoJS-compatible ----
+// ---- Crypto helpers (utils.dart) | CryptoJS-compatible ----
 
 export function aesEncryptCryptoJS(plain: string, passphrase: string): string {
   return CryptoJS.AES.encrypt(plain, passphrase).toString();
@@ -158,7 +158,7 @@ export function aesDecryptCryptoJS(encrypted: string, passphrase: string): strin
   return CryptoJS.AES.decrypt(encrypted, passphrase).toString(CryptoJS.enc.Utf8);
 }
 
-/** Dean Edwards' p,a,c,k,e,d unpacker — decodes eval(function(p,a,c,k,e,d){...}). */
+/** Dean Edwards' p,a,c,k,e,d unpacker | decodes eval(function(p,a,c,k,e,d){...}). */
 export function unpackJs(source: string): string {
   const m = source.match(/}\('(.*)',\s*(\d+),\s*(\d+),\s*'(.*?)'\.split\('\|'\)/s);
   if (!m) return source;
@@ -195,7 +195,7 @@ export function cryptoHandler(text: string, iv: string, key: string, encrypt: bo
 /**
  * Host-side HTML DOM backing the sandbox's `Document`/`Element` (dom_selector.dart
  * ≈ Jsoup → cheerio). The sandbox holds opaque numeric node ids; all parsing and
- * querying happens here. Scoped to one extension run — `dispose()` drops everything,
+ * querying happens here. Scoped to one extension run | `dispose()` drops everything,
  * so no per-node GC is needed.
  */
 export class DomStore {

@@ -1,5 +1,5 @@
 /**
- * Role helpers — pure, no server-only imports so they're usable from any context
+ * Role helpers | pure, no server-only imports so they're usable from any context
  * (RSC, route handlers, tests). `admin` implies every lower capability.
  */
 export type Role = "user" | "staff" | "admin";

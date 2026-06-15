@@ -16,19 +16,19 @@ export type ORPContext = {
 };
 
 /**
- * Builder factory — equivalent to `createORPContext` in @vulpes-ia/server. The
+ * Builder factory | equivalent to `createORPContext` in @vulpes-ia/server. The
  * `implement(contracts)` call happens HERE, once. Routes never repeat it; they
  * import `auth` and call `auth.<module>.<route>.handler(...)`.
  */
 /**
- * Public builder — no auth middleware. Use sparingly; only routes that MUST be
+ * Public builder | no auth middleware. Use sparingly; only routes that MUST be
  * anonymous (Docker /health probe, future status pages) should bind to this.
  * Everything else uses `auth`.
  */
 export const pub = implement(contracts).$context<ORPContext>();
 
 /**
- * X-API-KEY guard. Every contract route is gated by this — no anonymous access.
+ * X-API-KEY guard. Every contract route is gated by this | no anonymous access.
  * The shared key is set in `.env` and injected via Docker compose / Vercel env
  * (server-side only; never sent to the browser).
  */
@@ -41,7 +41,7 @@ const apiKeyMiddleware = pub.middleware(async ({ context, next }) => {
 });
 
 /**
- * Protected builder — use this for ALL routes that the frontend (or anyone
+ * Protected builder | use this for ALL routes that the frontend (or anyone
  * external) will call. The X-API-KEY guard runs before the handler.
  */
 export const auth = pub.use(apiKeyMiddleware);

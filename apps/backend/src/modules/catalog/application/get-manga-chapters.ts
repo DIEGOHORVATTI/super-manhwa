@@ -18,16 +18,16 @@ import { loadWork } from "./work-cache";
 const DETAIL_TTL = 10 * 60 * 1000;
 const SEARCH_TTL = 10 * 60 * 1000;
 const MERGED_TTL = 10 * 60 * 1000;
-/** Preferred reading language — chapters in this language win on duplicates. */
+/** Preferred reading language | chapters in this language win on duplicates. */
 const PREFERRED_LANG = "pt-br";
-/** Max connectors we fan out to per detail load — bounds latency. */
+/** Max connectors we fan out to per detail load | bounds latency. */
 const MAX_POOL = 6;
 /** Max title variants (catalog title + aliases) we search each connector by. */
 const MAX_QUERIES = 2;
 /**
  * Soft deadline for the whole fan-out. Connectors that miss it keep running in
  * the background (warming the per-connector search/detail caches), so the next
- * load — even before the merged cache expires elsewhere — is fast and more
+ * load | even before the merged cache expires elsewhere | is fast and more
  * complete. A first cold load returns within this bound rather than hanging.
  */
 const FANOUT_DEADLINE_MS = 40_000;
@@ -50,8 +50,8 @@ const uniqStrings = (xs: Array<string | undefined>): string[] => {
  * Slow half of the obra page: a work's chapters, unioned across reading sources.
  * Identity comes from the AniList catalog (the `id` is an AniList id, shared with
  * {@link makeGetMangaCore} via the cached {@link loadWork}): we take its title +
- * aliases, fan out across the reading connectors — matching the same work by
- * (English-aligned) title — and union every source's chapters, deduped by number,
+ * aliases, fan out across the reading connectors | matching the same work by
+ * (English-aligned) title | and union every source's chapters, deduped by number,
  * preferring {@link PREFERRED_LANG}. Non-chapter content lives in the `core`
  * route, so the page renders even when no reading source carries the work.
  */

@@ -18,7 +18,7 @@ export const workCreateSchema = z
     path: ["language"],
   });
 
-/** Create a TEXT chapter for a novel work — its content is tokenized on save. */
+/** Create a TEXT chapter for a novel work | its content is tokenized on save. */
 export const textChapterCreateSchema = z.object({
   number: z.string().trim().min(1).max(40),
   title: z.string().trim().max(200).optional(),

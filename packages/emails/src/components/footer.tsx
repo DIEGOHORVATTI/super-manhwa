@@ -14,7 +14,7 @@ export default function Footer() {
       }}
     >
       <Text style={{ fontSize: typography.fontSize.xs, color: colors.text.muted, margin: 0 }}>
-        Super Manhwa — leitor de mangás, manhwas e webtoons.
+        Super Manhwa | leitor de mangás, manhwas e webtoons.
       </Text>
     </Section>
   );

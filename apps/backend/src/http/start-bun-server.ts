@@ -11,7 +11,7 @@ import { createDefaultSecurityHeaders } from "./security";
 /**
  * A request handler that either claims the request (returning a Response) or
  * declines (returning null/undefined), letting the chain move on. Used for raw
- * routes that sit outside the oRPC dispatch — in our case `/api/img/<token>`.
+ * routes that sit outside the oRPC dispatch | in our case `/api/img/<token>`.
  */
 export type FetchHandler = (
   req: Request,
@@ -41,7 +41,7 @@ export type StartBunServerOptions<TContext> = {
    * Seconds Bun keeps an idle connection open before resetting it (max 255).
    * The detail route fans out across several reading connectors (some via
    * FlareSolverr) on a cold cache, which can exceed Bun's 10s default and drop
-   * the connection mid-request — so we raise it well above that.
+   * the connection mid-request | so we raise it well above that.
    */
   idleTimeout?: number;
   initialize?: () => Promise<void> | void;
@@ -107,7 +107,7 @@ export const startBunServer = async <TContext>({
         if (response) return response;
       }
 
-      // oRPC dispatch — the interceptor in `create-rpc-handler` logs these.
+      // oRPC dispatch | the interceptor in `create-rpc-handler` logs these.
       const { matched, response } = await rpcHandler.handle(stripPrefix(req), {
         context: createContext(req),
       });
