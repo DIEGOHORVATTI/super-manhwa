@@ -5,7 +5,6 @@ import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
 import { InfiniteList } from "@/components/InfiniteList";
 import { PosterRow } from "@/components/PosterRow";
-import { PremiumBanner } from "@/components/PremiumBanner";
 import { api } from "@/lib/orpc.server";
 
 const SHELF_SIZE = 15;
@@ -76,7 +75,6 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         <>
           {/* Continue reading now sits below the search/filters. */}
           <ContinueReading />
-          <PremiumBanner compact />
           <PosterRow
             title="Em tendência"
             icon="flame"
