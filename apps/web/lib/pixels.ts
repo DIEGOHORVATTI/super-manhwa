@@ -6,14 +6,13 @@
 export const GRID = { cols: 100, rows: 100, blockPx: 10 } as const; // 1000×1000 = 1M px
 
 /**
- * Price per 10×10 block in cents (env override). Default R$100,00 = R$1 per
- * pixel — a full 1000×1000 board sells for R$1.000.000 (Million Dollar Homepage
- * model). Single pixels aren't sold (invisible/unclickable); the block is the
- * minimum unit.
+ * Price per square (the 10×10px block) in cents (env override). Default R$1,00 —
+ * the square IS the unit. A full 100×100 board (10.000 squares) sells for
+ * R$10.000. Minimum purchase is one square (R$1); drag to buy a bigger region.
  */
 export const BLOCK_PRICE_CENTS = Math.max(
   1,
-  Math.round(Number(process.env.PIXEL_BLOCK_PRICE_CENTS ?? 10000)),
+  Math.round(Number(process.env.PIXEL_BLOCK_PRICE_CENTS ?? 100)),
 );
 
 export interface Rect {

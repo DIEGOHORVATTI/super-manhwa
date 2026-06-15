@@ -166,9 +166,9 @@ export function PixelBoard() {
     <div className="pixels-wrap">
       <h1 className="donate-title">Eternize sua marca</h1>
       <p className="donate-sub">
-        Arraste sobre uma área livre da grade para escolher seu espaço. R$1 por pixel (bloco mínimo
-        de {GRID.blockPx}×{GRID.blockPx} = {brl(priceCents({ x: 0, y: 0, w: 1, h: 1 }))}). Pague via
-        Pix — fica para sempre.
+        Arraste sobre uma área livre da grade para escolher seu espaço.{" "}
+        {brl(priceCents({ x: 0, y: 0, w: 1, h: 1 }))} por quadradinho ({GRID.blockPx}×{GRID.blockPx}
+        px) — selecione quantos quiser. Pague via Pix; fica para sempre.
       </p>
 
       <div className="pixels-status">
