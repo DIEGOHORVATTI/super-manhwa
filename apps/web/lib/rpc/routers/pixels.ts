@@ -4,14 +4,7 @@ import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
 import { createPixPayment, mpEnabled } from "@/lib/payments/mercadopago";
-import {
-  GRID,
-  isFree,
-  isValidRect,
-  MAX_BLOCKS_PER_SIDE,
-  priceCents,
-  type Rect,
-} from "@/lib/pixels";
+import { GRID, isFree, isValidRect, priceCents, type Rect } from "@/lib/pixels";
 import { publicUrlFor, putObject, r2Enabled } from "@/lib/r2";
 import { authed, base } from "../base";
 
@@ -39,7 +32,7 @@ export const pixelsRouter = {
   grid: base.handler(async ({ context }) => {
     const blockPriceCents = priceCents({ x: 0, y: 0, w: 1, h: 1 });
     if (!context.db) {
-      return { ads: [], taken: [], grid: GRID, blockPriceCents, maxSide: MAX_BLOCKS_PER_SIDE };
+      return { ads: [], taken: [], grid: GRID, blockPriceCents };
     }
 
     const { pixelBlocks } = schema;
@@ -71,7 +64,7 @@ export const pixelsRouter = {
 
     const taken = active.map((r) => ({ x: r.x, y: r.y, w: r.w, h: r.h }));
 
-    return { ads, taken, grid: GRID, blockPriceCents, maxSide: MAX_BLOCKS_PER_SIDE };
+    return { ads, taken, grid: GRID, blockPriceCents };
   }),
 
   reserve: authed.input(reserveSchema).handler(async ({ input, context }) => {

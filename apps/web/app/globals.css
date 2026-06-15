@@ -4288,51 +4288,70 @@ a:hover {
 }
 
 /* ───────────────────────── Million-pixel board ───────────────────────── */
+/* Full-bleed: break out of .app's max-width so the board fills the screen width. */
 .pixels-wrap {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 24px 0 60px;
+  width: 100vw;
+  margin: 0 calc(50% - 50vw);
+  padding: 8px 12px 60px;
 }
-.pixels-controls {
-  display: flex;
-  align-items: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
+.pixels-wrap > .donate-title,
+.pixels-wrap > .donate-sub,
+.pixels-wrap > .pixels-status,
+.pixels-wrap > .auth-error,
+.pixels-wrap > .pixels-form,
+.pixels-wrap > .settings-card {
+  max-width: 1040px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.pixels-status {
+  margin: 8px auto 10px;
+  font-size: 14px;
 }
 .pixels-price {
   font-weight: 700;
   color: var(--accent-hover);
-  padding-bottom: 8px;
 }
-.pixels-scroll {
-  overflow: auto;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: #fff;
-  max-width: 100%;
+.pixels-busy {
+  color: var(--danger);
+  font-weight: 700;
 }
+/* Square board that fills the width; blocks scale with it. No rounded corners. */
 .pixels-board {
   position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background-color: #fff;
   background-image:
     linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 10px 10px;
+  background-size: 1% 1%; /* 100×100 grid lines, responsive */
   cursor: crosshair;
+  touch-action: none; /* let pointer-drag select without scrolling on touch */
 }
 .pixels-ad {
   position: absolute;
   overflow: hidden;
+  border-radius: 0;
 }
 .pixels-ad img {
   display: block;
   object-fit: cover;
+  border-radius: 0;
+  image-rendering: pixelated;
 }
 .pixels-sel {
   position: absolute;
   border: 2px solid var(--accent);
   background: rgba(255, 62, 110, 0.25);
+  border-radius: 0;
   pointer-events: none;
+}
+.pixels-sel-bad {
+  border-color: var(--danger);
+  background: rgba(255, 107, 107, 0.3);
 }
 .pixels-form {
   margin-top: 16px;

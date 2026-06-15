@@ -10,13 +10,13 @@ describe("priceCents", () => {
 });
 
 describe("isValidRect", () => {
-  it("accepts in-bounds rectangles within the size cap", () => {
+  it("accepts in-bounds rectangles of any size (no per-purchase cap)", () => {
     expect(isValidRect({ x: 0, y: 0, w: 5, h: 5 })).toBe(true);
     expect(isValidRect({ x: GRID.cols - 1, y: GRID.rows - 1, w: 1, h: 1 })).toBe(true);
+    expect(isValidRect({ x: 0, y: 0, w: GRID.cols, h: GRID.rows })).toBe(true); // whole board
   });
-  it("rejects out-of-bounds, oversize, non-integer, negative", () => {
+  it("rejects out-of-bounds, non-integer, negative", () => {
     expect(isValidRect({ x: GRID.cols - 1, y: 0, w: 5, h: 1 })).toBe(false); // overflows right
-    expect(isValidRect({ x: 0, y: 0, w: 21, h: 1 })).toBe(false); // too wide
     expect(isValidRect({ x: 0, y: 0, w: 0, h: 1 })).toBe(false);
     expect(isValidRect({ x: -1, y: 0, w: 1, h: 1 })).toBe(false);
     expect(isValidRect({ x: 0.5, y: 0, w: 1, h: 1 })).toBe(false);

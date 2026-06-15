@@ -261,7 +261,7 @@ describe("rpc.pixels", () => {
     await expect(
       call(
         appRouter.pixels.reserve,
-        { x: 0, y: 0, w: 99, h: 2, linkUrl: "https://x", image: pngFile() },
+        { x: 0, y: 0, w: 200, h: 2, linkUrl: "https://x", image: pngFile() },
         { context: fakeContext({ user: { id: "u1", email: "u@x" } }) },
       ),
     ).rejects.toMatchObject({ code: "BAD_REQUEST" });

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { useSession } from "@/lib/auth/client";
-import { GRID, isFree, isValidRect, priceCents, type Rect, toPixelBox } from "@/lib/pixels";
+import { GRID, isFree, isValidRect, priceCents, type Rect, toPercentBox } from "@/lib/pixels";
 import { rpc } from "@/lib/rpc/client";
 
 interface Ad {
@@ -19,17 +19,32 @@ interface Ad {
 
 const brl = (cents: number) => `R$${(cents / 100).toFixed(2)}`;
 type Stage = "browse" | "form" | "pay" | "done";
+type Cell = { bx: number; by: number };
+
+const clamp = (n: number, max: number) => Math.max(0, Math.min(n, max));
+
+/** Rectangle spanning two dragged cells (inclusive), clamped to the grid. */
+function rectFromDrag(a: Cell, b: Cell): Rect {
+  const x = Math.min(a.bx, b.bx);
+  const y = Math.min(a.by, b.by);
+  return {
+    x,
+    y,
+    w: Math.min(Math.abs(a.bx - b.bx) + 1, GRID.cols - x),
+    h: Math.min(Math.abs(a.by - b.by) + 1, GRID.rows - y),
+  };
+}
 
 /**
- * The "million pixel" board: pick a size, click a free spot, fill in image+link,
- * pay via Pix (Mercado Pago). Approved ads render as clickable images. Selection
- * collision + pricing reuse the pure lib/pixels helpers.
+ * The "million pixel" board: drag across free blocks to pick a rectangle, fill
+ * in image+link, pay via Pix. R$1/pixel (10×10 block = R$100); a full board is
+ * R$1.000.000. The grid is responsive (fills the width) and scales the blocks.
  */
 export function PixelBoard() {
   const { data: session } = useSession();
   const [ads, setAds] = useState<Ad[]>([]);
   const [taken, setTaken] = useState<Rect[]>([]);
-  const [size, setSize] = useState({ w: 5, h: 5 });
+  const [drag, setDrag] = useState<{ start: Cell; cur: Cell } | null>(null);
   const [sel, setSel] = useState<Rect | null>(null);
   const [stage, setStage] = useState<Stage>("browse");
   const [link, setLink] = useState("");
@@ -57,26 +72,49 @@ export function PixelBoard() {
     };
   }, []);
 
-  function onBoardClick(e: React.MouseEvent) {
-    if (stage === "pay" || stage === "done") return;
+  function cellFromEvent(e: React.PointerEvent): Cell | null {
     const rect = boardRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const x = Math.floor((e.clientX - rect.left) / GRID.blockPx);
-    const y = Math.floor((e.clientY - rect.top) / GRID.blockPx);
-    const candidate: Rect = {
-      x: Math.min(x, GRID.cols - size.w),
-      y: Math.min(y, GRID.rows - size.h),
-      w: size.w,
-      h: size.h,
+    if (!rect) return null;
+    const cw = rect.width / GRID.cols;
+    const ch = rect.height / GRID.rows;
+    return {
+      bx: clamp(Math.floor((e.clientX - rect.left) / cw), GRID.cols - 1),
+      by: clamp(Math.floor((e.clientY - rect.top) / ch), GRID.rows - 1),
     };
-    if (!isValidRect(candidate) || !isFree(candidate, taken)) {
-      setErr("Esse espaço está ocupado ou inválido. Escolha outro.");
-      setSel(null);
-      return;
-    }
+  }
+
+  const editable = stage === "browse" || stage === "form";
+  const preview = drag ? rectFromDrag(drag.start, drag.cur) : sel;
+  const previewFree = preview ? isFree(preview, taken) : true;
+
+  function onPointerDown(e: React.PointerEvent) {
+    if (!editable) return;
+    const c = cellFromEvent(e);
+    if (!c) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
     setErr(null);
-    setSel(candidate);
-    setStage("form");
+    setSel(null);
+    setStage("browse");
+    setDrag({ start: c, cur: c });
+  }
+
+  function onPointerMove(e: React.PointerEvent) {
+    if (!drag) return;
+    const c = cellFromEvent(e);
+    if (c) setDrag((d) => (d ? { ...d, cur: c } : d));
+  }
+
+  function onPointerUp() {
+    if (!drag) return;
+    const r = rectFromDrag(drag.start, drag.cur);
+    setDrag(null);
+    if (isValidRect(r) && isFree(r, taken)) {
+      setSel(r);
+      setStage("form");
+    } else {
+      setErr("Esse espaço está ocupado. Arraste sobre uma área livre.");
+      setSel(null);
+    }
   }
 
   async function submit() {
@@ -118,74 +156,74 @@ export function PixelBoard() {
     }
   }
 
-  const boardW = GRID.cols * GRID.blockPx;
-  const boardH = GRID.rows * GRID.blockPx;
+  function cancel() {
+    setSel(null);
+    setStage("browse");
+    setErr(null);
+  }
 
   return (
     <div className="pixels-wrap">
       <h1 className="donate-title">Eternize sua marca</h1>
       <p className="donate-sub">
-        Compre um espaço na nossa grade de pixels. {brl(priceCents({ x: 0, y: 0, w: 1, h: 1 }))} por
-        bloco de {GRID.blockPx}×{GRID.blockPx}px. Pague via Pix — fica para sempre.
+        Arraste sobre uma área livre da grade para escolher seu espaço. R$1 por pixel (bloco mínimo
+        de {GRID.blockPx}×{GRID.blockPx} = {brl(priceCents({ x: 0, y: 0, w: 1, h: 1 }))}). Pague via
+        Pix — fica para sempre.
       </p>
 
-      {stage === "browse" && (
-        <div className="pixels-controls">
-          <label className="auth-field">
-            <span>Largura (blocos)</span>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={size.w}
-              onChange={(e) => setSize((s) => ({ ...s, w: Math.max(1, Number(e.target.value)) }))}
-            />
-          </label>
-          <label className="auth-field">
-            <span>Altura (blocos)</span>
-            <input
-              type="number"
-              min={1}
-              max={20}
-              value={size.h}
-              onChange={(e) => setSize((s) => ({ ...s, h: Math.max(1, Number(e.target.value)) }))}
-            />
-          </label>
-          <div className="pixels-price">
-            {brl(priceCents({ x: 0, y: 0, ...size }))} · clique num espaço livre
-          </div>
-        </div>
-      )}
+      <div className="pixels-status">
+        {preview ? (
+          <>
+            <strong>
+              {preview.w}×{preview.h} blocos
+            </strong>{" "}
+            ({preview.w * GRID.blockPx}×{preview.h * GRID.blockPx}px) ·{" "}
+            <span className="pixels-price">{brl(priceCents(preview))}</span>
+            {!previewFree && <span className="pixels-busy"> · ocupado</span>}
+          </>
+        ) : (
+          <span className="muted">Clique e arraste na grade para começar.</span>
+        )}
+      </div>
 
       {err && <p className="auth-error">{err}</p>}
 
-      <div className="pixels-scroll">
-        <div
-          ref={boardRef}
-          className="pixels-board"
-          style={{ width: boardW, height: boardH }}
-          onClick={onBoardClick}
-        >
-          {ads.map((a) => {
-            const box = toPixelBox(a);
-            const img = (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={a.imageUrl} alt={a.title ?? ""} style={{ width: "100%", height: "100%" }} />
-            );
-            return (
-              <div key={a.id} className="pixels-ad" style={box} title={a.title ?? undefined}>
-                {a.linkUrl ? (
-                  <a href={a.linkUrl} target="_blank" rel="sponsored nofollow noopener">
-                    {img}
-                  </a>
-                ) : (
-                  img
-                )}
-              </div>
-            );
-          })}
-          {sel && <div className="pixels-sel" style={toPixelBox(sel)} />}
-        </div>
+      <div
+        ref={boardRef}
+        className="pixels-board"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        {ads.map((a) => {
+          const img = (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={a.imageUrl} alt={a.title ?? ""} style={{ width: "100%", height: "100%" }} />
+          );
+          return (
+            <div
+              key={a.id}
+              className="pixels-ad"
+              style={toPercentBox(a)}
+              title={a.title ?? undefined}
+            >
+              {a.linkUrl ? (
+                <a href={a.linkUrl} target="_blank" rel="sponsored nofollow noopener">
+                  {img}
+                </a>
+              ) : (
+                img
+              )}
+            </div>
+          );
+        })}
+        {preview && (
+          <div
+            className={`pixels-sel${previewFree ? "" : " pixels-sel-bad"}`}
+            style={toPercentBox(preview)}
+          />
+        )}
       </div>
 
       {stage === "form" && sel && (
@@ -224,14 +262,7 @@ export function PixelBoard() {
               <button type="button" className="auth-submit" onClick={submit} disabled={busy}>
                 {busy ? "Gerando Pix…" : `Pagar ${brl(priceCents(sel))} via Pix`}
               </button>
-              <button
-                type="button"
-                className="comment-link"
-                onClick={() => {
-                  setSel(null);
-                  setStage("browse");
-                }}
-              >
+              <button type="button" className="comment-link" onClick={cancel}>
                 Cancelar
               </button>
             </>
