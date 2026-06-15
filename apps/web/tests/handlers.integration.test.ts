@@ -45,6 +45,10 @@ mock.module("@/lib/payments/mercadopago", () => ({
   }),
   getPaymentStatus: async () => "approved",
 }));
+// env is parsed once at import; mock it so the cron secret is deterministic.
+mock.module("@/lib/env", () => ({
+  env: { CRON_SECRET: "right", PIXEL_BLOCK_PRICE_CENTS: 500, LEARN_PREMIUM_PRICE: 14.9 },
+}));
 
 const { appRouter } = await import("../lib/rpc/router");
 const { fakeContext } = await import("./helpers/rpc-context");
@@ -191,18 +195,14 @@ describe("GET /api/cron/publish-scheduled", () => {
   const url = "http://t/api/cron/publish-scheduled";
 
   it("401 with a wrong secret", async () => {
-    process.env.CRON_SECRET = "right";
     const res = await cron.GET(new Request(url, { headers: { authorization: "Bearer wrong" } }));
     expect(res.status).toBe(401);
-    process.env.CRON_SECRET = undefined;
   });
 
   it("publishes nothing when none are due", async () => {
-    process.env.CRON_SECRET = "right";
     dbResults = [[]]; // no due chapters
     const res = await cron.GET(new Request(url, { headers: { authorization: "Bearer right" } }));
     expect(res.status).toBe(200);
     expect((await res.json()).published).toBe(0);
-    process.env.CRON_SECRET = undefined;
   });
 });

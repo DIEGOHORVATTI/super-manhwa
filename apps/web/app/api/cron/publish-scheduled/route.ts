@@ -1,4 +1,5 @@
 import { and, eq, lte } from "drizzle-orm";
+import { env } from "@/lib/env";
 import { NextResponse } from "next/server";
 
 import { dbEnabled, getDb, schema } from "@/lib/db";
@@ -8,7 +9,7 @@ import { dbEnabled, getDb, schema } from "@/lib/db";
  * (e.g. every 5 min) and guarded by `CRON_SECRET` like the newsletter cron.
  */
 export async function GET(req: Request) {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (secret) {
     const auth = req.headers.get("authorization");
     if (auth !== `Bearer ${secret}`) {

@@ -1,4 +1,5 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 
 /**
@@ -9,12 +10,12 @@ import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3
  * Public reads go through `R2_PUBLIC_URL` (a bucket public domain / CDN), so we
  * never sign GET URLs for hot-path image delivery.
  */
-const accountId = process.env.R2_ACCOUNT_ID;
-const endpoint = process.env.R2_ENDPOINT;
-const bucket = process.env.R2_BUCKET;
-const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-const publicUrl = process.env.R2_PUBLIC_URL;
+const accountId = env.R2_ACCOUNT_ID;
+const endpoint = env.R2_ENDPOINT;
+const bucket = env.R2_BUCKET;
+const accessKeyId = env.R2_ACCESS_KEY_ID;
+const secretAccessKey = env.R2_SECRET_ACCESS_KEY;
+const publicUrl = env.R2_PUBLIC_URL;
 
 export const r2Enabled = Boolean(endpoint && bucket && accessKeyId && secretAccessKey && publicUrl);
 

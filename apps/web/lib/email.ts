@@ -1,12 +1,13 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { Resend } from "resend";
 
 /**
  * Transactional e-mail via Resend. Gated on `RESEND_API_KEY` — `emailEnabled`
  * lets callers (legal forms, newsletter) skip sending when not configured.
  */
-const key = process.env.RESEND_API_KEY;
-const FROM = process.env.MAIL_FROM ?? "Super Manhwa <no-reply@supermanhwa.app>";
+const key = env.RESEND_API_KEY;
+const FROM = env.MAIL_FROM ?? "Super Manhwa <no-reply@supermanhwa.com>";
 
 export const emailEnabled = Boolean(key);
 

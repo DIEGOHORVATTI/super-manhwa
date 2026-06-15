@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { env } from "@/lib/env";
 import Image from "next/image";
 import Link from "next/link";
 import { permanentRedirect } from "next/navigation";
@@ -255,7 +256,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
 
   // Structured data so search engines render a rich book result (cover, rating,
   // genres). Image/URL absolute via SITE_URL; relative paths confuse some crawlers.
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const base = env.SITE_URL ?? "http://localhost:3000";
   const canonicalUrl = `${base}/manga/${id}/${canonicalSlug}`;
   const jsonLd = {
     "@context": "https://schema.org",

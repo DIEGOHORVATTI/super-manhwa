@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { env } from "@/lib/env";
 
 import { normalizeCode, REF_COOKIE, REF_COOKIE_MAX_AGE_S } from "@/lib/affiliate";
 import { SESSION_COOKIE, SESSION_MAX_AGE_S } from "@/lib/session-cookie";
@@ -36,7 +37,7 @@ export function proxy(request: NextRequest): NextResponse {
     response.cookies.set(SESSION_COOKIE, sid, {
       httpOnly: true,
       sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: env.NODE_ENV === "production",
       path: "/",
       maxAge: SESSION_MAX_AGE_S,
     });

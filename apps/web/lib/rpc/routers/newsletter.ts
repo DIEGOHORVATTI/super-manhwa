@@ -1,4 +1,5 @@
 import { ORPCError } from "@orpc/server";
+import { env } from "@/lib/env";
 import { subscribeInputSchema } from "@packages/contracts";
 
 import { newsletterEnabled, subscribeEmail } from "@/lib/newsletter";
@@ -20,7 +21,7 @@ export const newsletterRouter = {
     const proto = context.headers.get("x-forwarded-proto") ?? "https";
     const host = context.headers.get("host") ?? "localhost";
     const origin = `${proto}://${host}`;
-    const result = await subscribeEmail(input.email, process.env.SITE_URL ?? origin);
+    const result = await subscribeEmail(input.email, env.SITE_URL ?? origin);
     if (result === "error") throw new ORPCError("BAD_GATEWAY", { message: "send" });
     return { ok: true, status: result };
   }),

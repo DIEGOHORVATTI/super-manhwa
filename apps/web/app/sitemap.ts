@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { env } from "@/lib/env";
 import { api } from "@/lib/orpc.server";
 import { slugify } from "@/lib/slug";
 
@@ -43,7 +44,7 @@ async function pageThrough(
  * entries rather than failing the build.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const base = env.SITE_URL ?? "http://localhost:3000";
   const now = new Date();
 
   const entries: MetadataRoute.Sitemap = [

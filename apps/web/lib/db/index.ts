@@ -1,4 +1,5 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 
@@ -10,7 +11,7 @@ import * as schema from "./schema";
  * newsletter, push) checks `dbEnabled` first and degrades gracefully when
  * `DATABASE_URL` is unset.
  */
-const url = process.env.DATABASE_URL;
+const url = env.DATABASE_URL;
 export const dbEnabled = Boolean(url);
 
 let cached: ReturnType<typeof drizzle> | null = null;

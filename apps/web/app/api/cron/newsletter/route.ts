@@ -1,6 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
+import { env } from "@/lib/env";
 import { render } from "@react-email/render";
-import { type DigestItem, NewsletterEmail } from "@/emails/NewsletterEmail";
+import { type DigestItem, NewsletterDigestEmail } from "@packages/emails";
 import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { api } from "@/lib/orpc.server";
@@ -16,7 +17,7 @@ export const maxDuration = 60;
  * trending/new digest (React Email template) and sends to confirmed subscribers,
  * each with a personal unsubscribe link.
  */
-const base = process.env.SITE_URL;
+const base = env.SITE_URL;
 
 const toItem = (m: MangaSummary): DigestItem => ({
   title: m.name,
@@ -25,7 +26,7 @@ const toItem = (m: MangaSummary): DigestItem => ({
 });
 
 export async function GET(req: Request): Promise<Response> {
-  const secret = process.env.CRON_SECRET;
+  const secret = env.CRON_SECRET;
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return Response.json({ ok: false }, { status: 401 });
   }
@@ -46,7 +47,7 @@ export async function GET(req: Request): Promise<Response> {
   for (const sub of subs) {
     try {
       const html = await render(
-        NewsletterEmail({
+        NewsletterDigestEmail({
           trending: trendingItems,
           newest: newestItems,
           browseUrl: `${base}/`,

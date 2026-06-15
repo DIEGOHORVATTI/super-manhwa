@@ -1,4 +1,5 @@
 import "server-only";
+import { env } from "@/lib/env";
 
 import * as core from "./image-sign-core";
 
@@ -8,7 +9,7 @@ import * as core from "./image-sign-core";
  * pins the shared secret and the page-URL TTL so call sites stay terse. See the
  * core module for the two tag families (public cover vs session page).
  */
-const SECRET = process.env.IMAGE_SIGN_SECRET ?? "dev-only-image-sign-secret-change-in-prod";
+const SECRET = env.IMAGE_SIGN_SECRET ?? "dev-only-image-sign-secret-change-in-prod";
 
 /** How long a signed page URL stays valid. The real guard is the `sid` binding
  *  (a copied link fails instantly in another browser); the expiry only bounds

@@ -1,4 +1,5 @@
 import { cookies } from "next/headers";
+import { env } from "@/lib/env";
 
 import { verifyCover, verifyPage } from "@/lib/image-sign";
 import { SESSION_COOKIE } from "@/lib/session-cookie";
@@ -18,8 +19,8 @@ import { SESSION_COOKIE } from "@/lib/session-cookie";
  *
  * The RSC oRPC client bypasses this and talks to the backend directly.
  */
-const BACKEND = process.env.DELIVERY_SERVICE_URL ?? "http://localhost:8787";
-const API_KEY = process.env.API_KEY ?? "dev-api-key-change-in-prod";
+const BACKEND = env.DELIVERY_SERVICE_URL ?? "http://localhost:8787";
+const API_KEY = env.API_KEY ?? "dev-api-key-change-in-prod";
 
 const PASS_HEADERS = new Set(["content-type", "etag", "last-modified"]);
 const COVER_CACHE = "public, max-age=31536000, immutable";

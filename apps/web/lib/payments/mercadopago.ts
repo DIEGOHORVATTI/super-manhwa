@@ -1,4 +1,5 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
 
 /**
@@ -7,7 +8,7 @@ import { MercadoPagoConfig, Payment, PreApproval } from "mercadopago";
  * create a Pix payment and return the copy-paste code + QR image so the UI can
  * render it; confirmation arrives asynchronously via the webhook.
  */
-const accessToken = process.env.MP_ACCESS_TOKEN;
+const accessToken = env.MP_ACCESS_TOKEN;
 export const mpEnabled = Boolean(accessToken);
 
 let payment: Payment | null = null;

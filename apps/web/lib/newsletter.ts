@@ -2,7 +2,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { render } from "@react-email/render";
 
-import { ConfirmEmail } from "@/emails/ConfirmEmail";
+import { ConfirmNewsletterEmail } from "@packages/emails";
 import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { subscribersRepo } from "@/lib/repositories/subscribers";
@@ -29,7 +29,7 @@ export async function subscribeEmail(
 
   try {
     const html = await render(
-      ConfirmEmail({ confirmUrl: `${base}/api/newsletter/confirm?token=${token}` }),
+      ConfirmNewsletterEmail({ confirmUrl: `${base}/api/newsletter/confirm?token=${token}` }),
     );
     await sendEmail({ to: normalized, subject: "Confirme sua inscrição — Super Manhwa", html });
     return "sent";

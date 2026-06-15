@@ -1,3 +1,5 @@
+import { env } from "@/lib/env";
+
 /**
  * "Million pixel" board geometry + pricing — pure, unit-testable. The board is a
  * COLS×ROWS grid of square blocks (each `BLOCK_PX` pixels). Advertisers buy an
@@ -12,7 +14,7 @@ export const GRID = { cols: 100, rows: 100, blockPx: 10 } as const; // 1000×100
  */
 export const BLOCK_PRICE_CENTS = Math.max(
   1,
-  Math.round(Number(process.env.PIXEL_BLOCK_PRICE_CENTS ?? 500)),
+  Math.round(Number(env.PIXEL_BLOCK_PRICE_CENTS ?? 500)),
 );
 
 export interface Rect {

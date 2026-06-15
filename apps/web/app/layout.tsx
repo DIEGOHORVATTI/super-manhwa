@@ -1,4 +1,5 @@
 import "./globals.css";
+import { env } from "@/lib/env";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
@@ -8,7 +9,7 @@ import { Header } from "@/components/Header";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "http://localhost:3000"),
+  metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
   title: {
     default: "Super Manhwa — Ler Manhwas, Mangás e Webtoons Online Grátis",
     template: "%s · Super Manhwa",
@@ -47,7 +48,7 @@ export const metadata: Metadata = {
 export const viewport = { themeColor: "#0e1016" };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
+  const base = env.SITE_URL ?? "http://localhost:3000";
   // Site-wide structured data: WebSite (with a SearchAction that hints Google at a
   // sitelinks search box) + Organization (brand name/logo for the knowledge panel).
   const siteLd = {

@@ -1,6 +1,9 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { render } from "@react-email/render";
+import { RecoverPasswordEmail, VerificationEmail } from "@packages/emails";
 
 import { dbEnabled, getDb, schema } from "../db";
 import { emailEnabled, sendEmail } from "../email";
@@ -25,19 +28,19 @@ async function deliver(to: string, subject: string, html: string) {
   await sendEmail({ to, subject, html });
 }
 
-// Throttle verification e-mails to one per user every 30 min, so an unverified
-// user hammering the login button (sendOnSignIn resends each attempt) can't spam
-// their own inbox. ponytail: in-memory, per-instance — move to DB/Redis if you
-// run many instances and need a hard global cap.
-const VERIFY_COOLDOWN_MS = 30 * 60 * 1000;
+// Throttle verification e-mails to one per user every VERIFY_COOLDOWN_MINUTES
+// (default 30), so an unverified user hammering the login button (sendOnSignIn
+// resends each attempt) can't spam their own inbox. ponytail: in-memory,
+// per-instance — move to DB/Redis if you run many instances and need a hard cap.
+const VERIFY_COOLDOWN_MS = env.VERIFY_COOLDOWN_MINUTES * 60 * 1000;
 const lastVerifyAt = new Map<string, number>();
 
 function build() {
   const db = getDb();
   return betterAuth({
     appName: "Super Manhwa",
-    baseURL: process.env.BETTER_AUTH_URL,
-    secret: process.env.BETTER_AUTH_SECRET,
+    baseURL: env.BETTER_AUTH_URL,
+    secret: env.BETTER_AUTH_SECRET,
     database: drizzleAdapter(db, { provider: "pg", schema }),
     emailAndPassword: {
       enabled: true,
@@ -46,7 +49,7 @@ function build() {
         await deliver(
           user.email,
           "Redefinir sua senha — Super Manhwa",
-          `<p>Olá! Clique para redefinir sua senha:</p><p><a href="${url}">Redefinir senha</a></p>`,
+          await render(RecoverPasswordEmail({ url })),
         );
       },
     },
@@ -63,16 +66,16 @@ function build() {
         await deliver(
           user.email,
           "Confirme seu e-mail — Super Manhwa",
-          `<p>Bem-vindo à Super Manhwa! Confirme seu e-mail:</p><p><a href="${url}">Confirmar e-mail</a></p>`,
+          await render(VerificationEmail({ url })),
         );
       },
     },
     socialProviders:
-      process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
         ? {
             google: {
-              clientId: process.env.GOOGLE_CLIENT_ID,
-              clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+              clientId: env.GOOGLE_CLIENT_ID,
+              clientSecret: env.GOOGLE_CLIENT_SECRET,
             },
           }
         : undefined,

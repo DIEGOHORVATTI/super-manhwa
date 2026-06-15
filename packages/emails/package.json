@@ -1,0 +1,31 @@
+{
+  "name": "@packages/emails",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/views/index.ts",
+  "types": "src/views/index.ts",
+  "exports": {
+    ".": "./src/views/index.ts"
+  },
+  "scripts": {
+    "dev": "email dev --dir ./src/views --port 3001",
+    "export": "email export"
+  },
+  "dependencies": {
+    "@react-email/components": "1.0.12"
+  },
+  "devDependencies": {
+    "@react-email/preview-server": "5.2.10",
+    "@types/react": "19.0.0",
+    "@types/react-dom": "19.0.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-email": "6.6.0",
+    "typescript": "catalog:"
+  },
+  "peerDependencies": {
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  }
+}

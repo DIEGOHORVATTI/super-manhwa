@@ -8,14 +8,14 @@
       "packages/*"
     ],
     "catalog": {
-      "@orpc/client": "^1.14.3",
-      "@orpc/contract": "^1.14.3",
-      "@orpc/openapi": "^1.14.3",
-      "@orpc/openapi-client": "^1.14.3",
-      "@orpc/server": "^1.14.3",
-      "@orpc/zod": "^1.14.3",
-      "typescript": "^5.5.3",
-      "zod": "^4.4.3"
+      "@orpc/client": "1.14.3",
+      "@orpc/contract": "1.14.3",
+      "@orpc/openapi": "1.14.3",
+      "@orpc/openapi-client": "1.14.3",
+      "@orpc/server": "1.14.3",
+      "@orpc/zod": "1.14.3",
+      "typescript": "5.5.3",
+      "zod": "4.4.3"
     }
   },
   "type": "module",
@@ -23,6 +23,7 @@
     "dev": "bunx concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
     "dev:web": "cd apps/web && bun run dev",
     "dev:api": "cd apps/backend && bun run --watch dev",
+    "dev:email": "cd packages/emails && bun run dev",
     "start": "cd apps/backend && bun run start",
     "build": "cd apps/web && bun run build",
     "type-check": "cd apps/backend && bunx tsc --noEmit && cd ../web && bunx tsc --noEmit",

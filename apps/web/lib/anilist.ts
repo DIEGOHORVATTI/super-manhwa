@@ -1,5 +1,6 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { env } from "@/lib/env";
 
 import type { LibEntry } from "./library";
 
@@ -17,7 +18,7 @@ import type { LibEntry } from "./library";
  * Our catalog ids ARE AniList media ids, so a favourite maps 1:1 with no lookup:
  * `mediaId = Number(entry.id)`.
  */
-const CLIENT_ID = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
+const CLIENT_ID = env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
 export const anilistConfigured = Boolean(CLIENT_ID);
 
 const ENDPOINT = "https://graphql.anilist.co";
