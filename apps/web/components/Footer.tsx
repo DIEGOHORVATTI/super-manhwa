@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { routes } from "@/lib/routes";
 
 const YEAR = new Date().getFullYear();
 
 const SOCIALS: ReadonlyArray<{ label: string; href: string; icon: React.ReactNode }> = [
   {
     label: "Discord",
-    href: "#",
+    href: process.env.NEXT_PUBLIC_DISCORD_URL ?? "#",
     icon: (
       <path d="M20.3 4.4A19.8 19.8 0 0 0 15.4 3l-.25.5a14.6 14.6 0 0 1 4.2 1.7c-2.1-1-4.3-1.5-6.5-1.5-2.2 0-4.4.5-6.5 1.5a14.6 14.6 0 0 1 4.2-1.7L10.3 3a19.8 19.8 0 0 0-4.9 1.4C2.2 9.2 1.4 13.9 1.8 18.5a19.9 19.9 0 0 0 6 3l.5-.7c-1-.3-2-.8-2.9-1.4l.2-.2c3.7 1.7 7.7 1.7 11.4 0l.2.2c-.9.6-1.9 1.1-2.9 1.4l.5.7a19.9 19.9 0 0 0 6-3c.5-5.3-.8-10-3.2-14.1ZM8.5 15.4c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z" />
     ),
@@ -46,7 +47,7 @@ export function Footer() {
     <footer className="footer">
       <div className="footer-grid">
         <div className="footer-brand">
-          <Link href="/" className="brand">
+          <Link href={routes.home} className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="brand-name brand-name-lg">
@@ -74,31 +75,38 @@ export function Footer() {
             ))}
           </div>
           <NewsletterSignup />
+          <Link href={routes.donate} className="footer-donate">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
+              <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2.2 5 5.5 5c1.9 0 3.3 1 4.5 2.4C11.2 6 12.6 5 14.5 5 17.8 5 19.5 8.4 22 11.8 19.5 16.4 12 21 12 21Z" />
+            </svg>
+            Apoiar via Pix
+          </Link>
         </div>
 
         <nav className="footer-col" aria-label="Explorar">
           <h3>Explorar</h3>
-          <Link href="/">Início</Link>
-          <Link href="/explorar">Explorar</Link>
-          <Link href="/explorar?sort=trending">Tendência</Link>
-          <Link href="/explorar?sort=newest">Mais novos</Link>
+          <Link href={routes.home}>Início</Link>
+          <Link href={`${routes.home}?sort=trending`}>Tendência</Link>
+          <Link href={`${routes.home}?sort=newest`}>Mais novos</Link>
+          <Link href={routes.library}>Biblioteca</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Comunidade">
           <h3>Comunidade</h3>
-          <Link href="/about">Sobre nós</Link>
-          <Link href="/contact">Contato</Link>
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-            Feedback
-          </a>
+          <Link href={routes.about}>Sobre nós</Link>
+          <Link href={routes.contact}>Contato</Link>
+          <Link href={routes.donate}>Doar</Link>
+          <Link href={routes.studio}>Studio</Link>
+          <Link href={routes.affiliate}>Afiliados</Link>
+          <Link href={routes.pixels}>Anuncie (pixels)</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Legal">
           <h3>Legal</h3>
-          <Link href="/privacy">Política de Privacidade</Link>
-          <Link href="/terms">Termos de Serviço</Link>
-          <Link href="/dmca">DMCA</Link>
-          <Link href="/cookies">Política de Cookies</Link>
+          <Link href={routes.privacy}>Política de Privacidade</Link>
+          <Link href={routes.terms}>Termos de Serviço</Link>
+          <Link href={routes.dmca}>DMCA</Link>
+          <Link href={routes.cookies}>Política de Cookies</Link>
         </nav>
       </div>
 

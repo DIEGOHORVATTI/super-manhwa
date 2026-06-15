@@ -4,14 +4,13 @@ import { Cover } from "@/components/Cover";
 import { Icon } from "@/components/Icon";
 import { ShelfScroller } from "@/components/ShelfScroller";
 import { type ProgressEntry, removeProgress, useHistory } from "@/lib/library";
+import { routes } from "@/lib/routes";
 
 const readHref = (e: ProgressEntry) =>
-  `/read/${e.chapterId}?m=${e.id}&mn=${encodeURIComponent(e.name)}${
-    e.chapterName ? `&n=${encodeURIComponent(e.chapterName)}` : ""
-  }`;
+  routes.read(e.chapterId, { m: e.id, mn: e.name, n: e.chapterName });
 
 /**
- * "Continuar lendo" rail on the home — a client island fed entirely by
+ * "Continuar lendo" rail on the home | a client island fed entirely by
  * localStorage history, so it renders nothing on the server / for new visitors
  * and never opts the (cached) home page out of static-ish rendering.
  */

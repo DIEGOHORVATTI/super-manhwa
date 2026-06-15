@@ -23,7 +23,7 @@ const breakdownOf = (chapters: Chapter[], lang: string) => {
 };
 
 /**
- * Chapter-derived stats for the detail page — count + language mix. Both depend
+ * Chapter-derived stats for the detail page | count + language mix. Both depend
  * on the streamed chapters, so this `use()`s the same promise as the chapter
  * list and renders inside its own Suspense boundary, letting the hero paint
  * immediately. `flags` powers the hero meta row; `breakdown` the "Sobre" tab.

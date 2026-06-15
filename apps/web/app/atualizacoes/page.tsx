@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { Pagination } from "@/components/Pagination";
-import { PosterGrid } from "@/components/PosterGrid";
+import { InfiniteList } from "@/components/InfiniteList";
 import { api } from "@/lib/orpc.server";
 
 export const metadata: Metadata = {
@@ -23,8 +22,6 @@ export default async function AtualizacoesPage({ searchParams }: { searchParams:
     .latest({ lang: "pt-br", page })
     .catch(() => ({ list: [], hasNextPage: false }));
 
-  const buildHref = (p: number) => (p > 1 ? `/atualizacoes?page=${p}` : "/atualizacoes");
-
   return (
     <>
       <h1 className="home-title" style={{ marginBottom: 12 }}>
@@ -32,12 +29,14 @@ export default async function AtualizacoesPage({ searchParams }: { searchParams:
       </h1>
 
       {result.list.length === 0 ? (
-        <p className="muted">Nada por aqui agora — tente de novo em instantes.</p>
+        <p className="muted">Nada por aqui agora | tente de novo em instantes.</p>
       ) : (
-        <>
-          <PosterGrid items={result.list} />
-          <Pagination page={page} hasNextPage={result.hasNextPage} buildHref={buildHref} />
-        </>
+        <InfiniteList
+          initial={result.list}
+          initialPage={page}
+          hasNextPage={result.hasNextPage}
+          params={{ feed: "latest" }}
+        />
       )}
     </>
   );

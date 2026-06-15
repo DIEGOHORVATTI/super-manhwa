@@ -12,11 +12,11 @@ const PER_CONNECTOR = 12;
 const DEADLINE_MS = 12_000;
 
 /**
- * "Recently updated" feed — sourced from the reading connectors (NOT AniList,
+ * "Recently updated" feed | sourced from the reading connectors (NOT AniList,
  * which only knows a work's start date). Fans out to the connectors that expose
  * `getLatestUpdates`, preferring the request language, bounded by a soft
  * deadline, and round-robin-interleaves their results (deduped by title) so the
- * feed mixes sources rather than grouping them. Cached 10 min — the first cold
+ * feed mixes sources rather than grouping them. Cached 10 min | the first cold
  * load per window absorbs the connector latency.
  *
  * Items carry opaque connector ids; the detail page resolves them by the title
@@ -29,7 +29,10 @@ export const makeListLatest =
       const pool = registry
         .listCurated()
         .filter((c) => typeof c.getLatestUpdates === "function")
-        .sort((a, b) => (a.lang === PREFERRED_LANG ? 0 : 1) - (b.lang === PREFERRED_LANG ? 0 : 1))
+        .sort(
+          (a, b) =>
+            (a.langs.includes(PREFERRED_LANG) ? 0 : 1) - (b.langs.includes(PREFERRED_LANG) ? 0 : 1),
+        )
         .slice(0, MAX_POOL);
 
       let timer: ReturnType<typeof setTimeout> | undefined;

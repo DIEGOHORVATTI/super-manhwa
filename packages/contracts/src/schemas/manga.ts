@@ -15,7 +15,7 @@ export const mangaStatusSchema = z.enum([
 export type MangaStatus = z.infer<typeof mangaStatusSchema>;
 
 /**
- * Listing item — what shows up on the home grid, search, and autocomplete.
+ * Listing item | what shows up on the home grid, search, and autocomplete.
  * Source-agnostic by design: only `id` (opaque) + display fields.
  *
  * Enrichment fields (`status`, `genres`) are present only when the listing
@@ -26,7 +26,7 @@ export const mangaSummarySchema = z.object({
   name: z.string(),
   imageUrl: z.string().optional(),
   lang: z.string(),
-  /** Reading languages this work is available in — drives the flag(s) over the
+  /** Reading languages this work is available in | drives the flag(s) over the
    *  listing cover. Catalog listings can't probe sources cheaply, so this is the
    *  platform's primary reading language for now; enriched later per work. */
   langs: z.array(z.string()).optional(),
@@ -35,6 +35,9 @@ export const mangaSummarySchema = z.object({
   /** Chapter count, when a source can answer cheaply (e.g. MangaDex /aggregate).
    *  Populated only by the suggest route; undefined elsewhere. */
   chapters: z.number().optional(),
+  /** Short plain-text teaser shown on listing hover. Present on AniList-backed
+   *  listings (popular/search/trending/newest); undefined for connector lists. */
+  description: z.string().optional(),
 });
 export type MangaSummary = z.infer<typeof mangaSummarySchema>;
 
@@ -59,7 +62,7 @@ export const chapterSchema = z.object({
 export type Chapter = z.infer<typeof chapterSchema>;
 
 /**
- * Work metadata, no chapters — the fast half of the detail page. Comes straight
+ * Work metadata, no chapters | the fast half of the detail page. Comes straight
  * from the AniList catalog (`catalog.byId`, ~200ms), so the obra page can paint
  * the hero immediately while the slower cross-source chapter fan-out streams in
  * separately via the `chapters` route.
@@ -72,6 +75,12 @@ export const mangaCoreSchema = z.object({
   genre: z.array(z.string()).optional(),
   status: mangaStatusSchema.optional(),
   imageUrl: z.string().optional(),
+  /**
+   * Official title variants (english/romaji/native/synonyms, incl. localized
+   * names like the pt-BR title). Surfaced on the detail page so the work is found
+   * when searched by any of its names, in any language.
+   */
+  aliases: z.array(z.string()).default([]),
 });
 export type MangaCore = z.infer<typeof mangaCoreSchema>;
 
@@ -91,7 +100,7 @@ export const genresResultSchema = z.object({ genres: z.array(z.string()) });
 export const mangaSortSchema = z.enum(["popular", "trending", "newest", "completed"]);
 export type MangaSort = z.infer<typeof mangaSortSchema>;
 
-/* ----- Rich metadata (AniList) — powers the detail page's extra tabs ----- */
+/* ----- Rich metadata (AniList) | powers the detail page's extra tabs ----- */
 /* Discovery/metadata layer, NOT a reading source: no opaque source id (the
  * provider is internal), image URLs proxied like covers/pages. */
 
@@ -130,7 +139,7 @@ export type MangaMeta = z.infer<typeof mangaMetaSchema>;
 
 export const metaResultSchema = z.object({ meta: mangaMetaSchema });
 
-/** Characters live in their own route — heavy, and only the "Personagens" tab needs them. */
+/** Characters live in their own route | heavy, and only the "Personagens" tab needs them. */
 export const charactersResultSchema = z.object({
   characters: z.array(mangaCharacterSchema).default([]),
 });

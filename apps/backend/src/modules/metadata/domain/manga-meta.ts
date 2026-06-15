@@ -1,5 +1,5 @@
 /**
- * Rich metadata for a work — a discovery layer on top of the reading sources.
+ * Rich metadata for a work | a discovery layer on top of the reading sources.
  * Sourced from an external metadata DB (AniList), keyed by title. Image URLs
  * are raw upstream here; the application layer proxies them like covers/pages.
  */

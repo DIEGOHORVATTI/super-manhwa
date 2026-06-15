@@ -1,4 +1,8 @@
 import "server-only";
+import { render } from "@react-email/render";
+import { LegalRequestEmail } from "@packages/emails";
+
+import { env } from "@/lib/env";
 import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
 import { legalRequestsRepo } from "@/lib/repositories/legal-requests";
@@ -12,16 +16,11 @@ import { legalRequestsRepo } from "@/lib/repositories/legal-requests";
  */
 type Payload = Record<string, unknown>;
 
-const esc = (s: string) =>
-  s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c] ?? c);
-
-const renderHtml = (type: string, payload: Payload): string => {
-  const rows = Object.entries(payload)
+// React Email escapes values automatically | só montamos os pares campo/valor.
+const toFields = (payload: Payload): [string, string][] =>
+  Object.entries(payload)
     .filter(([k]) => k !== "hp")
-    .map(([k, v]) => `<p><strong>${esc(k)}:</strong><br>${esc(String(v ?? ""))}</p>`)
-    .join("");
-  return `<h2>Nova solicitação (${esc(type)})</h2>${rows}`;
-};
+    .map(([k, v]) => [k, String(v ?? "")]);
 
 export async function handleLegalSubmission(
   type: "dmca" | "contact",
@@ -32,12 +31,12 @@ export async function handleLegalSubmission(
     await legalRequestsRepo.create(type, payload);
     stored = true;
   }
-  const admin = process.env.ADMIN_EMAIL;
+  const admin = env.ADMIN_EMAIL;
   if (emailEnabled && admin) {
     await sendEmail({
       to: admin,
-      subject: `[${type}] nova solicitação — Super Manhwa`,
-      html: renderHtml(type, payload),
+      subject: `[${type}] nova solicitação | Super Manhwa`,
+      html: await render(LegalRequestEmail({ type, fields: toFields(payload) })),
     });
   }
   return { ok: dbEnabled || (emailEnabled && Boolean(admin)), stored };

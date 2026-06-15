@@ -31,7 +31,7 @@ import { makeGetHealth } from "@/modules/system/application";
 // Infrastructure (singletons)
 const cache = makeMemoryCache();
 // Stateless: chapter/image tokens are self-describing (AES-GCM), so there's no
-// lookup file to persist — manga ids are AniList ids, not minted here.
+// lookup file to persist | manga ids are AniList ids, not minted here.
 const idStore = makeAesIdStore({ secret: env.IMAGE_TOKEN_SECRET });
 const connectorRegistry = makeConnectorRegistry();
 const imageFetcher = makeHttpImageFetcher();
@@ -53,7 +53,7 @@ export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, c
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(catalog, cache);
 
-// Metadata application (AniList enrichment) — meta + characters share one
+// Metadata application (AniList enrichment) | meta + characters share one
 // cached lookup so a work resolves with a single provider round-trip.
 const loadMeta = makeLoadMeta(metadataProvider, cache);
 export const getMangaMeta = makeGetMangaMeta(loadMeta, idStore);
@@ -62,6 +62,6 @@ export const getMangaCharacters = makeGetMangaCharacters(loadMeta, idStore);
 // Media application
 export const proxyImage = makeProxyImage(idStore, connectorRegistry, imageFetcher, imageByteCache);
 
-// System application — `startedAt` captured at module load time so uptime is
+// System application | `startedAt` captured at module load time so uptime is
 // monotonically increasing for the life of the process.
 export const getHealth = makeGetHealth(Date.now());

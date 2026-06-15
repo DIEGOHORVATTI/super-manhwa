@@ -29,7 +29,7 @@ const QUERY = `query ($s: String) {
   }
 }`;
 
-/** Lightweight query — just the title variants, for cross-source name matching. */
+/** Lightweight query | just the title variants, for cross-source name matching. */
 const ALIAS_QUERY = `query ($s: String) {
   Media(search: $s, type: MANGA, sort: POPULARITY_DESC) {
     title { romaji english native }
@@ -79,7 +79,7 @@ interface AniListResponse {
 /**
  * AniList GraphQL metadata provider. Public, free, no API key (generous
  * ~90 req/min rate limit). Returns the most-popular manga matching the title.
- * Image URLs are raw AniList CDN here — the use case proxies them.
+ * Image URLs are raw AniList CDN here | the use case proxies them.
  */
 export const makeAniListProvider = (): MetadataProvider => ({
   async byTitle(title) {

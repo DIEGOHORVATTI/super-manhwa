@@ -15,7 +15,7 @@ import { auth } from "@/context";
 
 /**
  * Wire-level handlers. All routes are `auth`-protected by the shared
- * X-API-KEY — orchestration lives in the application use cases below.
+ * X-API-KEY | orchestration lives in the application use cases below.
  */
 export const listPopularRoute = auth.manga.popular.handler(async ({ input }) => listPopular(input));
 export const searchMangaRoute = auth.manga.search.handler(async ({ input }) => searchManga(input));

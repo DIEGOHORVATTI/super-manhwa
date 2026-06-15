@@ -6,8 +6,8 @@ import { CONNECTORS, type MangaConnector } from "@packages/extension";
  * Native pt-br connectors exist as typed values even though their upstream
  * sites currently need a real-browser bypass to scrape (see
  * `packages/extension/src/native/README.md`). This suite validates the
- * contract surface — metadata, presence in CONNECTORS, exclusion from the
- * popular pool — so the wire stays correct as we incrementally enable them.
+ * contract surface | metadata, presence in CONNECTORS, exclusion from the
+ * popular pool | so the wire stays correct as we incrementally enable them.
  *
  * We do NOT exercise the live network here. When a Playwright/Puppeteer
  * layer lands and we flip `hasCloudflare` to false on a connector, the
@@ -32,7 +32,7 @@ describe("native BR connectors / registration", () => {
   it.each(NATIVE_BR_IDS)("'%s' declares lang=pt-br and hasCloudflare=true", (id) => {
     const c = CONNECTORS.find((x) => x.id === id) as MangaConnector;
     expect(c.lang).toBe("pt-br");
-    // CF-flagged so the aggregator's popular pool skips them — the contract
+    // CF-flagged so the aggregator's popular pool skips them | the contract
     // we want until full-browser bypass lands.
     expect(c.hasCloudflare).toBe(true);
     expect(c.featured).toBe(false);
@@ -54,16 +54,16 @@ describe("native BR connectors / registration", () => {
 });
 
 describe("native BR connectors / failure modes", () => {
-  // Each connector's methods either throw an Error (Tsuki/Yabu — site
+  // Each connector's methods either throw an Error (Tsuki/Yabu | site
   // unreachable without browser bypass) OR return `{ list: [] }` (MangaLivre
-  // — SPA, parser stubbed). Both are acceptable shapes for an unreachable
+  // | SPA, parser stubbed). Both are acceptable shapes for an unreachable
   // connector. What is NOT acceptable: crashing the process, hanging
   // forever, or returning malformed data.
 
   // comick's search routes through FlareSolverr (CF challenge), whose solve is
   // flaky (~30 s, sometimes a 500). The connector caps the solve at 30 s and
   // flareFetch aborts the round-trip at solve+15 s, so the call always settles
-  // (list or throw) within ~45 s — this budget proves "never hangs", not speed.
+  // (list or throw) within ~45 s | this budget proves "never hangs", not speed.
   const TEST_TIMEOUT = 50_000;
 
   it.each(NATIVE_BR_IDS)(
@@ -84,7 +84,7 @@ describe("native BR connectors / failure modes", () => {
   );
 
   it.each(NATIVE_BR_IDS)(
-    "'%s'.search returns a list or throws — never returns undefined",
+    "'%s'.search returns a list or throws | never returns undefined",
     async (id) => {
       const c = CONNECTORS.find((x) => x.id === id) as MangaConnector;
       try {
@@ -102,7 +102,7 @@ describe("native BR connectors / failure modes", () => {
 describe("native BR connectors / mangafire partial-working", () => {
   // Mangafire's `getPopular` works against mangafire.to (no vrf needed); only
   // search/getDetail need the anti-bot vrf that breaks under QuickJS. This is
-  // the one positive signal we can assert without a working host — it proves
+  // the one positive signal we can assert without a working host | it proves
   // the vendored JS + our two vendor patches load and execute. Tolerant of the
   // upstream site being briefly down so it doesn't flake CI.
   it("mangafire-ptbr getPopular returns items (or the site is transiently down)", async () => {
@@ -115,7 +115,7 @@ describe("native BR connectors / mangafire partial-working", () => {
         expect(typeof list[0].link).toBe("string");
       }
     } catch (e) {
-      // network/host hiccup — acceptable, the contract test above still holds
+      // network/host hiccup | acceptable, the contract test above still holds
       expect(e).toBeInstanceOf(Error);
     }
   }, 40_000);

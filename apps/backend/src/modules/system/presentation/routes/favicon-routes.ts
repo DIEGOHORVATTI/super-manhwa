@@ -5,7 +5,7 @@ import type { FetchHandler } from "@/http/start-bun-server";
 /**
  * Serves the brand favicon for the OpenAPI docs page (`/api/docs`). The docs
  * `<head>` links `/api/favicon*`; these are static files copied into
- * `apps/backend/public`. Public (no API key) — they're just icons.
+ * `apps/backend/public`. Public (no API key) | they're just icons.
  */
 const PUBLIC_DIR = path.join(import.meta.dir, "..", "..", "..", "..", "..", "public");
 

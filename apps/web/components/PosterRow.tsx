@@ -1,13 +1,14 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { routes } from "@/lib/routes";
 import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
 import { ShelfScroller } from "./ShelfScroller";
 import { StatusBadge } from "./StatusBadge";
 
 /**
- * Horizontal "shelf" of works (Asura-style discovery row). Used on /explorar for
+ * Horizontal "shelf" of works (Asura-style discovery row). Used on the home for
  * the trending/newest carousels so those views don't need their own page or nav
  * slot. Optional `moreHref` exposes the full paginated grid for that ordering.
  */
@@ -39,7 +40,7 @@ export function PosterRow({
       <ShelfScroller>
         {items.map((m) => (
           <li key={m.id} className="shelf-card">
-            <Link className="poster" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
+            <Link className="poster" href={routes.manga(m.id, m.name)}>
               <div className="poster-cover">
                 <Cover src={m.imageUrl} alt={m.name} sizes="150px" />
                 {m.status && (

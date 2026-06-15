@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { chapterHref, chapterNav } from "@/lib/reader";
+import { routes } from "@/lib/routes";
 
 /**
  * Sticky reader toolbar. Server fetches the manga detail once, hands us the full
@@ -32,7 +33,7 @@ export function ReaderNav({
   const { idx, prev, next, current } = chapterNav(chapters, currentId);
   const href = (c: Chapter) => chapterHref(c, mangaId, mangaName);
 
-  // Combobox state — type to filter, click to jump.
+  // Combobox state | type to filter, click to jump.
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -107,7 +108,7 @@ export function ReaderNav({
 
         <Link
           className="reader-btn reader-btn-series"
-          href={`/manga/${mangaId}?n=${encodeURIComponent(mangaName)}`}
+          href={routes.manga(mangaId, mangaName)}
           title={`Voltar para ${mangaName}`}
         >
           <Icon name="book-open" size={16} />
@@ -143,7 +144,7 @@ export function ReaderNav({
           <input
             ref={inputRef}
             className="reader-chap-field"
-            value={open ? q : (current?.name ?? "—")}
+            value={open ? q : (current?.name ?? "|")}
             placeholder="Capítulo…"
             onFocus={() => {
               setQ("");

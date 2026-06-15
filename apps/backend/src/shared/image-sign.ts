@@ -6,7 +6,7 @@ import { env } from "@/config/env";
  * Public-cover signature. Covers (AniList / connector thumbnails) are not
  * sensitive, so they get a *permanent, session-less* HMAC tag appended as `?k=`.
  * The Next image proxy verifies this tag and serves the cover with a long,
- * immutable, CDN-shareable cache — while *page* images (which carry no `k`) are
+ * immutable, CDN-shareable cache | while *page* images (which carry no `k`) are
  * forced down the session-signed, `private` path instead.
  *
  * Keep the algorithm byte-for-byte in sync with the web app's verifier

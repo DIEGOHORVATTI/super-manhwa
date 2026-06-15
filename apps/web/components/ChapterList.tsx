@@ -5,20 +5,25 @@ import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
 import { fmtChapterDate, isRecent, parseChapterNumber } from "@/lib/format";
 import { useReadChapters } from "@/lib/library";
+import { routes } from "@/lib/routes";
 
 type Chapter = { id: string; name: string; lang?: string; dateUpload?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
 
 /** Accent/diacritic-insensitive haystack for the in-tab filter. */
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
 
-/** Chapters rendered before the "ver todos" link — keeps first paint cheap. */
+/** Chapters rendered before the "ver todos" link | keeps first paint cheap. */
 const INITIAL = 21;
 
 /**
  * Chapter grid for the detail page. `use()`s the streamed chapters promise, so
  * it suspends (behind a skeleton) while the cross-source fan-out resolves while
- * the rest of the page — hero, tabs — is already painted. Owns the per-source
+ * the rest of the page | hero, tabs | is already painted. Owns the per-source
  * flag + read-state styling; the live filter `query` is driven from `DetailView`.
  */
 export function ChapterList({
@@ -82,7 +87,7 @@ export function ChapterList({
             <li key={c.id}>
               <Link
                 className={`chip${read.has(c.id) ? " is-read" : ""}`}
-                href={`/read/${c.id}?m=${mangaId}&mn=${encodeURIComponent(title)}&n=${encodeURIComponent(c.name)}`}
+                href={routes.read(c.id, { m: mangaId, mn: title, n: c.name })}
                 title={read.has(c.id) ? "Lido" : undefined}
               >
                 <Flag

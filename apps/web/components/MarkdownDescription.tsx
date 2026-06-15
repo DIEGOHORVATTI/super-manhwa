@@ -4,8 +4,8 @@ import remarkGfm from "remark-gfm";
 
 /**
  * Manga synopses arrive in two shapes: MangaDex sends real markdown, AniList
- * sends light HTML (`<br>`, `<i>`, `<b>`). We render both — GFM for markdown,
- * `rehype-raw` to parse the embedded HTML — with `allowedElements` acting as the
+ * sends light HTML (`<br>`, `<i>`, `<b>`). We render both | GFM for markdown,
+ * `rehype-raw` to parse the embedded HTML | with `allowedElements` acting as the
  * sanitiser (any tag outside the list is dropped). We then rewrite the link layer:
  *
  *   - links to ANY known source domain (mangadex, webtoons, …) are stripped to
@@ -13,7 +13,7 @@ import remarkGfm from "remark-gfm";
  *     the upstream URL
  *   - other links open in a new tab with `rel="noopener noreferrer"`
  *
- * Pure server component — no browser APIs, safe to render in RSC.
+ * Pure server component | no browser APIs, safe to render in RSC.
  */
 
 const BLOCKED_HOSTS = [
@@ -34,7 +34,7 @@ const isBlocked = (href: string | undefined): boolean => {
   if (!href) return true;
   try {
     const u = new URL(href);
-    // Only http(s) renders as a link — blocks `javascript:`/`data:` URLs that
+    // Only http(s) renders as a link | blocks `javascript:`/`data:` URLs that
     // rehype-raw would otherwise let through (XSS vector).
     if (u.protocol !== "http:" && u.protocol !== "https:") return true;
     return BLOCKED_HOSTS.some((host) => u.hostname === host || u.hostname.endsWith(`.${host}`));
@@ -52,7 +52,7 @@ export function MarkdownDescription({ text }: { text?: string | null }) {
         remarkPlugins={[remarkGfm]}
         // Parse embedded HTML (AniList synopses use `<br>`, `<i>`, `<b>`).
         rehypePlugins={[rehypeRaw]}
-        // Allow only the elements that make sense in a synopsis — anything
+        // Allow only the elements that make sense in a synopsis | anything
         // else (images, scripts, raw HTML) is stripped silently. This list is
         // the sanitiser for the rehype-raw output.
         allowedElements={[
@@ -81,7 +81,7 @@ export function MarkdownDescription({ text }: { text?: string | null }) {
         components={{
           a({ href, children }) {
             if (isBlocked(href)) {
-              // Render as plain text — keeps the description readable while
+              // Render as plain text | keeps the description readable while
               // stripping the upstream URL from the browser.
               return <span>{children}</span>;
             }

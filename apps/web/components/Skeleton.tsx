@@ -16,7 +16,7 @@ export function PosterGridSkeleton({ count = 18 }: { count?: number }) {
   );
 }
 
-/** Chapter-grid placeholder — the Suspense fallback while the cross-source
+/** Chapter-grid placeholder | the Suspense fallback while the cross-source
  *  chapter fan-out streams in on the detail page. Mirrors `.chapters-grid`. */
 export function ChaptersGridSkeleton({ count = 18 }: { count?: number }) {
   return (
@@ -30,7 +30,7 @@ export function ChaptersGridSkeleton({ count = 18 }: { count?: number }) {
   );
 }
 
-/** Detail-page placeholder — mirrors the hero (cover + info), the tab bar and the
+/** Detail-page placeholder | mirrors the hero (cover + info), the tab bar and the
  *  chapter grid so the swap to real content doesn't shift the layout. */
 export function DetailSkeleton() {
   return (
@@ -70,7 +70,7 @@ export function DetailSkeleton() {
   );
 }
 
-/** Reader placeholder — a toolbar bar plus a stack of tall page slots, mirroring
+/** Reader placeholder | a toolbar bar plus a stack of tall page slots, mirroring
  *  `.reader-nav` + `.pages`/`.page-img` so the swap to real pages doesn't jump. */
 export function ReaderSkeleton({ count = 4 }: { count?: number }) {
   return (

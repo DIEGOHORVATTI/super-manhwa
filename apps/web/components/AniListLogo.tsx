@@ -1,6 +1,6 @@
 /**
  * AniList brand mark, inline SVG (single path, viewBox 0 0 24 24). `fill` follows
- * `currentColor` so callers set the colour — the brand blue is `#02A9FF`.
+ * `currentColor` so callers set the colour | the brand blue is `#02A9FF`.
  */
 export function AniListLogo({ size = 20, className }: { size?: number; className?: string }) {
   return (

@@ -1,5 +1,7 @@
 "use client";
 import { useSyncExternalStore } from "react";
+import { env } from "@/lib/env";
+import { routes } from "@/lib/routes";
 
 import type { LibEntry } from "./library";
 
@@ -17,7 +19,7 @@ import type { LibEntry } from "./library";
  * Our catalog ids ARE AniList media ids, so a favourite maps 1:1 with no lookup:
  * `mediaId = Number(entry.id)`.
  */
-const CLIENT_ID = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
+const CLIENT_ID = env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
 export const anilistConfigured = Boolean(CLIENT_ID);
 
 const ENDPOINT = "https://graphql.anilist.co";
@@ -102,20 +104,25 @@ function login(): void {
 
 /** Where to send the user back to after a successful callback. */
 export function consumeReturnPath(): string {
-  if (!isClient) return "/library";
+  if (!isClient) return routes.library;
   const p = window.sessionStorage.getItem(RETURN_KEY);
   window.sessionStorage.removeItem(RETURN_KEY);
-  return p || "/library";
+  return p || routes.library;
 }
 
 /**
  * Parse the implicit-grant fragment (`#access_token=…&expires_in=…`), persist the
  * session, then best-effort fetch the viewer's name. Returns success.
  */
-export async function completeAuthFromHash(hash: string): Promise<boolean> {
+/**
+ * Persists the AniList session from the OAuth fragment. Returns the access token
+ * (so the caller can also link it to a signed-in platform account), or null on
+ * failure.
+ */
+export async function completeAuthFromHash(hash: string): Promise<string | null> {
   const params = new URLSearchParams(hash.replace(/^#/, ""));
   const token = params.get("access_token");
-  if (!token) return false;
+  if (!token) return null;
   const expiresIn = Number(params.get("expires_in") ?? 0);
   const expiresAt =
     Date.now() +
@@ -129,9 +136,9 @@ export async function completeAuthFromHash(hash: string): Promise<boolean> {
     );
     writeSession({ token, expiresAt, name: data.Viewer?.name });
   } catch {
-    /* name is cosmetic — keep the session even if it fails */
+    /* name is cosmetic | keep the session even if it fails */
   }
-  return true;
+  return token;
 }
 
 /* --------------------------------- graphql -------------------------------- */

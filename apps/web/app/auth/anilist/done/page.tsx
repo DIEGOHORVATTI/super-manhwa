@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { completeAuthFromHash, consumeReturnPath } from "@/lib/anilist";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Final hop of the AniList login: the server callback redirected here with the
@@ -15,10 +16,20 @@ export default function AniListDone() {
   useEffect(() => {
     let active = true;
     (async () => {
-      const ok = await completeAuthFromHash(window.location.hash);
+      const token = await completeAuthFromHash(window.location.hash);
       if (!active) return;
-      if (ok) router.replace(consumeReturnPath());
-      else setFailed(true);
+      if (token) {
+        // If the visitor is signed in, also persist the AniList link to their
+        // account (multiple AniList accounts allowed). No-op / 401 when anon.
+        try {
+          await rpc.anilist.link({ token });
+        } catch {
+          /* favourites sync still works from localStorage even if linking fails */
+        }
+        router.replace(consumeReturnPath());
+      } else {
+        setFailed(true);
+      }
     })();
     return () => {
       active = false;

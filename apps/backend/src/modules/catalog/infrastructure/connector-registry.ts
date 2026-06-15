@@ -2,7 +2,7 @@ import { CONNECTORS, type MangaConnector, resolveConnector } from "@packages/ext
 
 /**
  * Domain port over `@packages/extension`. Application use cases depend on this
- * interface — never on the package directly — so they stay testable with a
+ * interface | never on the package directly | so they stay testable with a
  * fake registry.
  *
  * `listCurated()` is the static curated set (validated, vendored). `resolve()`

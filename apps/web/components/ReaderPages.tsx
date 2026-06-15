@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef } from "react";
 import { markChapterRead, recordProgress } from "@/lib/library";
+import { rpc } from "@/lib/rpc/client";
 
 const PRELOAD_AHEAD = 4;
 
@@ -9,7 +10,7 @@ const PRELOAD_AHEAD = 4;
  * page scrolls into view we warm the next few via `new Image()` so the reader
  * never waits on the lazy loader mid-scroll. Also drives local persistence:
  * records "continue reading" on mount and marks the chapter read once the last
- * page is reached. All client-side — the signed page URLs come pre-built from
+ * page is reached. All client-side | the signed page URLs come pre-built from
  * the server.
  */
 export function ReaderPages({
@@ -43,6 +44,8 @@ export function ReaderPages({
       chapterName,
       chapterNo,
     });
+    // Server-side reading tracker (badges). Fire-and-forget; auth errors for anon are fine.
+    void rpc.reading.track({ workId: mangaId, chapterId }).catch(() => {});
   }, [mangaId, mangaName, cover, chapterId, chapterName, chapterNo]);
 
   // Preload-ahead + mark-read when the last page is seen.

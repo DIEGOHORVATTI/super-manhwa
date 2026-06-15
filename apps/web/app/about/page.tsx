@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/StaticPage";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Sobre nós",
@@ -27,7 +28,8 @@ export default function SobrePage() {
         <li>Se você é detentor de direitos e quer remover uma obra, veja nossa página de DMCA.</li>
       </ul>
       <p>
-        Gostou do projeto ou encontrou um problema? Veja a página de <a href="/contact">Contato</a>.
+        Gostou do projeto ou encontrou um problema? Veja a página de{" "}
+        <a href={routes.contact}>Contato</a>.
       </p>
     </StaticPage>
   );

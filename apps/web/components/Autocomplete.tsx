@@ -3,6 +3,7 @@ import type { MangaSummary } from "@packages/contracts";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 /** Frontend is pt-br locked, so suggest always filters to pt-br titles. */
 const LANG = "pt-br";
@@ -10,7 +11,7 @@ const LANG = "pt-br";
 /**
  * Search combobox. Debounced fetch → spinner inline while loading → dropdown of
  * matches with cover thumb + lang badge. Click or Enter on a row navigates to
- * /manga/<opaque-id>?n=<name> (the frontend never learns which source backed it).
+ * /manga/<opaque-id>/<slug> (the frontend never learns which source backed it).
  */
 export function Autocomplete() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export function Autocomplete() {
     const t = setTimeout(async () => {
       try {
         const params = new URLSearchParams({ q: Q, lang: LANG });
-        const r = await fetch(`/api/manga/suggest?${params}`, { signal: ctrl.signal });
+        const r = await fetch(`${routes.api.mangaSuggest}?${params}`, { signal: ctrl.signal });
         if (!r.ok) throw new Error(`${r.status}`);
         const data = (await r.json()) as { list: MangaSummary[] };
         setItems(data.list ?? []);
@@ -63,7 +64,7 @@ export function Autocomplete() {
 
   const go = (m: MangaSummary) => {
     setOpen(false);
-    router.push(`/manga/${m.id}?n=${encodeURIComponent(m.name)}`);
+    router.push(routes.manga(m.id, m.name));
   };
 
   const onKey = (e: React.KeyboardEvent<HTMLInputElement>) => {

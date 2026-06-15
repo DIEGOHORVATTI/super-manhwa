@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 
+import { rpc } from "@/lib/rpc/client";
+
 export type LegalField = {
   name: string;
   label: string;
@@ -10,17 +12,18 @@ export type LegalField = {
 };
 
 /**
- * Generic submit form for the legal pages (DMCA / contact). Posts JSON to
- * `endpoint`; on success shows a thank-you, on failure keeps the data and shows
- * an error (with the fallback e-mail). Includes a hidden honeypot field.
+ * Generic submit form for the legal pages (DMCA / contact). Submits the collected
+ * values through the typed rpc procedure picked by `kind`; on success shows a
+ * thank-you, on failure keeps the data and shows an error (with the fallback
+ * e-mail). Includes a hidden honeypot field.
  */
 export function LegalForm({
-  endpoint,
+  kind,
   fields,
   submitLabel,
   fallbackEmail,
 }: {
-  endpoint: string;
+  kind: "contact" | "dmca";
   fields: LegalField[];
   submitLabel: string;
   fallbackEmail: string;
@@ -34,12 +37,13 @@ export function LegalForm({
     e.preventDefault();
     setState("sending");
     try {
-      const res = await fetch(endpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
-      });
-      setState(res.ok ? "done" : "error");
+      // Field config per page matches the procedure input; cast at the boundary.
+      if (kind === "dmca") {
+        await rpc.legal.dmca(values as Parameters<typeof rpc.legal.dmca>[0]);
+      } else {
+        await rpc.legal.contact(values as Parameters<typeof rpc.legal.contact>[0]);
+      }
+      setState("done");
     } catch {
       setState("error");
     }
@@ -48,7 +52,7 @@ export function LegalForm({
   if (state === "done") {
     return (
       <p className="notice notice-ok">
-        Recebemos sua mensagem — obrigado! Responderemos assim que possível.
+        Recebemos sua mensagem | obrigado! Responderemos assim que possível.
       </p>
     );
   }
@@ -95,7 +99,7 @@ export function LegalForm({
         ),
       )}
 
-      {/* honeypot — bots fill it, humans don't */}
+      {/* honeypot | bots fill it, humans don't */}
       <input
         type="text"
         name="hp"

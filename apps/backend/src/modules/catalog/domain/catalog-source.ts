@@ -3,7 +3,7 @@ import type { MangaStatus } from "@packages/contracts";
 /**
  * Discovery/catalog port. The catalog (listing, search, suggest, genres, and a
  * work's canonical identity) is sourced from a metadata DB (AniList) rather than
- * the reading connectors — one consistent catalog with stable ids, titles, covers
+ * the reading connectors | one consistent catalog with stable ids, titles, covers
  * and genres. The reading connectors are only consulted later, to resolve the
  * actual chapters/pages for a work (see get-manga-chapters).
  *
@@ -19,9 +19,11 @@ export type CatalogItem = {
   score?: number;
   /** Total chapter count when the catalog knows it (often null while ongoing). */
   chapters?: number;
+  /** Short plain-text teaser for listing hover; undefined when unavailable. */
+  description?: string;
 };
 
-/** A work's full catalog record — drives the detail page's non-chapter content. */
+/** A work's full catalog record | drives the detail page's non-chapter content. */
 export type CatalogWork = CatalogItem & {
   description?: string;
   bannerImage?: string;

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/StaticPage";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Termos de Serviço",
@@ -32,7 +33,7 @@ export default function TermosPage() {
       <h2>4. Propriedade intelectual</h2>
       <p>
         Pedidos de remoção de conteúdo protegido devem seguir o procedimento da página de{" "}
-        <a href="/dmca">DMCA</a>.
+        <a href={routes.dmca}>DMCA</a>.
       </p>
       <h2>5. Alterações</h2>
       <p>

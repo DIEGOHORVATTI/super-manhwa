@@ -33,7 +33,7 @@ export const makeProxyImage =
       url: ref.url,
       referer: connector ? `${connector.baseUrl}/` : undefined,
     });
-    if (!res.ok) return res; // upstream error — don't cache
+    if (!res.ok) return res; // upstream error | don't cache
 
     const contentType = res.headers.get("content-type") ?? "image/jpeg";
     const body = await res.arrayBuffer();

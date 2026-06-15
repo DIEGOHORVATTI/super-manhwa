@@ -3,7 +3,7 @@ import { createMangayomiConnector } from "./shared/mangayomi-factory";
 import type { MangaConnector } from "./types";
 
 /**
- * Lazy resolver for sources that aren't in our curated set — backed by the
+ * Lazy resolver for sources that aren't in our curated set | backed by the
  * upstream Mangayomi index. Used when an opaque manga/chapter id decodes to
  * a source we haven't bothered to vendor.
  *
@@ -61,7 +61,7 @@ export const resolveConnector = async (id: string): Promise<MangaConnector | und
   return createMangayomiConnector({
     id,
     name: entry.name,
-    lang: entry.lang,
+    langs: [entry.lang],
     baseUrl: entry.baseUrl ?? "",
     iconUrl: entry.iconUrl ?? "",
     hasCloudflare: Boolean(entry.hasCloudflare),

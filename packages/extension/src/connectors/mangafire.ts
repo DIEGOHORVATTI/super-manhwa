@@ -4,14 +4,14 @@ import type { MangaConnector, RawDetail, RawListPage, RawPage } from "../types";
 import { generateVrf } from "./mangafire-vrf";
 
 /**
- * Mangafire (pt-br) — NATIVE connector against mangafire.to.
+ * Mangafire (pt-br) | NATIVE connector against mangafire.to.
  *
  * Mangafire has no WAF (plain fetch reaches it), but signs search/detail/page
  * requests with a `vrf` token. The Mangayomi-vendored extension computes that
  * token fine in a real engine but throws under our QuickJS sandbox (arrow
  * class-fields don't initialise). So we run natively: fetch + cheerio here,
  * and reuse the extension's exact `generate_vrf` via `./mangafire-vrf` (loaded
- * in Bun, where it works). No FlareSolverr, no container — just native JS.
+ * in Bun, where it works). No FlareSolverr, no container | just native JS.
  *
  * VALIDATED (2026-05): search "solo leveling" → 30 hits; getDetail
  * (solo-levelingg.52x0) → 201 pt-br chapters; getPageList → real CDN images.
@@ -60,7 +60,7 @@ const STATUS: Record<string, number> = {
 export const mangafirePtBr: MangaConnector = {
   id: "mangafire-ptbr",
   name: "Mangafire (pt-br)",
-  lang: LANG,
+  langs: [LANG],
   baseUrl: BASE,
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=mangafire.to",
   hasCloudflare: true,
@@ -112,7 +112,7 @@ export const mangafirePtBr: MangaConnector = {
     const $ch = cheerio.load(chJson.result?.html ?? "");
 
     // Best-effort date map (chapter number → unix ms). A failure here just
-    // leaves chapters dateless — the ids above are what actually drive reading.
+    // leaves chapters dateless | the ids above are what actually drive reading.
     const dateByNo = new Map<string, string>();
     try {
       const dRes = await get(`${BASE}/ajax/manga/${id}/chapter/${LANG}?vrf=${sign(vrf)}`, {

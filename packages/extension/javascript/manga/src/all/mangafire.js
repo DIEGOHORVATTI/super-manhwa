@@ -103,7 +103,7 @@ class DefaultExtension extends MProvider {
     var slug = `language=${this.source.lang}&page=${page}`;
 
     // Search sometimes failed because filters were empty. I experienced this mostly on android...
-    // VENDOR PATCH: was `filters || filters.length > 0` — an empty array `[]` is
+    // VENDOR PATCH: was `filters || filters.length > 0` | an empty array `[]` is
     // truthy, so it entered the block and crashed on `filters[0].state`. We pass
     // `[]` for filters, so require a non-empty array. See EXTENSIONS_SYNC.md.
     var isFiltersAvailable = filters && filters.length > 0;

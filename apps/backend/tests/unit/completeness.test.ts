@@ -68,7 +68,7 @@ describe("mergeChapters", () => {
       ],
       "pt-br",
     );
-    // 3,2 from pt-br + 1 from en — sorted desc, no duplicate 2/3.
+    // 3,2 from pt-br + 1 from en | sorted desc, no duplicate 2/3.
     expect(merged.map((c) => c.id)).toEqual(["a3", "a2", "b1"]);
   });
 

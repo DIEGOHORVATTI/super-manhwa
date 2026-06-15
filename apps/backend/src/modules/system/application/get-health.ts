@@ -3,7 +3,7 @@ import type { Health } from "@packages/contracts";
 import { APP_INFO } from "@/config/app";
 
 /**
- * Pure synthesis of the health payload. No external IO, no auth — Docker /
+ * Pure synthesis of the health payload. No external IO, no auth | Docker /
  * load balancers poll this so it must always be cheap and predictable.
  *
  * `version` comes from package.json via `APP_INFO`, satisfying the requirement

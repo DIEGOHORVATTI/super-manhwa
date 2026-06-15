@@ -4,7 +4,7 @@ export const webtoons = createMangayomiConnector({
   hasLatestUpdates: true,
   id: "webtoons",
   name: "Webtoons",
-  lang: "en",
+  langs: ["en", "es"],
   baseUrl: "https://www.webtoons.com",
   iconUrl: "https://www.google.com/s2/favicons?sz=64&domain=webtoons.com",
   hasCloudflare: false,

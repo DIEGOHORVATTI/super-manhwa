@@ -3,7 +3,7 @@ import packageJson from "../../package.json" with { type: "json" };
 
 /**
  * Centralised environment loader. Every env variable the app reads MUST go
- * through `env` exported below — call sites don't touch `process.env` directly.
+ * through `env` exported below | call sites don't touch `process.env` directly.
  * That gives us:
  *   - one place to see every input the app needs;
  *   - Zod-validated coercion (strings → numbers/booleans);

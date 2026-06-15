@@ -20,13 +20,13 @@ const concat = (...parts: Uint8Array[]): Uint8Array => {
 
 /**
  * Stateless opaque-id store. Encrypts `{source, url}` with AES-256-GCM under a
- * key derived from the secret, so ids are fully self-describing — `decode` needs
+ * key derived from the secret, so ids are fully self-describing | `decode` needs
  * no lookup table, hence no persisted file / Docker volume.
  *
  * The IV is derived deterministically from the plaintext (HMAC of source‖url),
  * so the same input always yields the same id (idempotent aggregation, stable
  * bookmarks) while staying reversible. Rotating the secret invalidates every
- * outstanding id at once — the intended kill-switch.
+ * outstanding id at once | the intended kill-switch.
  *
  * Token layout: base64url( iv[12] ‖ authTag[16] ‖ ciphertext ).
  */

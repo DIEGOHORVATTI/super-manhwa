@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { rpc } from "@/lib/rpc/client";
 
 /**
  * Footer newsletter signup. Gated on `NEXT_PUBLIC_NEWSLETTER_ENABLED` so it only
@@ -19,12 +20,8 @@ export function NewsletterSignup() {
     e.preventDefault();
     setState("sending");
     try {
-      const res = await fetch("/api/newsletter/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      setState(res.ok ? "done" : "error");
+      await rpc.newsletter.subscribe({ email });
+      setState("done");
     } catch {
       setState("error");
     }
@@ -52,7 +49,7 @@ export function NewsletterSignup() {
             {state === "sending" ? "…" : <Icon name="arrow-right" size={16} />}
           </button>
           {state === "error" && (
-            <span className="newsletter-err muted">Não deu certo — tente de novo.</span>
+            <span className="newsletter-err muted">Não deu certo | tente de novo.</span>
           )}
         </form>
       )}

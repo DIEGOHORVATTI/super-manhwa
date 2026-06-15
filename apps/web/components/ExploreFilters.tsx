@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { routes } from "@/lib/routes";
 
 /** Status options that map to a real AniList filter (see backend ANILIST_STATUS). */
 const STATUS_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
@@ -19,7 +20,7 @@ const SORT_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 ];
 
 /**
- * The Explorar filter bar. Source of truth is the URL — each control rewrites
+ * The Explorar filter bar. Source of truth is the URL | each control rewrites
  * the querystring (resetting to page 1) and lets the server re-render. The text
  * query submits on Enter so we don't navigate on every keystroke.
  */
@@ -29,12 +30,15 @@ export function ExploreFilters({
   genre,
   status,
   sort,
+  basePath = routes.home,
 }: {
   genres: string[];
   q: string;
   genre: string;
   status: string;
   sort: string;
+  /** Where filter changes navigate to | `/` now that explore is the home. */
+  basePath?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(q);
@@ -47,10 +51,10 @@ export function ExploreFilters({
     if (merged.status) params.set("status", merged.status);
     if (merged.sort && merged.sort !== "popular") params.set("sort", merged.sort);
     const qs = params.toString();
-    router.push(qs ? `/explorar?${qs}` : "/explorar");
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
-  // Remove a single applied filter — rebuilt from the *applied* props (not the
+  // Remove a single applied filter | rebuilt from the *applied* props (not the
   // in-progress text input), resetting page to 1.
   const removeFilter = (
     patch: Partial<{ q: string; genre: string; status: string; sort: string }>,
@@ -63,7 +67,7 @@ export function ExploreFilters({
     if (m.sort && m.sort !== "popular") params.set("sort", m.sort);
     if (patch.q === "") setQuery("");
     const qs = params.toString();
-    router.push(qs ? `/explorar?${qs}` : "/explorar");
+    router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
   // Applied filters as removable chips (popular sort is the default → no chip).
@@ -177,7 +181,7 @@ export function ExploreFilters({
               className="filter-clear"
               onClick={() => {
                 setQuery("");
-                router.push("/explorar");
+                router.push(basePath);
               }}
             >
               Limpar tudo

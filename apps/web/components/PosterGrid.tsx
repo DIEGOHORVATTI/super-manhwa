@@ -1,6 +1,7 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { routes } from "@/lib/routes";
 import { Cover } from "./Cover";
 import { FavoriteButton } from "./FavoriteButton";
 import { Flag } from "./Flag";
@@ -12,8 +13,8 @@ const COVER_SIZES = "(max-width: 620px) 33vw, 160px";
 
 /**
  * Shared grid used by the home, genre pages, and any future listing. Each card
- * carries only the opaque id; the `?n=` query is the title hint used for SEO,
- * fallback detail lookup, and the reader's back-button label.
+ * carries only the opaque id; the slug tail is the keyword-rich title used for
+ * SEO and doubles as the fallback detail-lookup hint (de-slugified server-side).
  */
 export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   if (items.length === 0) {
@@ -22,7 +23,7 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   return (
     <div className="poster-grid">
       {items.map((m, i) => {
-        const href = `/manga/${m.id}?n=${encodeURIComponent(m.name)}`;
+        const href = routes.manga(m.id, m.name);
         return (
           <div key={m.id} className="poster">
             <div className="poster-cover">
@@ -43,6 +44,11 @@ export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
               {/* Stretched link makes the whole cover clickable; the heart sits above it. */}
               <Link className="poster-hit" href={href} aria-label={m.name} tabIndex={-1} />
               <FavoriteButton compact id={m.id} name={m.name} imageUrl={m.imageUrl} />
+              {m.description && (
+                <div className="poster-desc" aria-hidden="true">
+                  <p>{m.description}</p>
+                </div>
+              )}
             </div>
             <Link className="poster-name" href={href}>
               {m.name}

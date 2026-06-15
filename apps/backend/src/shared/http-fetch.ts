@@ -1,7 +1,7 @@
 import { type Result, wrapPromiseResult } from "./result";
 
 /**
- * Typed `fetch` wrappers that always return a `Result<T, HttpError>` — no
+ * Typed `fetch` wrappers that always return a `Result<T, HttpError>` | no
  * exceptions thrown. Call sites get exhaustive failure handling without try/catch
  * scaffolding everywhere.
  *
@@ -12,7 +12,7 @@ import { type Result, wrapPromiseResult } from "./result";
  * Three variants for three response shapes:
  *   - `httpFetch<T>`  → JSON-parsed `T` (the common case)
  *   - `httpFetchText` → raw `string` (e.g. downloading extension JS source)
- *   - `httpFetchRaw`  → raw `Response` (binary streams — image proxy)
+ *   - `httpFetchRaw`  → raw `Response` (binary streams | image proxy)
  *
  * Every integration that the backend talks to must provide a real type for `T`;
  * if a third-party API doesn't have one yet, declare it next to the call site
@@ -63,7 +63,7 @@ export const httpFetchText = async (
  * Fetch + return the raw `Response`. Use for binary streams (image proxy)
  * where the body is forwarded to another consumer rather than read into memory.
  *
- * Note: a non-2xx upstream is still surfaced as `HttpError` in the Err branch —
+ * Note: a non-2xx upstream is still surfaced as `HttpError` in the Err branch |
  * the caller doesn't have to inspect `.value.status` themselves.
  */
 export const httpFetchRaw = async (

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { StaticPage } from "@/components/StaticPage";
+import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Política de Cookies",
@@ -31,7 +32,7 @@ export default function CookiesPage() {
         cookies essenciais pode afetar o funcionamento do site.
       </p>
       <p>
-        Para mais detalhes sobre dados, veja a <a href="/privacy">Política de Privacidade</a>.
+        Para mais detalhes sobre dados, veja a <a href={routes.privacy}>Política de Privacidade</a>.
       </p>
     </StaticPage>
   );

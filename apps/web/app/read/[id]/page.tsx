@@ -1,15 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AdBanner } from "@/components/AdBanner";
-import { DisqusComments } from "@/components/DisqusComments";
+import { Comments } from "@/components/Comments";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
-import { adKeys } from "@/lib/ads";
 import { signPagePath } from "@/lib/image-sign";
 import { api } from "@/lib/orpc.server";
+import { routes } from "@/lib/routes";
 import { getSessionId } from "@/lib/session";
 
 // Not force-dynamic: reading the session cookie already opts this route into
@@ -21,14 +20,14 @@ type SP = Promise<{ n?: string; m?: string; mn?: string }>;
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const { n, mn } = await searchParams;
-  const title = mn ? `${mn} — ${n ?? "capítulo"}` : n || "Leitor";
+  const title = mn ? `${mn} | ${n ?? "capítulo"}` : n || "Leitor";
   return { title, robots: { index: false } };
 }
 
 export default async function ReadPage({ params, searchParams }: { params: P; searchParams: SP }) {
   const [{ id }, { n, m, mn }] = await Promise.all([params, searchParams]);
 
-  // Pages always; manga chapters + cover only if we know the manga (m=…) — they
+  // Pages always; manga chapters + cover only if we know the manga (m=…) | they
   // power the reader nav (prev/next + chapter combobox) and the continue-reading
   // history entry. All fired in parallel.
   const [pagesRes, chaptersRes, coreRes] = await Promise.allSettled([
@@ -58,7 +57,6 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   const chapterNo = idx >= 0 ? chapters.length - idx : undefined;
   const cover =
     coreRes.status === "fulfilled" && coreRes.value ? coreRes.value.core.imageUrl : undefined;
-  const base = process.env.SITE_URL ?? "http://localhost:3000";
 
   return (
     <>
@@ -67,7 +65,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
-          <Link className="reader-btn reader-btn-series" href="/">
+          <Link className="reader-btn reader-btn-series" href={routes.home}>
             <Icon name="house" size={16} />
             <span className="reader-series-name">Início</span>
           </Link>
@@ -79,8 +77,6 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
           </span>
         </div>
       )}
-
-      <AdBanner slotKey={adKeys.banner728x90} width={728} height={90} />
 
       <ReaderPages
         pages={pages}
@@ -98,13 +94,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
         <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       )}
 
-      <AdBanner slotKey={adKeys.banner300x250} width={300} height={250} />
-
-      <DisqusComments
-        identifier={`chapter-${id}`}
-        title={mn ? `${mn} — ${n ?? "capítulo"}` : (n ?? "Capítulo")}
-        url={`${base}/read/${id}`}
-      />
+      <Comments targetType="chapter" targetId={id} />
     </>
   );
 }

@@ -2,11 +2,12 @@ import type { Chapter } from "@packages/contracts";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { chapterHref, chapterNav } from "@/lib/reader";
+import { routes } from "@/lib/routes";
 
 /**
  * End-of-chapter navigation rendered after the page images. Big prev/next CTAs so
  * a reader who reaches the bottom can move on without scrolling back to the top
- * toolbar. Pure links — no client JS needed.
+ * toolbar. Pure links | no client JS needed.
  */
 export function ReaderChapterEnd({
   chapters,
@@ -42,11 +43,7 @@ export function ReaderChapterEnd({
         </span>
       )}
 
-      <Link
-        className="reader-end-series"
-        href={`/manga/${mangaId}?n=${encodeURIComponent(mangaName)}`}
-        title={mangaName}
-      >
+      <Link className="reader-end-series" href={routes.manga(mangaId, mangaName)} title={mangaName}>
         <Icon name="book-open" size={18} />
         <span>Todos os capítulos</span>
       </Link>

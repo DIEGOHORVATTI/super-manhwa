@@ -4,6 +4,9 @@ dist/
 .DS_Store
 .env
 .env.*
+*.prod.env
+!.env.example
+!**/.env.example
 
 # build artifacts (no leading slash → match at any depth, incl. apps/*/)
 .next
@@ -12,3 +15,5 @@ dist/
 .wrangler
 
 data
+# Local deploy helper(s) with embedded server credentials — never commit
+scripts/*.local.sh

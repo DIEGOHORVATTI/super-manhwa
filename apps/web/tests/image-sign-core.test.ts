@@ -7,7 +7,7 @@ const TOKEN = "manga-tok-123";
 
 describe("image-sign-core: cover (public) tags", () => {
   it("matches the cross-layer canonical vector (must equal the backend's coverSig)", () => {
-    // If this changes, apps/backend/tests/unit/image-sign.test.ts breaks too —
+    // If this changes, apps/backend/tests/unit/image-sign.test.ts breaks too |
     // that's the point: the two layers MUST agree byte-for-byte.
     expect(coverSig(TOKEN, SECRET)).toBe("tt0tqCcAiYJ3qS2RW1");
   });

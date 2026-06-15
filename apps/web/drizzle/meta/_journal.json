@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1781022272303,
+      "tag": "0000_yielding_killraven",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1781028259845,
+      "tag": "0001_true_stephen_strange",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781432687247,
+      "tag": "0002_late_pepper_potts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781433280838,
+      "tag": "0003_wooden_vance_astro",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781433429018,
+      "tag": "0004_jittery_expediter",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781433873248,
+      "tag": "0005_aberrant_multiple_man",
+      "breakpoints": true
+    }
+  ]
+}

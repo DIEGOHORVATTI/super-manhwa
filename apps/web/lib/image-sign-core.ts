@@ -1,7 +1,9 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+import { routes } from "@/lib/routes";
+
 /**
- * Pure image-URL signing — no env, no `server-only`, so it's unit-testable and
+ * Pure image-URL signing | no env, no `server-only`, so it's unit-testable and
  * shared by the secret-bound wrappers in {@link image-sign}. The cover branch
  * MUST stay byte-identical to the backend's `coverSig`
  * (apps/backend/src/shared/image-sign.ts) so the Next proxy can verify covers
@@ -44,7 +46,7 @@ export const verifyPage = (
 };
 
 const tokenOf = (path: string): string =>
-  path.startsWith("/api/img/") ? path.slice("/api/img/".length) : path;
+  path.startsWith(`${routes.api.img}/`) ? path.slice(`${routes.api.img}/`.length) : path;
 
 export const signPagePath = (
   path: string,

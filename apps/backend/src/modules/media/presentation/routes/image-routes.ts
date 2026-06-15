@@ -7,7 +7,7 @@ const TOKEN_PREFIX = "/api/img/";
 /**
  * Raw HTTP handler (binary stream, not oRPC). Wired into the server via
  * `customHandlers` in `startBunServer`. Same X-API-KEY guard as the oRPC
- * routes — the same-origin Next proxy injects the header server-side, so the
+ * routes | the same-origin Next proxy injects the header server-side, so the
  * browser never holds the key.
  */
 export const imageRoute: FetchHandler = async (req) => {

@@ -1,7 +1,7 @@
 import type { MangaStatus } from "@packages/contracts";
 
 /**
- * Domain entities. There is no persistence layer for manga — these are
+ * Domain entities. There is no persistence layer for manga | these are
  * transient projections of upstream Mangayomi extension responses, shaped into
  * the form our application uses. The opaque `id` is minted by IdStore.
  */
@@ -13,11 +13,13 @@ export type MangaSummary = {
   lang: string;
   /** Reading languages this work is available in (flag overlay on listing covers). */
   langs?: string[];
-  /** Enrichment fields — populated only when the use case ran in enriched mode. */
+  /** Enrichment fields | populated only when the use case ran in enriched mode. */
   status?: MangaStatus;
   genres?: string[];
   /** Chapter count, when the source exposes a cheap probe (suggest route only). */
   chapters?: number;
+  /** Short plain-text teaser for listing hover (AniList-backed listings). */
+  description?: string;
 };
 
 export type Chapter = {

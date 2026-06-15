@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import { contactInputSchema, dmcaInputSchema } from "../lib/schemas/legal";
-import { subscribeInputSchema } from "../lib/schemas/newsletter";
+import { contactInputSchema, dmcaInputSchema } from "@packages/contracts";
+import { subscribeInputSchema } from "@packages/contracts";
 
 describe("dmcaInputSchema", () => {
   const valid = {

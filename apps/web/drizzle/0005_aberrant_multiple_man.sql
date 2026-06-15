@@ -1,0 +1,1 @@
+ALTER TABLE "user_works" ADD COLUMN "categories" text[];

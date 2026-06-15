@@ -18,16 +18,16 @@ import { loadWork } from "./work-cache";
 const DETAIL_TTL = 10 * 60 * 1000;
 const SEARCH_TTL = 10 * 60 * 1000;
 const MERGED_TTL = 10 * 60 * 1000;
-/** Preferred reading language — chapters in this language win on duplicates. */
+/** Preferred reading language | chapters in this language win on duplicates. */
 const PREFERRED_LANG = "pt-br";
-/** Max connectors we fan out to per detail load — bounds latency. */
+/** Max connectors we fan out to per detail load | bounds latency. */
 const MAX_POOL = 6;
 /** Max title variants (catalog title + aliases) we search each connector by. */
 const MAX_QUERIES = 2;
 /**
  * Soft deadline for the whole fan-out. Connectors that miss it keep running in
  * the background (warming the per-connector search/detail caches), so the next
- * load — even before the merged cache expires elsewhere — is fast and more
+ * load | even before the merged cache expires elsewhere | is fast and more
  * complete. A first cold load returns within this bound rather than hanging.
  */
 const FANOUT_DEADLINE_MS = 40_000;
@@ -50,8 +50,8 @@ const uniqStrings = (xs: Array<string | undefined>): string[] => {
  * Slow half of the obra page: a work's chapters, unioned across reading sources.
  * Identity comes from the AniList catalog (the `id` is an AniList id, shared with
  * {@link makeGetMangaCore} via the cached {@link loadWork}): we take its title +
- * aliases, fan out across the reading connectors — matching the same work by
- * (English-aligned) title — and union every source's chapters, deduped by number,
+ * aliases, fan out across the reading connectors | matching the same work by
+ * (English-aligned) title | and union every source's chapters, deduped by number,
  * preferring {@link PREFERRED_LANG}. Non-chapter content lives in the `core`
  * route, so the page renders even when no reading source carries the work.
  */
@@ -70,19 +70,25 @@ export const makeGetMangaChapters =
       queries: string[],
       targets: string[],
     ): Promise<{ priority: number; shaped: MangaDetail } | null> => {
+      // Ask the source in the preferred language when it serves it, else its
+      // own first language (fallback). The chosen language tags every chapter
+      // and namespaces the cache so per-language requests never collide.
+      const qlang = connector.langs.includes(PREFERRED_LANG) ? PREFERRED_LANG : connector.langs[0];
       for (const q of queries) {
         try {
           const r = await cache.remember(
-            `search:${connector.id}:${q.toLowerCase()}`,
+            `search:${connector.id}:${qlang}:${q.toLowerCase()}`,
             SEARCH_TTL,
-            () => connector.search(q, 1),
+            () => connector.search(q, 1, qlang),
           );
           const hit = (r.list ?? []).find((m) => titleMatches(m.name, targets));
           if (!hit) continue;
-          const raw = await cache.remember(`detail:${connector.id}:${hit.link}`, DETAIL_TTL, () =>
-            connector.getDetail(hit.link),
+          const raw = await cache.remember(
+            `detail:${connector.id}:${qlang}:${hit.link}`,
+            DETAIL_TTL,
+            () => connector.getDetail(hit.link, qlang),
           );
-          const shaped = MangaMapper.toDetail(idStore, connector, raw ?? {});
+          const shaped = MangaMapper.toDetail(idStore, connector, raw ?? {}, qlang);
           if (shaped.chapters && shaped.chapters.length > 0) {
             return { priority: priorityOf(connector.id), shaped };
           }

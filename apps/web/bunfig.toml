@@ -1,0 +1,4 @@
+[test]
+# Stub the Next-only `server-only` marker so lib/route modules import cleanly
+# under `bun test`. See tests/setup.ts.
+preload = ["./tests/setup.ts"]

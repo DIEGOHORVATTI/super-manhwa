@@ -2,7 +2,7 @@ import type { ConnectorRegistry } from "../infrastructure/connector-registry";
 
 /**
  * Languages spoken by the curated, non-CF connectors. Used to populate the
- * frontend's lang filter dropdown — the only legitimate UI filter besides
+ * frontend's lang filter dropdown | the only legitimate UI filter besides
  * genre.
  */
 export const makeListLangs =
@@ -12,7 +12,7 @@ export const makeListLangs =
         registry
           .listCurated()
           .filter((c) => !c.hasCloudflare)
-          .map((c) => c.lang),
+          .flatMap((c) => c.langs),
       ),
     )
       .filter(Boolean)

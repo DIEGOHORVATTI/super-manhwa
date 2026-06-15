@@ -13,7 +13,7 @@ export function PosterProgressBadge({ id }: { id: string }) {
   if (!entry) return null;
   const label = typeof entry.chapterNo === "number" ? `Cap ${entry.chapterNo}` : "Lendo";
   return (
-    <span className="poster-progress" title={`Continuar lendo — ${label}`}>
+    <span className="poster-progress" title={`Continuar lendo | ${label}`}>
       <Icon name="book-open" size={12} />
       {label}
     </span>

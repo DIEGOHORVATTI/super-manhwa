@@ -32,7 +32,7 @@ export const isRecent = (ms?: string, days = NEW_FOR_DAYS): boolean => {
 };
 
 /**
- * The real chapter number parsed from its (inconsistent) name — mirrors the
+ * The real chapter number parsed from its (inconsistent) name | mirrors the
  * backend merge logic: drop volume, prefer a ch/cap/# marker, else first number.
  * Undefined when the name carries no number (e.g. "Prólogo").
  */

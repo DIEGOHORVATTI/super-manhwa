@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import { CONNECTORS, type MangaConnector } from "@packages/extension";
 
 /**
- * Manga Livre native connectors — two separate sites/stacks behind one brand:
+ * Manga Livre native connectors | two separate sites/stacks behind one brand:
  *   - mangalivre-to   → WordPress + Madara (WP-Manga) theme
  *   - mangalivre-blog → custom WordPress theme ("b"), inline chapter list
  *
@@ -68,7 +68,7 @@ describe("manga livre / live network", () => {
           expect(list[0].link).toMatch(/^https?:\/\//);
         }
       } catch (e) {
-        // Upstream/network hiccup — don't flake CI.
+        // Upstream/network hiccup | don't flake CI.
         console.warn(`${id} getPopular skipped:`, (e as Error).message);
       }
     },
@@ -89,11 +89,11 @@ describe("manga livre / live network", () => {
         console.warn(`${id} search skipped:`, (e as Error).message);
         return;
       }
-      if (!link) return; // search empty — tolerated
+      if (!link) return; // search empty | tolerated
 
       // Network calls (getDetail/getPageList) are wrapped so a solver hiccup
       // (timeout/500) is tolerated, while a *contract* break (wrong title, no
-      // chapters, fake page URLs) still fails hard — the assertions stay outside.
+      // chapters, fake page URLs) still fails hard | the assertions stay outside.
       let detail: Awaited<ReturnType<typeof c.getDetail>>;
       try {
         detail = await c.getDetail(link);
@@ -112,7 +112,7 @@ describe("manga livre / live network", () => {
       expect(ch.name.length).toBeGreaterThan(0);
       expect(ch.url).toMatch(/^https?:\/\//);
 
-      // Newest chapter — pages must be real upstream image URLs.
+      // Newest chapter | pages must be real upstream image URLs.
       let pages: Awaited<ReturnType<typeof c.getPageList>>;
       try {
         pages = await c.getPageList(ch.url);

@@ -1,12 +1,13 @@
 import type { MangaSummary } from "@packages/contracts";
 import Link from "next/link";
 
+import { routes } from "@/lib/routes";
 import { Cover } from "./Cover";
 import { Icon, type IconName } from "./Icon";
 
 /**
  * Numbered ranking rail (Asura-style "Popular Today"). A compact, ordered list
- * of works with a big rank index, thumbnail and title — meant to sit beside the
+ * of works with a big rank index, thumbnail and title | meant to sit beside the
  * main grid on desktop and stack above it on phones. Purely presentational; the
  * caller decides what the ranking represents (trending, popular, …).
  */
@@ -30,7 +31,7 @@ export function RankingList({
       <ol className="rank-list">
         {items.map((m, i) => (
           <li key={m.id} className="rank-item">
-            <Link className="rank-link" href={`/manga/${m.id}?n=${encodeURIComponent(m.name)}`}>
+            <Link className="rank-link" href={routes.manga(m.id, m.name)}>
               <span className={`rank-no${i < 3 ? " is-top" : ""}`}>{i + 1}</span>
               <span className="rank-thumb">
                 <Cover src={m.imageUrl} alt="" sizes="38px" />

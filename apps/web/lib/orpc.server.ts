@@ -1,4 +1,5 @@
 import "server-only";
+import { env } from "@/lib/env";
 import { createORPCClient } from "@orpc/client";
 import type { ContractRouterClient } from "@orpc/contract";
 import type { JsonifiedClient } from "@orpc/openapi-client";
@@ -11,8 +12,8 @@ import { contracts } from "@packages/contracts";
  * shared API_KEY (both are server-only env). For browser-side requests the
  * /api/[...path] route on Next forwards same-origin and injects the key there.
  */
-const BACKEND = process.env.DELIVERY_SERVICE_URL ?? "http://localhost:8787";
-const API_KEY = process.env.API_KEY ?? "dev-api-key-change-in-prod";
+const BACKEND = env.DELIVERY_SERVICE_URL ?? "http://localhost:8787";
+const API_KEY = env.API_KEY ?? "dev-api-key-change-in-prod";
 
 /**
  * Catalog data barely moves (a work's metadata and chapter list change at most

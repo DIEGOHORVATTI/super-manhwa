@@ -3,15 +3,15 @@ import type { ConnectorMeta, MangaConnector, RawDetail, RawListPage, RawPage } f
 import { loadMangaExtension } from "./load-extension";
 
 /**
- * One module-scope cache for every fetched/loaded extension source — across
+ * One module-scope cache for every fetched/loaded extension source | across
  * all Mangayomi-backed connectors built in this process.
  */
 const codeCache = new Map<string, string>();
 
 export interface MangayomiConnectorInit extends ConnectorMeta {
   /**
-   * Either a vendored relative path (e.g. `all/mangadex.js`) — loaded from
-   * `packages/extension/javascript/manga/src/` — or an absolute `https://`
+   * Either a vendored relative path (e.g. `all/mangadex.js`) | loaded from
+   * `packages/extension/javascript/manga/src/` | or an absolute `https://`
    * URL fetched on demand. The dynamic-source path uses the latter.
    */
   source: { kind: "vendored"; path: string } | { kind: "remote"; url: string };
@@ -30,13 +30,13 @@ export interface MangayomiConnectorInit extends ConnectorMeta {
   };
 
   /**
-   * Expose the optional `getChapterCount` capability — set only for bundles
+   * Expose the optional `getChapterCount` capability | set only for bundles
    * whose JS actually implements the method (e.g. MangaDex via `/aggregate`).
    */
   hasChapterCount?: boolean;
 
   /**
-   * Expose the optional `getLatestUpdates` capability — set for bundles whose JS
+   * Expose the optional `getLatestUpdates` capability | set for bundles whose JS
    * implements it (most Mangayomi sources do).
    */
   hasLatestUpdates?: boolean;
@@ -74,18 +74,25 @@ const resolveSource = async (source: MangayomiConnectorInit["source"]): Promise<
  * pulled from a remote URL (the dynamic-source path).
  *
  * For sources we author ourselves in native TypeScript, skip this factory and
- * implement `MangaConnector` directly — see `connectors/native/` for examples.
+ * implement `MangaConnector` directly | see `connectors/native/` for examples.
  */
 export const createMangayomiConnector = (init: MangayomiConnectorInit): MangaConnector => {
   const timeouts = { ...DEFAULT_TIMEOUTS, ...init.timeouts };
 
-  const run = async <T>(method: string, args: unknown[], timeoutMs: number): Promise<T> => {
+  const run = async <T>(
+    method: string,
+    args: unknown[],
+    timeoutMs: number,
+    lang?: string,
+  ): Promise<T> => {
     const code = await resolveSource(init.source);
     return runExtension<T>({
       code,
       method,
       args,
-      source: { lang: init.lang },
+      // Inject the requested language (defaulting to the connector's first), so
+      // the same JS bundle returns the right locale at run time.
+      source: { lang: lang ?? init.langs[0] },
       cloudflare: init.hasCloudflare,
       timeoutMs,
     });
@@ -94,26 +101,27 @@ export const createMangayomiConnector = (init: MangayomiConnectorInit): MangaCon
   return {
     id: init.id,
     name: init.name,
-    lang: init.lang,
+    langs: init.langs,
     baseUrl: init.baseUrl,
     iconUrl: init.iconUrl,
     hasCloudflare: init.hasCloudflare,
     isNsfw: init.isNsfw,
     featured: init.featured,
-    getPopular: (page) => run<RawListPage>("getPopular", [page], timeouts.popular!),
-    search: (query, page) => run<RawListPage>("search", [query, page, []], timeouts.search!),
-    getDetail: (link) => run<RawDetail>("getDetail", [link], timeouts.detail!),
+    getPopular: (page, lang) => run<RawListPage>("getPopular", [page], timeouts.popular!, lang),
+    search: (query, page, lang) =>
+      run<RawListPage>("search", [query, page, []], timeouts.search!, lang),
+    getDetail: (link, lang) => run<RawDetail>("getDetail", [link], timeouts.detail!, lang),
     getPageList: (chapterUrl) => run<RawPage[]>("getPageList", [chapterUrl], timeouts.pages!),
     ...(init.hasChapterCount
       ? {
-          getChapterCount: (link: string) =>
-            run<number>("getChapterCount", [link], timeouts.count!),
+          getChapterCount: (link: string, lang?: string) =>
+            run<number>("getChapterCount", [link], timeouts.count!, lang),
         }
       : {}),
     ...(init.hasLatestUpdates
       ? {
-          getLatestUpdates: (page: number) =>
-            run<RawListPage>("getLatestUpdates", [page], timeouts.latest!),
+          getLatestUpdates: (page: number, lang?: string) =>
+            run<RawListPage>("getLatestUpdates", [page], timeouts.latest!, lang),
         }
       : {}),
   };

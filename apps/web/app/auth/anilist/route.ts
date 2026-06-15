@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { routes } from "@/lib/routes";
+import { env } from "@/lib/env";
 
 /**
  * AniList OAuth callback (authorization code grant). AniList redirects here with
@@ -22,12 +24,12 @@ export async function GET(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const done = (frag: string) =>
-    NextResponse.redirect(new URL(`/auth/anilist/done${frag}`, url.origin));
+    NextResponse.redirect(new URL(`${routes.authAnilistDone}${frag}`, url.origin));
 
   if (!code) return done("#error=denied");
 
-  const clientId = process.env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
-  const clientSecret = process.env.ANILIST_CLIENT_SECRET;
+  const clientId = env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
+  const clientSecret = env.ANILIST_CLIENT_SECRET;
   if (!clientId || !clientSecret) return done("#error=unconfigured");
 
   try {

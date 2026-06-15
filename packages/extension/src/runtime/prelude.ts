@@ -1,5 +1,5 @@
 /**
- * PRELUDE — JavaScript injected INTO the QuickJS sandbox before the extension code.
+ * PRELUDE | JavaScript injected INTO the QuickJS sandbox before the extension code.
  *
  * Recreates the Mangayomi host bridge globals (see DECISIONS.md "Bridge reference").
  * The sandbox has zero ambient capabilities: network and prefs are bridged to host
@@ -9,7 +9,7 @@
  * The host starts the real fetch via `__hostFetchStart(id, reqJson)` and later
  * resolves the VM Promise via `__resolveFetch(id, raw)` / `__rejectFetch(id, err)`,
  * pumping the VM job queue in between. This uses the *synchronous* QuickJS module
- * (no asyncify) — asyncify can only drive one host call before the first VM `await`.
+ * (no asyncify) | asyncify can only drive one host call before the first VM `await`.
  *
  * Kept free of backticks / ${...} so it can live inside a TS template literal.
  */

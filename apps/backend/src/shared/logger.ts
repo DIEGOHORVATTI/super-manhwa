@@ -1,7 +1,7 @@
 import { isProduction } from "@/config/env";
 
 /**
- * Tiny structured logger — JSON in production (Docker stdout → log aggregation),
+ * Tiny structured logger | JSON in production (Docker stdout → log aggregation),
  * pretty/coloured in dev. Adapted from `novo-horizonte/server/src/shared/logger.ts`.
  */
 type LogLevel = "debug" | "info" | "warn" | "error";
@@ -56,9 +56,9 @@ const clipBody = (s: string) => (s.length > MAX_BODY ? `${s.slice(0, MAX_BODY)}�
 export type HttpLog = {
   method: string;
   path: string;
-  /** Route input — decoded query string (GET) or body preview (mutations). */
+  /** Route input | decoded query string (GET) or body preview (mutations). */
   input?: string;
-  /** Parsed JSON response body — pretty-printed under the line in dev. */
+  /** Parsed JSON response body | pretty-printed under the line in dev. */
   output?: unknown;
   ms: number;
   status?: number;
@@ -91,7 +91,7 @@ const emit = (level: LogLevel, message: string, context?: LogContext) => {
 };
 
 /**
- * Render one line per request for the dev stream — a GET conceptually goes in
+ * Render one line per request for the dev stream | a GET conceptually goes in
  * and comes back as one thing, so we log it once on completion, e.g.
  *   `09:06:43 GET    /manga/core ?id=30002  200 284ms  core lang=pt-br`
  *   `09:06:43 GET    /manga/chapters  200 40.27s  chapters:107 (mangafire-ptbr:60) lang=pt-br`
@@ -101,7 +101,7 @@ const emitHttpPretty = (e: HttpLog) => {
   const ts = colorize(GRAY, new Date().toTimeString().slice(0, 8));
   const verb = colorize(VERB_ANSI[e.method] ?? RESET, e.method.padEnd(6));
   const input = e.input ? ` ${colorize(GRAY, e.input)}` : "";
-  // A thrown error has no status — treat it as a 5xx so the line reads red.
+  // A thrown error has no status | treat it as a 5xx so the line reads red.
   const tone = e.error ? RED : statusAnsi(e.status);
   const status = colorize(tone, e.status ? String(e.status) : e.error ? "ERR" : "---");
   const dur = ` ${colorize(e.ms >= SLOW_MS ? YELLOW : GRAY, fmtDuration(e.ms))}`;
@@ -112,7 +112,7 @@ const emitHttpPretty = (e: HttpLog) => {
       : "";
   process.stdout.write(`${ts} ${verb} ${e.path}${input}  ${status}${dur}${tail}\n`);
 
-  // The JSON response body, pretty-printed and indented underneath — like `jq`.
+  // The JSON response body, pretty-printed and indented underneath | like `jq`.
   if (e.output !== undefined && !e.error && e.matched !== false) {
     const body = clipBody(JSON.stringify(e.output, null, 2)).replace(/^/gm, "  ");
     process.stdout.write(`${colorize(GRAY, body)}\n`);

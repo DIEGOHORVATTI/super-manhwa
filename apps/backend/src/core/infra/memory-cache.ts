@@ -6,7 +6,7 @@ interface Entry {
 }
 
 /**
- * In-process TTL cache with a hard size cap. Process-scoped — survives requests
+ * In-process TTL cache with a hard size cap. Process-scoped | survives requests
  * but not restarts. Good enough for popular-list caching where data is cheap to
  * re-derive on the next miss.
  */
