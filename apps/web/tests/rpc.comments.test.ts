@@ -10,7 +10,7 @@ const { appRouter } = await import("../lib/rpc/router");
 const { fakeContext } = await import("./helpers/rpc-context");
 
 /**
- * Unit tests for the comments oRPC router — procedures are invoked directly via
+ * Unit tests for the comments oRPC router | procedures are invoked directly via
  * `call()` with a fake context (no HTTP, no mock.module of db/auth). The middleware
  * chain (db guard → auth → handler) runs for real.
  */

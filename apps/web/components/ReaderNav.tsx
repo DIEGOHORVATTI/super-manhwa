@@ -33,7 +33,7 @@ export function ReaderNav({
   const { idx, prev, next, current } = chapterNav(chapters, currentId);
   const href = (c: Chapter) => chapterHref(c, mangaId, mangaName);
 
-  // Combobox state — type to filter, click to jump.
+  // Combobox state | type to filter, click to jump.
   const [q, setQ] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -144,7 +144,7 @@ export function ReaderNav({
           <input
             ref={inputRef}
             className="reader-chap-field"
-            value={open ? q : (current?.name ?? "—")}
+            value={open ? q : (current?.name ?? "|")}
             placeholder="Capítulo…"
             onFocus={() => {
               setQ("");

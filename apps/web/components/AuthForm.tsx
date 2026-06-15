@@ -25,7 +25,7 @@ const COPY: Record<Mode, { title: string; submit: string; path: string; sub: str
     title: "Recuperar senha",
     submit: "Enviar link de recuperação",
     path: "~/recuperar",
-    sub: "Sem estresse — a gente te manda um link mágico por e-mail.",
+    sub: "Sem estresse | a gente te manda um link mágico por e-mail.",
   },
   reset: {
     title: "Definir nova senha",
@@ -35,7 +35,7 @@ const COPY: Record<Mode, { title: string; submit: string; path: string; sub: str
   },
 };
 
-/** Inline eye toggle — keeps the icon set small while giving show/hide password. */
+/** Inline eye toggle | keeps the icon set small while giving show/hide password. */
 function EyeIcon({ off }: { off: boolean }) {
   return (
     <svg
@@ -90,7 +90,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         const res = await authClient.signIn.email({ email, password });
         if (res.error) {
           // Unverified e-mail: Better Auth (sendOnSignIn) just resent the link
-          // — send them to the confirmation screen instead of an error.
+          // | send them to the confirmation screen instead of an error.
           if (res.error.code === "EMAIL_NOT_VERIFIED" || res.error.status === 403) {
             router.push("/verify-email");
             return;

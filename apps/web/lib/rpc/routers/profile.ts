@@ -7,7 +7,7 @@ import { authed } from "../base";
 
 /**
  * Profile of the signed-in user. Handle is the public slug for /u/[handle]
- * — lowercase letters, digits and underscores, enforced unique here (Better Auth
+ * | lowercase letters, digits and underscores, enforced unique here (Better Auth
  * doesn't dedupe additional fields).
  */
 export const profileRouter = {

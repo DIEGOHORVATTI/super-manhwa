@@ -10,7 +10,7 @@ import { SESSION_COOKIE } from "@/lib/session-cookie";
  * browser never sees DELIVERY_SERVICE_URL nor the key.
  *
  * This is also the protection boundary for images (the browser can't reach the
- * backend directly — it lacks the key). Image requests MUST carry a valid
+ * backend directly | it lacks the key). Image requests MUST carry a valid
  * signature:
  *   - `?k=` public-cover tag  → served `public, immutable` (CDN + next/image)
  *   - `?e=&s=` session page tag → bound to `mr_sid`, served `private`
@@ -52,7 +52,7 @@ export async function GET(
     }
   }
 
-  // Forward only the pathname (drop our signature query — the backend keys on
+  // Forward only the pathname (drop our signature query | the backend keys on
   // the opaque token alone).
   const upstream = await fetch(
     `${BACKEND}/api/${path.join("/")}${path[0] === "img" ? "" : url.search}`,

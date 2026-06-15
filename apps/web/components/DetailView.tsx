@@ -15,7 +15,7 @@ type ChaptersResult = { chapters: Chapter[]; lang: string };
 /**
  * Owns the active-tab + filter state for the whole detail page. The header's
  * "…ver mais" jumps to "Sobre"; the search box on the right of the tab bar
- * filters the active tab live — chapters by name/number, characters by name —
+ * filters the active tab live | chapters by name/number, characters by name |
  * and is disabled on "Sobre". Cover/genres/about/meta are server-rendered slots.
  *
  * Chapters are streamed: `chaptersPromise` is consumed (via `use()`) inside a
@@ -59,7 +59,7 @@ export function DetailView({
   // resolves (keeps client cache warm for ChapterList's first paint).
   useReadChapters(mangaId);
 
-  // Always open a work at the top — navigating between obras (or back from the
+  // Always open a work at the top | navigating between obras (or back from the
   // reader) otherwise keeps the previous scroll position. Smooth so the jump
   // reads as a deliberate scroll, not a flash.
   useEffect(() => {
@@ -159,7 +159,7 @@ export function DetailView({
         </div>
       </nav>
 
-      {/* Capítulos — streamed; suspends behind a grid skeleton until the
+      {/* Capítulos | streamed; suspends behind a grid skeleton until the
           cross-source fan-out resolves. */}
       <div hidden={active !== "chapters"}>
         <Suspense
@@ -181,7 +181,7 @@ export function DetailView({
         </Suspense>
       </div>
 
-      {/* Personagens — streamed; suspends until the AniList lookup resolves. */}
+      {/* Personagens | streamed; suspends until the AniList lookup resolves. */}
       <div hidden={active !== "characters"}>
         <Suspense fallback={<p className="muted">Carregando personagens…</p>}>
           <CharactersTab promise={charactersPromise} query={query} />
@@ -191,7 +191,7 @@ export function DetailView({
       {/* Sobre */}
       <div hidden={active !== "about"}>{about}</div>
 
-      {/* Comentários — montados só quando a aba abre. */}
+      {/* Comentários | montados só quando a aba abre. */}
       {comments && (
         <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
       )}

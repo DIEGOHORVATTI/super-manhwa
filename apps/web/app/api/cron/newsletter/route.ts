@@ -13,7 +13,7 @@ export const maxDuration = 60;
 
 /**
  * Weekly newsletter digest. Triggered by Vercel Cron (see vercel.json). Guarded
- * by CRON_SECRET — Vercel sends it as `Authorization: Bearer <secret>`. Builds a
+ * by CRON_SECRET | Vercel sends it as `Authorization: Bearer <secret>`. Builds a
  * trending/new digest (React Email template) and sends to confirmed subscribers,
  * each with a personal unsubscribe link.
  */
@@ -54,7 +54,7 @@ export async function GET(req: Request): Promise<Response> {
           unsubscribeUrl: `${base}/api/newsletter/unsubscribe?token=${sub.token}`,
         }),
       );
-      await sendEmail({ to: sub.email, subject: "Super Manhwa — destaques da semana", html });
+      await sendEmail({ to: sub.email, subject: "Super Manhwa | destaques da semana", html });
       sent++;
     } catch {
       /* skip individual failures */

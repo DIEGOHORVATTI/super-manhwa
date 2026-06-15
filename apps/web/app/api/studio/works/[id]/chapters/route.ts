@@ -7,9 +7,9 @@ import { putObject, r2Enabled } from "@/lib/r2";
 
 /**
  * Create a chapter and upload its page images to R2. Accepts multipart/form-data:
- *   number  (string)   — chapter number/label
- *   title   (string?)  — optional
- *   pages   (File[])   — ordered image files
+ *   number  (string)   | chapter number/label
+ *   title   (string?)  | optional
+ *   pages   (File[])   | ordered image files
  * Pages are stored at works/<workId>/ch/<chapterId>/<index>.<ext>; the chapter
  * starts as a draft.
  */

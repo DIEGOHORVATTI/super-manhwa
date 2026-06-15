@@ -8,7 +8,7 @@ import { PosterGrid } from "@/components/PosterGrid";
 import { useFavorites } from "@/lib/library";
 
 /**
- * The local library screen — favorites grid + the continue-reading rail, both
+ * The local library screen | favorites grid + the continue-reading rail, both
  * sourced from localStorage. Client-only by nature; the server page wraps it so
  * metadata still renders. Empty state nudges to the catalog.
  */
@@ -32,7 +32,7 @@ export function LibraryView() {
       {items.length === 0 ? (
         <p className="muted">
           Nenhuma obra salva ainda. Toque em <Icon name="heart" size={13} /> numa obra para
-          adicioná-la — fica salvo só neste navegador. <Link href="/">Explorar o catálogo</Link>.
+          adicioná-la | fica salvo só neste navegador. <Link href="/">Explorar o catálogo</Link>.
         </p>
       ) : (
         <PosterGrid items={items} />

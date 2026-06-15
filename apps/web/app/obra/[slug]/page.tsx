@@ -97,7 +97,7 @@ export default async function ObraPage({ params }: { params: Params }) {
             <li key={c.id}>
               <Link href={work.kind === "novel" ? `/learn/${c.id}` : `/obra/${slug}/${c.id}`}>
                 Cap. {c.number}
-                {c.title ? ` — ${c.title}` : ""}
+                {c.title ? ` | ${c.title}` : ""}
               </Link>
             </li>
           ))}

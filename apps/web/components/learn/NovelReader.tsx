@@ -19,7 +19,7 @@ type Status = "new" | "learning" | "known" | "ignored";
  * Interactive novel reader. Every word is clickable and coloured by the reader's
  * per-word status (blue = new, yellow = learning, none = known/ignored). Clicking
  * opens a popup with the word, its sentence as a live example, and status
- * buttons. A "known words" counter rises as you study — the LingQ retention hook.
+ * buttons. A "known words" counter rises as you study | the LingQ retention hook.
  */
 export function NovelReader({ chapterId }: { chapterId: number }) {
   const { data: session } = useSession();

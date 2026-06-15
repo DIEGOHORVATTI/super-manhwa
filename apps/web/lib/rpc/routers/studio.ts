@@ -23,7 +23,7 @@ const workIdInput = z.object({ id: z.number().int().positive() });
  * Studio (user-works) authoring surface, ported from the Next route handlers.
  * Everything requires auth (`authed`); finer access is enforced per-procedure
  * via `getWorkAccess(workId, user.id)`. Image/cover/page uploads stay as native
- * multipart route handlers — only the JSON operations live here.
+ * multipart route handlers | only the JSON operations live here.
  *
  * Shape:
  *   works:    { list, create }
@@ -83,7 +83,7 @@ export const studioRouter = {
       // A team backs every work so collaborators can be added with roles.
       const [team] = await context.db
         .insert(teams)
-        .values({ name: `${input.title} — equipe`, ownerId: userId })
+        .values({ name: `${input.title} | equipe`, ownerId: userId })
         .returning({ id: teams.id });
       await context.db.insert(teamMembers).values({ teamId: team.id, userId, role: "owner" });
 

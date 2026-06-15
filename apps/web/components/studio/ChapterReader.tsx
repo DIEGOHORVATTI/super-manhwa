@@ -45,7 +45,7 @@ export function ChapterReader({
         </Link>
         <span>
           Cap. {data.chapter.number}
-          {data.chapter.title ? ` — ${data.chapter.title}` : ""}
+          {data.chapter.title ? ` | ${data.chapter.title}` : ""}
         </span>
         {preview && <span className="status-badge status-draft">{data.chapter.status}</span>}
       </div>

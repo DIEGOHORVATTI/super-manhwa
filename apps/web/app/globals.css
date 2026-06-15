@@ -29,7 +29,11 @@ body {
     sans-serif;
 }
 body {
-  background-image: radial-gradient(1200px 600px at 50% -10%, #1a1d2b 0%, var(--bg) 60%);
+  background-image: radial-gradient(
+    1200px 600px at 50% -10%,
+    #1a1d2b 0%,
+    var(--bg) 60%
+  );
   min-height: 100vh;
   /* 100vw full-bleed sections include the scrollbar width; clip the overflow. */
   overflow-x: clip;
@@ -50,7 +54,7 @@ a:hover {
 /* ── Global sticky app header ────────────────────────────────────────────── */
 /* Floating "island" header. Flush full-width bar at the top of the page; once
    scrolled past the threshold (JS toggles .is-scrolled) it detaches from the top,
-   narrows, rounds, and gains a border + shadow — all animated via this transition.
+   narrows, rounds, and gains a border + shadow | all animated via this transition.
    position:fixed (not sticky) so it can pull away from the edge cleanly; .app
    reserves the space with padding-top. */
 .app-header {
@@ -63,7 +67,7 @@ a:hover {
   z-index: 50;
   border: 1px solid transparent;
   border-radius: 0;
-  /* Mostly opaque on purpose — backdrop-filter blur isn't reliable here, so the
+  /* Mostly opaque on purpose | backdrop-filter blur isn't reliable here, so the
      bar reads as solid glass via opacity, not blur. */
   background: rgba(14, 16, 22, 0.94);
   backdrop-filter: blur(14px) saturate(1.4);
@@ -90,7 +94,7 @@ a:hover {
     0 2px 8px rgba(0, 0, 0, 0.35);
 }
 /* Reader route: no floating island. The global header sits at the top in normal
-   flow and scrolls away — the in-page ReaderNav is the sticky toolbar, so we
+   flow and scrolls away | the in-page ReaderNav is the sticky toolbar, so we
    avoid two stacked bars. The reserved top padding is dropped and ReaderNav
    sticks to the very top instead of below a (now absent) fixed header. */
 .app-header.is-static {
@@ -125,7 +129,7 @@ a:hover {
   width: 30px;
   height: 30px;
 }
-/* In the compact floating island the wordmark drops — the logo carries the
+/* In the compact floating island the wordmark drops | the logo carries the
    brand and the row gets more room for the tabs/search. */
 .app-header.is-scrolled .brand-name {
   display: none;
@@ -186,7 +190,7 @@ a:hover {
   color: var(--accent);
   -webkit-text-fill-color: var(--accent);
 }
-/* Primary tab nav — a mobile-style segmented control. The catalog shortcuts
+/* Primary tab nav | a mobile-style segmented control. The catalog shortcuts
    double as the home filter; a single accent pill slides under the active tab.
    The pill's left/width are measured in JS (relative to the nav) and animated
    here, so it glides between tabs on navigation. Labels collapse to icons first,
@@ -526,7 +530,7 @@ a:hover {
   z-index: -1;
   /* Two layers: a left→right fade pulling to the bg color (where the cover,
      title and chips sit), plus a top→bottom fade so the bottom melts into the
-     page. Together the bottom-left — all the text — gets the most contrast. */
+     page. Together the bottom-left | all the text | gets the most contrast. */
   background:
     linear-gradient(
       90deg,
@@ -861,7 +865,7 @@ a:hover {
   pointer-events: none;
 }
 
-/* Chapter picker — input with leading list icon + trailing caret. */
+/* Chapter picker | input with leading list icon + trailing caret. */
 .reader-chap-picker {
   position: relative;
   display: flex;
@@ -1029,7 +1033,7 @@ a:hover {
   }
 }
 
-/* Autocomplete v2 — input com ícone, spinner, skeleton, hover suave */
+/* Autocomplete v2 | input com ícone, spinner, skeleton, hover suave */
 .combobox-input {
   position: relative;
   display: flex;
@@ -1129,7 +1133,12 @@ a:hover {
 
 /* Loading skeleton */
 .skeleton {
-  background: linear-gradient(90deg, var(--surface-2) 0%, var(--border) 50%, var(--surface-2) 100%);
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 0%,
+    var(--border) 50%,
+    var(--surface-2) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.2s linear infinite;
 }
@@ -1156,7 +1165,7 @@ a:hover {
   border-radius: 4px;
 }
 
-/* Home heading — the catalog filter moved to the header tabs, so the home just
+/* Home heading | the catalog filter moved to the header tabs, so the home just
    labels the active listing + count. */
 .home-head {
   display: flex;
@@ -1359,11 +1368,16 @@ a:hover {
   border-radius: 6px;
 }
 .skel::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.06), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.06),
+    transparent
+  );
   animation: skel-shimmer 1.3s ease-in-out infinite;
 }
 @keyframes skel-shimmer {
@@ -1407,7 +1421,7 @@ a:hover {
 }
 
 /* Reader tools bar (offline download) */
-/* Lives in the reader toolbar — sized to line up with the .reader-btn pills. */
+/* Lives in the reader toolbar | sized to line up with the .reader-btn pills. */
 .download-btn {
   display: inline-flex;
   align-items: center;
@@ -1609,7 +1623,7 @@ a:hover {
   }
 }
 
-/* AniList connect card (library) — styled like a third-party sign-in. */
+/* AniList connect card (library) | styled like a third-party sign-in. */
 .anilist-card {
   display: flex;
   align-items: center;
@@ -1622,7 +1636,12 @@ a:hover {
   border-radius: 16px;
   /* faint AniList-blue wash so the card reads as "branded" without shouting */
   background:
-    radial-gradient(140% 140% at 0% 0%, rgba(2, 169, 255, 0.1), transparent 55%), var(--surface);
+    radial-gradient(
+      140% 140% at 0% 0%,
+      rgba(2, 169, 255, 0.1),
+      transparent 55%
+    ),
+    var(--surface);
 }
 .anilist-card-info {
   min-width: 0;
@@ -1751,7 +1770,7 @@ a:hover {
   -webkit-user-drag: none;
   user-select: none;
 }
-/* Side navigation arrows — outside the row, always visible, disabled at ends. */
+/* Side navigation arrows | outside the row, always visible, disabled at ends. */
 .shelf-arrow {
   flex: none;
   align-self: center;
@@ -1975,14 +1994,14 @@ a:hover {
   }
 }
 
-/* Ranking rail — Asura-style numbered "what's hot" list. */
+/* Ranking rail | Asura-style numbered "what's hot" list. */
 .rank {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 14px 14px 6px;
 }
-/* On phones the rail would just push the grid down — hide it; the Tendência tab
+/* On phones the rail would just push the grid down | hide it; the Tendência tab
    already gives the full trending list. */
 @media (max-width: 620px) {
   .rank {
@@ -2083,7 +2102,7 @@ a:hover {
   text-overflow: ellipsis;
 }
 
-/* Pager — prev/next + windowed page numbers. */
+/* Pager | prev/next + windowed page numbers. */
 .pager {
   display: flex;
   align-items: center;
@@ -2390,7 +2409,7 @@ a:hover {
   border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
 }
-/* Contextual filter on the far right of the tab bar — searches the active tab
+/* Contextual filter on the far right of the tab bar | searches the active tab
    (chapters by name/number, characters by name), disabled on "Sobre". */
 /* Sort button + search field, grouped on the far right of the tab bar. */
 .tab-tools {
@@ -2848,7 +2867,9 @@ a:hover {
 /* Cozy terminal-window auth screen. --auth-mono is local so we don't touch the
    global type scale; the whole card reads like a tiny editor pane. */
 .auth-page {
-  --auth-mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+  --auth-mono:
+    ui-monospace, 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas,
+    monospace;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2860,9 +2881,13 @@ a:hover {
   margin: calc(-1 * (var(--header-h) + 24px)) calc(50% - 50vw) -64px;
   /* Full-bleed banner with a parallax (fixed) attachment, dimmed for contrast. */
   background:
-    radial-gradient(520px 320px at 50% 4%, rgba(255, 62, 110, 0.22), transparent 70%),
+    radial-gradient(
+      520px 320px at 50% 4%,
+      rgba(255, 62, 110, 0.22),
+      transparent 70%
+    ),
     linear-gradient(180deg, rgba(14, 16, 22, 0.7), rgba(14, 16, 22, 0.92)),
-    url("/banner_1500x500.jpeg") center / cover no-repeat fixed;
+    url('/banner_1500x500.jpeg') center / cover no-repeat fixed;
 }
 @media (min-width: 560px) {
   .auth-page {
@@ -2875,7 +2900,9 @@ a:hover {
   max-width: 412px;
   border-radius: 16px;
   border: 1px solid var(--border);
-  background: linear-gradient(180deg, rgba(255, 62, 110, 0.16), transparent 36%), var(--surface);
+  background:
+    linear-gradient(180deg, rgba(255, 62, 110, 0.16), transparent 36%),
+    var(--surface);
   box-shadow:
     0 30px 70px -30px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(255, 62, 110, 0.08),
@@ -3094,7 +3121,7 @@ a:hover {
 }
 .auth-divider::before,
 .auth-divider::after {
-  content: "";
+  content: '';
   flex: 1;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border), transparent);
@@ -3273,7 +3300,12 @@ a:hover {
   text-decoration: none;
   color: var(--text);
   background:
-    radial-gradient(140% 140% at 0% 0%, rgba(88, 101, 242, 0.18), transparent 55%), var(--surface);
+    radial-gradient(
+      140% 140% at 0% 0%,
+      rgba(88, 101, 242, 0.18),
+      transparent 55%
+    ),
+    var(--surface);
   transition:
     transform 0.12s,
     border-color 0.12s;
@@ -4029,7 +4061,12 @@ a:hover {
   text-decoration: none;
   color: var(--text);
   background:
-    radial-gradient(140% 140% at 100% 0%, rgba(74, 222, 128, 0.16), transparent 55%), var(--surface);
+    radial-gradient(
+      140% 140% at 100% 0%,
+      rgba(74, 222, 128, 0.16),
+      transparent 55%
+    ),
+    var(--surface);
   transition:
     transform 0.12s,
     border-color 0.12s;
@@ -4115,7 +4152,12 @@ a:hover {
   text-decoration: none;
   color: var(--text);
   background:
-    radial-gradient(140% 140% at 0% 0%, rgba(255, 62, 110, 0.18), transparent 60%), var(--surface);
+    radial-gradient(
+      140% 140% at 0% 0%,
+      rgba(255, 62, 110, 0.18),
+      transparent 60%
+    ),
+    var(--surface);
 }
 .premium-banner-head {
   display: flex;
@@ -4212,7 +4254,7 @@ a:hover {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-/* Only on devices with a real hover (desktop) — avoids covering taps on mobile. */
+/* Only on devices with a real hover (desktop) | avoids covering taps on mobile. */
 @media (hover: hover) and (pointer: fine) {
   .poster:hover .poster-desc {
     opacity: 1;

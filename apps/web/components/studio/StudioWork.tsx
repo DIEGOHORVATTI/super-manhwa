@@ -85,7 +85,7 @@ export function StudioWork({ workId }: { workId: number }) {
     try {
       await rpc.studio.chapter.review({ id, decision, note });
     } catch {
-      // ignore — reload reflects whatever state persisted.
+      // ignore | reload reflects whatever state persisted.
     }
     await load();
   }
@@ -119,7 +119,7 @@ export function StudioWork({ workId }: { workId: number }) {
                 <div className="studio-chapter-info">
                   <strong>
                     Cap. {c.number}
-                    {c.title ? ` — ${c.title}` : ""}
+                    {c.title ? ` | ${c.title}` : ""}
                   </strong>
                   <span className={`status-badge status-${c.status}`}>
                     {CH_STATUS[c.status] ?? c.status}
@@ -394,7 +394,7 @@ function TeamManager({
       });
       setHandle("");
     } catch {
-      // ignore — onChange reload reflects the unchanged roster.
+      // ignore | onChange reload reflects the unchanged roster.
     }
     onChange();
   }
@@ -402,7 +402,7 @@ function TeamManager({
     try {
       await rpc.studio.team.remove({ id: workId, userId });
     } catch {
-      // ignore — onChange reload reflects the unchanged roster.
+      // ignore | onChange reload reflects the unchanged roster.
     }
     onChange();
   }

@@ -15,7 +15,7 @@ import { rpc } from "@/lib/rpc/client";
  */
 type Target = "work" | "chapter";
 
-/** Shape comes straight from the procedure — no hand-kept duplicate. */
+/** Shape comes straight from the procedure | no hand-kept duplicate. */
 type Comment = Awaited<ReturnType<typeof rpc.comments.list>>["comments"][number];
 
 function timeAgo(iso: string | Date): string {

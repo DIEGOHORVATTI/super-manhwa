@@ -6,7 +6,7 @@ import type { AppRouter } from "./router";
 
 /**
  * Browser-side typed client for the web platform router. `import type` keeps the
- * server router (and its db/auth imports) out of the client bundle — only the
+ * server router (and its db/auth imports) out of the client bundle | only the
  * types survive. Same-origin; cookies ride along for the Better Auth session.
  */
 const link = new RPCLink({

@@ -15,7 +15,7 @@ export const newsletterRouter = {
     if (!newsletterEnabled()) {
       throw new ORPCError("SERVICE_UNAVAILABLE", { message: "unconfigured" });
     }
-    // Honeypot — bots fill it, humans don't.
+    // Honeypot | bots fill it, humans don't.
     if (input.hp) throw new ORPCError("BAD_REQUEST", { message: "invalid" });
 
     const proto = context.headers.get("x-forwarded-proto") ?? "https";

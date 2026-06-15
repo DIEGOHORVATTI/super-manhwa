@@ -4,7 +4,7 @@ import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/lib/db";
 
 /**
- * Data access for newsletter subscribers — the only place that touches the
+ * Data access for newsletter subscribers | the only place that touches the
  * `subscribers` table (mirrors the backend's infrastructure layer). Services
  * call these; routes never query Drizzle directly.
  */

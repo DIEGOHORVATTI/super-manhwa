@@ -34,7 +34,7 @@ export function AdminPixels() {
     try {
       await rpc.admin.pixels.moderate({ id, action });
     } catch {
-      /* ignore — load() refreshes truth */
+      /* ignore | load() refreshes truth */
     }
     await load();
   }
@@ -43,7 +43,7 @@ export function AdminPixels() {
 
   return (
     <>
-      <h1 className="settings-title">Pixels — moderação</h1>
+      <h1 className="settings-title">Pixels | moderação</h1>
       {blocks.length === 0 && <p className="muted">Nada pendente.</p>}
       <div className="admin-table">
         {blocks.map((b) => (

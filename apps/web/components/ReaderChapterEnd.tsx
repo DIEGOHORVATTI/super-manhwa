@@ -7,7 +7,7 @@ import { mangaHref } from "@/lib/slug";
 /**
  * End-of-chapter navigation rendered after the page images. Big prev/next CTAs so
  * a reader who reaches the bottom can move on without scrolling back to the top
- * toolbar. Pure links — no client JS needed.
+ * toolbar. Pure links | no client JS needed.
  */
 export function ReaderChapterEnd({
   chapters,

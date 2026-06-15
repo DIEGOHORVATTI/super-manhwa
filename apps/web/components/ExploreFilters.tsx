@@ -19,7 +19,7 @@ const SORT_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
 ];
 
 /**
- * The Explorar filter bar. Source of truth is the URL — each control rewrites
+ * The Explorar filter bar. Source of truth is the URL | each control rewrites
  * the querystring (resetting to page 1) and lets the server re-render. The text
  * query submits on Enter so we don't navigate on every keystroke.
  */
@@ -36,7 +36,7 @@ export function ExploreFilters({
   genre: string;
   status: string;
   sort: string;
-  /** Where filter changes navigate to — `/` now that explore is the home. */
+  /** Where filter changes navigate to | `/` now that explore is the home. */
   basePath?: string;
 }) {
   const router = useRouter();
@@ -53,7 +53,7 @@ export function ExploreFilters({
     router.push(qs ? `${basePath}?${qs}` : basePath);
   };
 
-  // Remove a single applied filter — rebuilt from the *applied* props (not the
+  // Remove a single applied filter | rebuilt from the *applied* props (not the
   // in-progress text input), resetting page to 1.
   const removeFilter = (
     patch: Partial<{ q: string; genre: string; status: string; sort: string }>,

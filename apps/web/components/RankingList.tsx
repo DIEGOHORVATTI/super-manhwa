@@ -7,7 +7,7 @@ import { Icon, type IconName } from "./Icon";
 
 /**
  * Numbered ranking rail (Asura-style "Popular Today"). A compact, ordered list
- * of works with a big rank index, thumbnail and title — meant to sit beside the
+ * of works with a big rank index, thumbnail and title | meant to sit beside the
  * main grid on desktop and stack above it on phones. Purely presentational; the
  * caller decides what the ranking represents (trending, popular, …).
  */

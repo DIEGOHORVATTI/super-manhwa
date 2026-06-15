@@ -127,7 +127,7 @@ function BottomNavWithSort() {
 
 export function Header() {
   const pathname = usePathname();
-  // The reader has its own sticky toolbar (ReaderNav) to follow the chapter —
+  // The reader has its own sticky toolbar (ReaderNav) to follow the chapter |
   // a second floating bar reads badly, so here the global header stays static at
   // the top and scrolls away with the page.
   const isReader = pathname.startsWith("/read");

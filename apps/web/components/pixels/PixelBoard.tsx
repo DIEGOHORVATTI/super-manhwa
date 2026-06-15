@@ -168,7 +168,7 @@ export function PixelBoard() {
       <p className="donate-sub">
         Arraste sobre uma área livre da grade para escolher seu espaço.{" "}
         {brl(priceCents({ x: 0, y: 0, w: 1, h: 1 }))} por quadradinho ({GRID.blockPx}×{GRID.blockPx}
-        px) — selecione quantos quiser. Pague via Pix; fica para sempre.
+        px) | selecione quantos quiser. Pague via Pix; fica para sempre.
       </p>
 
       <div className="pixels-status">
@@ -229,7 +229,7 @@ export function PixelBoard() {
       {stage === "form" && sel && (
         <section className="settings-card pixels-form">
           <h2>
-            Seu espaço {sel.w}×{sel.h} — {brl(priceCents(sel))}
+            Seu espaço {sel.w}×{sel.h} | {brl(priceCents(sel))}
           </h2>
           {!session?.user ? (
             <p className="muted">

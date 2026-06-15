@@ -21,7 +21,7 @@ export function PremiumBanner({ compact = false }: { compact?: boolean }) {
       <Link className="premium-strip" href="/learn/premium">
         <Icon name="sparkles" size={18} />
         <span>
-          <strong>Vire Premium</strong> — aprenda sem limites e apoie o site.
+          <strong>Vire Premium</strong> | aprenda sem limites e apoie o site.
         </span>
         <span className="premium-strip-go">Assinar</span>
       </Link>

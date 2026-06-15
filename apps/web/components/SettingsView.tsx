@@ -47,7 +47,7 @@ export function SettingsView() {
       const { accounts } = await rpc.anilist.list();
       setLinks(accounts ?? []);
     } catch {
-      /* not signed in / unconfigured — leave the list empty */
+      /* not signed in / unconfigured | leave the list empty */
     }
   };
   useEffect(() => {
@@ -94,7 +94,7 @@ export function SettingsView() {
     try {
       await rpc.anilist.unlink({ accountId: id });
     } catch {
-      /* ignore — refresh reflects the real state below */
+      /* ignore | refresh reflects the real state below */
     }
     await loadLinks();
   }

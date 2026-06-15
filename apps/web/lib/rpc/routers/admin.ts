@@ -8,7 +8,7 @@ import { hasRole } from "@/lib/roles";
 import { staff } from "../base";
 
 /**
- * Admin/moderation console surface — gated by `staff` (moderators), matching the
+ * Admin/moderation console surface | gated by `staff` (moderators), matching the
  * original routes: staff run the panels (users, comment moderation, donation
  * history, pending pixel ads) and can ban users / moderate pixels, but changing
  * a user's *role* stays admin-only. The web owns this data in its own Postgres.

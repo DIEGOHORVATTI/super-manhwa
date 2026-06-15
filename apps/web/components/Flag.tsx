@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 /**
  * Country-flag icons, rendered as inline SVG (Iconify's `circle-flags` set,
  * viewBox 0 0 512 512). Same offline strategy as {@link Icon}: emitting the SVG
- * directly renders identically on server and client — no hydration flash, no
- * client boundary — unlike @iconify/react's runtime loader. We register only
+ * directly renders identically on server and client | no hydration flash, no
+ * client boundary | unlike @iconify/react's runtime loader. We register only
  * the flags the catalog actually surfaces; `xx` is the neutral fallback.
  *
  * To add a flag: grab its `body` from

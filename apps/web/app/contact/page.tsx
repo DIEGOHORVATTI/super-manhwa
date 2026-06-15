@@ -11,7 +11,7 @@ export default function ContatoPage() {
   return (
     <StaticPage title="Contato">
       <p>
-        Quer mandar uma sugestão, relatar um bug ou tirar uma dúvida? Use um dos canais abaixo —
+        Quer mandar uma sugestão, relatar um bug ou tirar uma dúvida? Use um dos canais abaixo |
         respondemos assim que possível.
       </p>
       <ul>

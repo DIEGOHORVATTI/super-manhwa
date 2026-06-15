@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-/** Admin overview — entry points into each moderation area. */
+/** Admin overview | entry points into each moderation area. */
 export default function AdminOverview() {
   return (
     <>

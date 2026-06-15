@@ -133,7 +133,7 @@ export const pixelsRouter = {
     const email = (context.user as { email?: string }).email ?? "anunciante@supermanhwa.app";
     const pix = await createPixPayment({
       amount: priceCents(rect) / 100,
-      description: `Espaço publicitário ${rect.w}x${rect.h} — Super Manhwa`,
+      description: `Espaço publicitário ${rect.w}x${rect.h} | Super Manhwa`,
       email,
       notificationUrl: `${origin}/api/pixels/webhook`,
     });

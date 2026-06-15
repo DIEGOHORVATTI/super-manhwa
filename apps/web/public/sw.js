@@ -1,5 +1,5 @@
 /**
- * Hand-written service worker (no bundler — robust under Turbopack builds).
+ * Hand-written service worker (no bundler | robust under Turbopack builds).
  * Goals: serve cached covers + downloaded chapter pages offline, and keep
  * recently visited pages available when the network drops.
  *

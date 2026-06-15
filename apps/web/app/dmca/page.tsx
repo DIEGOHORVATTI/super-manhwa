@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function DmcaPage() {
   return (
-    <StaticPage title="DMCA — Direitos Autorais" updated="28 de maio de 2026">
+    <StaticPage title="DMCA | Direitos Autorais" updated="28 de maio de 2026">
       <p>
         O <strong>Super Manhwa</strong> respeita os direitos de propriedade intelectual. Não
         hospedamos arquivos: apenas indexamos e exibimos conteúdo disponibilizado publicamente por

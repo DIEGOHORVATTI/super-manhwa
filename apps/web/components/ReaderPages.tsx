@@ -10,7 +10,7 @@ const PRELOAD_AHEAD = 4;
  * page scrolls into view we warm the next few via `new Image()` so the reader
  * never waits on the lazy loader mid-scroll. Also drives local persistence:
  * records "continue reading" on mount and marks the chapter read once the last
- * page is reached. All client-side — the signed page URLs come pre-built from
+ * page is reached. All client-side | the signed page URLs come pre-built from
  * the server.
  */
 export function ReaderPages({

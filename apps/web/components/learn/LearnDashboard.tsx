@@ -107,7 +107,7 @@ export function LearnDashboard() {
       <section className="settings-card">
         <h2>Conquistas</h2>
         {stats.achievements.length === 0 ? (
-          <p className="muted">Nenhuma ainda — comece a ler!</p>
+          <p className="muted">Nenhuma ainda | comece a ler!</p>
         ) : (
           <div className="learn-badges">
             {stats.achievements.map((a) => (

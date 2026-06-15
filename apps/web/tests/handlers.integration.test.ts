@@ -7,7 +7,7 @@ import { makeFakeDb } from "./helpers/fake-db";
 
 /**
  * Integration tests. Migrated platform features are oRPC procedures, invoked via
- * `call()` with a fake context (`fakeContext`) — no HTTP. The routes that remain
+ * `call()` with a fake context (`fakeContext`) | no HTTP. The routes that remain
  * native (cron) are still exercised through their real GET with the side-effecting
  * modules mocked below.
  */

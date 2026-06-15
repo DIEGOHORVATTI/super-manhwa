@@ -9,7 +9,7 @@ import { publicUrlFor } from "@/lib/r2";
 /**
  * Ordered page image URLs for a chapter. Published chapters are public; any
  * other status (draft/in_review/scheduled) is preview-only and requires a team
- * role — this powers the studio preview before publishing.
+ * role | this powers the studio preview before publishing.
  */
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {
   if (!dbEnabled) return NextResponse.json({ error: "unconfigured" }, { status: 503 });

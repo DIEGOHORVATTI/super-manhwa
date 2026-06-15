@@ -4,7 +4,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { DiscordCard } from "../components/DiscordCard";
 
 /**
- * DiscordCard is a pure server component gated on NEXT_PUBLIC_DISCORD_URL — we
+ * DiscordCard is a pure server component gated on NEXT_PUBLIC_DISCORD_URL | we
  * render it to static HTML (no DOM needed) and assert the gating + the invite.
  */
 const original = process.env.NEXT_PUBLIC_DISCORD_URL;

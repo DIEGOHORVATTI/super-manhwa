@@ -29,7 +29,7 @@ export default async function AtualizacoesPage({ searchParams }: { searchParams:
       </h1>
 
       {result.list.length === 0 ? (
-        <p className="muted">Nada por aqui agora — tente de novo em instantes.</p>
+        <p className="muted">Nada por aqui agora | tente de novo em instantes.</p>
       ) : (
         <InfiniteList
           initial={result.list}

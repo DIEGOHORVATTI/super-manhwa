@@ -11,7 +11,7 @@ import {
 
 /**
  * The only server-side state the app keeps (everything else is stateless /
- * localStorage). Lives in the Next app's Postgres (Neon) via Drizzle — the
+ * localStorage). Lives in the Next app's Postgres (Neon) via Drizzle | the
  * reading/catalog backend stays untouched. Used by the legal forms, the
  * newsletter and web-push.
  */
@@ -235,7 +235,7 @@ export const userWorks = pgTable(
     coverR2Key: text("cover_r2_key"),
     status: text("status").notNull().default("draft"), // draft | pending | published
     kind: text("kind").notNull().default("manga"), // manga (image) | novel (text)
-    language: text("language"), // ISO code for novels (pt | en | …) — drives the learning layer
+    language: text("language"), // ISO code for novels (pt | en | …) | drives the learning layer
     categories: text("categories").array(), // genre/category tags
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
@@ -367,7 +367,7 @@ export const cachedPages = pgTable(
   (t) => [uniqueIndex("cached_page_uniq").on(t.chapterId, t.index)],
 );
 
-/* ───────────────────────── Language learning — vocabulary & SRS ─────────────────────────
+/* ───────────────────────── Language learning | vocabulary & SRS ─────────────────────────
  * Determinístico, sem IA: tokens → dicionário (words) → estado por usuário (userWords, FSRS)
  * → revisão (srsCards/reviewLogs). Ver docs/language-learning-plan.md.
  */
@@ -428,7 +428,7 @@ export const srsCards = pgTable(
   (t) => [index("srs_cards_user_idx").on(t.userId)],
 );
 
-/** Immutable log of each review — the FSRS input history. */
+/** Immutable log of each review | the FSRS input history. */
 export const reviewLogs = pgTable("review_logs", {
   id: serial("id").primaryKey(),
   cardId: integer("card_id")
@@ -445,7 +445,7 @@ export const reviewLogs = pgTable("review_logs", {
 
 /* ───────────────────────── Gamification, daily limits & plan ───────────────────────── */
 
-/** Per-user-per-day counters — drive streak, daily goal and freemium limits. */
+/** Per-user-per-day counters | drive streak, daily goal and freemium limits. */
 export const dailyActivity = pgTable(
   "daily_activity",
   {
@@ -496,7 +496,7 @@ export const subscriptions = pgTable("subscriptions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
-/** A user read a chapter — drives reading badges (distinct works + chapters). */
+/** A user read a chapter | drives reading badges (distinct works + chapters). */
 export const readingEvents = pgTable(
   "reading_events",
   {

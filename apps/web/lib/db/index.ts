@@ -7,7 +7,7 @@ import * as schema from "./schema";
 
 /**
  * Drizzle client over Neon (serverless Postgres). Lazily constructed so the app
- * builds/runs without a DB — every feature that needs it (legal forms,
+ * builds/runs without a DB | every feature that needs it (legal forms,
  * newsletter, push) checks `dbEnabled` first and degrades gracefully when
  * `DATABASE_URL` is unset.
  */

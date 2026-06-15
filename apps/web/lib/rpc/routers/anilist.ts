@@ -10,9 +10,9 @@ import { authed } from "../base";
  * localStorage), this persists the AniList identity against the signed-in user
  * in the `account` table, so one user can attach several AniList accounts.
  *
- * link   { token } — resolves the AniList viewer via GraphQL and upserts the link.
- * list             — lists the current user's linked AniList accounts.
- * unlink { accountId } — detaches one AniList account from the user.
+ * link   { token } | resolves the AniList viewer via GraphQL and upserts the link.
+ * list             | lists the current user's linked AniList accounts.
+ * unlink { accountId } | detaches one AniList account from the user.
  */
 const ENDPOINT = "https://graphql.anilist.co";
 
@@ -58,7 +58,7 @@ export const anilistRouter = {
       const accountId = String(viewer.id);
       const now = new Date();
 
-      // One AniList account links to one platform user — re-linking updates the token.
+      // One AniList account links to one platform user | re-linking updates the token.
       const existing = await context.db
         .select({ id: account.id })
         .from(account)

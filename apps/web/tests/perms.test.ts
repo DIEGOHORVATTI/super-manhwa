@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 
 import { computeAccess } from "../lib/perms";
 
-describe("computeAccess — work authorization matrix", () => {
+describe("computeAccess | work authorization matrix", () => {
   it("owner gets every capability", () => {
     const a = computeAccess(null, true);
     expect(a).toEqual({

@@ -22,7 +22,7 @@ export function DownloadChapterButton({
   const [busy, setBusy] = useState(false);
   // The Cache API is browser-only, so the server always renders nothing here.
   // Gate on mount so the client's first paint matches that (null) and only then
-  // reveals the button — otherwise hydration mismatches on the reader toolbar.
+  // reveals the button | otherwise hydration mismatches on the reader toolbar.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -44,7 +44,7 @@ export function DownloadChapterButton({
       await cache.addAll(pages);
       markDownloaded(chapterId);
     } catch {
-      /* quota / offline — leave it un-downloaded */
+      /* quota / offline | leave it un-downloaded */
     } finally {
       setBusy(false);
     }

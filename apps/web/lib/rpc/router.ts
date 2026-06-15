@@ -12,7 +12,7 @@ import { readingRouter } from "./routers/reading";
 import { studioRouter } from "./routers/studio";
 
 /**
- * The web platform's oRPC router — every stateful feature the Next app owns
+ * The web platform's oRPC router | every stateful feature the Next app owns
  * (its own Postgres + Better Auth session), exposed as typed procedures. Mounted
  * at `/api/rpc` by `app/api/rpc/[...rest]/route.ts`; the browser calls it through
  * the typed client in `client.ts`. Webhooks, Better Auth, cron, email-link GETs

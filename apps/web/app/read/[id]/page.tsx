@@ -19,14 +19,14 @@ type SP = Promise<{ n?: string; m?: string; mn?: string }>;
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const { n, mn } = await searchParams;
-  const title = mn ? `${mn} — ${n ?? "capítulo"}` : n || "Leitor";
+  const title = mn ? `${mn} | ${n ?? "capítulo"}` : n || "Leitor";
   return { title, robots: { index: false } };
 }
 
 export default async function ReadPage({ params, searchParams }: { params: P; searchParams: SP }) {
   const [{ id }, { n, m, mn }] = await Promise.all([params, searchParams]);
 
-  // Pages always; manga chapters + cover only if we know the manga (m=…) — they
+  // Pages always; manga chapters + cover only if we know the manga (m=…) | they
   // power the reader nav (prev/next + chapter combobox) and the continue-reading
   // history entry. All fired in parallel.
   const [pagesRes, chaptersRes, coreRes] = await Promise.allSettled([

@@ -6,7 +6,7 @@ const LABELS: Record<MangaStatus, string> = {
   hiatus: "Hiato",
   cancelled: "Cancelado",
   "publishing-finished": "Finalizado",
-  unknown: "—",
+  unknown: "|",
 };
 
 /**

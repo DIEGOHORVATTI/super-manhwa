@@ -15,11 +15,11 @@ const STATUSES: ReadonlyArray<MangaStatus> = ["ongoing", "completed", "hiatus", 
 type SP = Promise<{ q?: string; genre?: string; status?: string; sort?: string; page?: string }>;
 
 // Every filter/sort/page variant is the same landing content reshuffled, so they
-// all canonicalize to "/" — keeping Google's index on one strong home URL.
+// all canonicalize to "/" | keeping Google's index on one strong home URL.
 export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 /**
- * Home — unified discovery (the landing page (formerly /explorar)). A text
+ * Home | unified discovery (the landing page (formerly /explorar)). A text
  * query runs search; without one it browses by sort. Genre + status refine
  * either; all state lives in the URL so results are shareable. The landing state
  * (no filters) tops the page with the continue-reading rail, a Discord CTA and
@@ -52,7 +52,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       : Promise.resolve({ list: [] }),
   ]);
 
-  // Params for the infinite-scroll endpoint (no `page` — InfiniteList adds it).
+  // Params for the infinite-scroll endpoint (no `page` | InfiniteList adds it).
   const listParams: Record<string, string> = { feed: "browse" };
   if (q) listParams.q = q;
   if (genre) listParams.genre = genre;

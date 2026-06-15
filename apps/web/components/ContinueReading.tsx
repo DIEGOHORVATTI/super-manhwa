@@ -11,7 +11,7 @@ const readHref = (e: ProgressEntry) =>
   }`;
 
 /**
- * "Continuar lendo" rail on the home — a client island fed entirely by
+ * "Continuar lendo" rail on the home | a client island fed entirely by
  * localStorage history, so it renders nothing on the server / for new visitors
  * and never opts the (cached) home page out of static-ish rendering.
  */

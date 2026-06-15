@@ -11,7 +11,7 @@ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 export const metadata: Metadata = {
   metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Super Manhwa — Ler Manhwas, Mangás e Webtoons Online Grátis",
+    default: "Super Manhwa | Ler Manhwas, Mangás e Webtoons Online Grátis",
     template: "%s · Super Manhwa",
   },
   description:

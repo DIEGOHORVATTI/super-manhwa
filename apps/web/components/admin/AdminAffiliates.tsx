@@ -46,7 +46,7 @@ export function AdminAffiliates() {
             <div className="admin-row-main">
               <strong>{r.name ?? r.code}</strong>
               <span className="muted">
-                /?ref={r.code} · Pix: {r.pixKey || "—"}
+                /?ref={r.code} · Pix: {r.pixKey || "|"}
               </span>
               <span className="muted">A pagar: {brl(r.pendingCents)}</span>
             </div>

@@ -6,7 +6,7 @@ import { dbEnabled, getDb } from "@/lib/db";
 /**
  * The signed-in user as it reaches a procedure. Mirrors the Better Auth `user`
  * row plus the additional fields declared on the auth config (role/plan/…). Kept
- * loose on purpose — procedures read only what they need.
+ * loose on purpose | procedures read only what they need.
  */
 export type RpcUser = {
   id: string;
@@ -29,7 +29,7 @@ export type RpcDb = ReturnType<typeof getDb>;
 /**
  * Per-request oRPC context for the web platform router. The Next adapter builds
  * one of these per request (session from Better Auth cookies, db lazily). `db`
- * is null when the database is unconfigured — the `pub`/`authed` builders in
+ * is null when the database is unconfigured | the `pub`/`authed` builders in
  * `base.ts` turn that into a SERVICE_UNAVAILABLE, while a few public reads
  * tolerate it and degrade to empty.
  */

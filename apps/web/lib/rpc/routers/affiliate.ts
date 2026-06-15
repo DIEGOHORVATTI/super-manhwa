@@ -69,7 +69,7 @@ export const affiliateRouter = {
         return { ok: true };
       }
 
-      // New affiliate — generate a unique code (retry on the rare collision).
+      // New affiliate | generate a unique code (retry on the rare collision).
       let code = "";
       for (let i = 0; i < 5; i++) {
         code = codeFromBytes(crypto.getRandomValues(new Uint8Array(8)));
@@ -89,7 +89,7 @@ export const affiliateRouter = {
   /**
    * Turns the first-touch `ref` cookie into a referral, called right after
    * signup. Idempotent (referredUserId is unique); no self-referral; clears the
-   * cookie. Needs auth — the referral binds to the signed-in user.
+   * cookie. Needs auth | the referral binds to the signed-in user.
    */
   attribute: authed.handler(async ({ context }) => {
     const jar = await cookies();

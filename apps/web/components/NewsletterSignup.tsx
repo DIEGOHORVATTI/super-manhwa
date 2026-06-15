@@ -49,7 +49,7 @@ export function NewsletterSignup() {
             {state === "sending" ? "…" : <Icon name="arrow-right" size={16} />}
           </button>
           {state === "error" && (
-            <span className="newsletter-err muted">Não deu certo — tente de novo.</span>
+            <span className="newsletter-err muted">Não deu certo | tente de novo.</span>
           )}
         </form>
       )}

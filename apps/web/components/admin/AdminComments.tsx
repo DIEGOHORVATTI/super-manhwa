@@ -33,7 +33,7 @@ export function AdminComments() {
     try {
       await rpc.comments.remove({ id });
     } catch {
-      /* ignore — load() refreshes truth */
+      /* ignore | load() refreshes truth */
     }
     await load();
   }

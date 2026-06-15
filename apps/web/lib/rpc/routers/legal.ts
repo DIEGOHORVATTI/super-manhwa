@@ -19,7 +19,7 @@ export const legalRouter = {
     if (rateLimited(clientIp(context.headers))) {
       throw new ORPCError("TOO_MANY_REQUESTS", { message: "rate" });
     }
-    // Honeypot — bots fill it, humans don't.
+    // Honeypot | bots fill it, humans don't.
     if (input.hp) throw new ORPCError("BAD_REQUEST", { message: "invalid" });
 
     try {
@@ -36,7 +36,7 @@ export const legalRouter = {
     if (rateLimited(clientIp(context.headers))) {
       throw new ORPCError("TOO_MANY_REQUESTS", { message: "rate" });
     }
-    // Honeypot — bots fill it, humans don't.
+    // Honeypot | bots fill it, humans don't.
     if (input.hp) throw new ORPCError("BAD_REQUEST", { message: "invalid" });
 
     try {

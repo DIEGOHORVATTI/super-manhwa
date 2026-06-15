@@ -19,7 +19,7 @@ describe("nextInterval", () => {
   });
 });
 
-describe("schedule — new card", () => {
+describe("schedule | new card", () => {
   it("initializes stability/difficulty and schedules a future review", () => {
     const s = schedule(NEW, 3, 0);
     expect(s.reps).toBe(1);
@@ -40,7 +40,7 @@ describe("schedule — new card", () => {
   });
 });
 
-describe("schedule — review", () => {
+describe("schedule | review", () => {
   const learned: MemoryState = { stability: 10, difficulty: 5, reps: 3, lapses: 0 };
 
   it("'good' recall increases stability and pushes the interval out", () => {

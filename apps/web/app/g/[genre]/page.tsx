@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: P }): Promise<Metad
   const { genre } = await params;
   const name = prettify(genre);
   return {
-    title: `${name} — Super Manhwa`,
+    title: `${name} | Super Manhwa`,
     description: `Obras do gênero ${name} em português.`,
   };
 }

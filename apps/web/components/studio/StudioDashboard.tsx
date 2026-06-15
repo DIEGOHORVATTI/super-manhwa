@@ -70,7 +70,7 @@ export function StudioDashboard() {
       setCategories("");
       await load();
     } catch {
-      // creation failed — leave the form as-is so the user can retry.
+      // creation failed | leave the form as-is so the user can retry.
     } finally {
       setCreating(false);
     }
@@ -99,7 +99,7 @@ export function StudioDashboard() {
               onChange={(e) => setKind(e.target.value as "manga" | "novel")}
             >
               <option value="manga">Mangá (imagem)</option>
-              <option value="novel">Novel (texto — aprendizado)</option>
+              <option value="novel">Novel (texto | aprendizado)</option>
             </select>
           </label>
           {kind === "novel" && (

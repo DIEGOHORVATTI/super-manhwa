@@ -16,7 +16,7 @@ const GENDER_LABEL: Record<string, string> = {
   "Non-binary": "Não-binário",
 };
 
-/** AniList bios use ~!spoiler!~ markers — drop them, keep the text readable. */
+/** AniList bios use ~!spoiler!~ markers | drop them, keep the text readable. */
 const cleanBio = (text?: string) => text?.replace(/~!|!~/g, "").trim() || undefined;
 
 /**

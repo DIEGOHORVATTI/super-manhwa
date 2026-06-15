@@ -35,7 +35,7 @@ export function AdminUsers() {
     try {
       await rpc.admin.users.update({ userId, ...body });
     } catch {
-      /* ignore — load() refreshes truth */
+      /* ignore | load() refreshes truth */
     }
     await load();
   }

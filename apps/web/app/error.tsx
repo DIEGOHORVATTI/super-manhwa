@@ -16,7 +16,7 @@ export default function Error({ error, reset }: { error: Error; reset: () => voi
     <div className="state-screen">
       <h1 className="state-title">Algo deu errado</h1>
       <p className="muted">
-        Não foi possível carregar este conteúdo agora. A fonte pode estar instável — tente de novo.
+        Não foi possível carregar este conteúdo agora. A fonte pode estar instável | tente de novo.
       </p>
       <div className="state-actions">
         <button type="button" className="pager-btn" onClick={() => reset()}>

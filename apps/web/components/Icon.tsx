@@ -1,12 +1,12 @@
 /**
  * Lucide icon set, rendered as inline SVG.
  *
- * We register only the icons the UI actually uses — the full @iconify-json/lucide
+ * We register only the icons the UI actually uses | the full @iconify-json/lucide
  * collection is ~540KB. The path data below is copied verbatim from that package
  * (Iconify's Lucide set, viewBox 0 0 24 24, stroke = currentColor).
  *
  * Why not @iconify/react's <Icon>? In offline mode it still renders an empty
- * placeholder during SSR and only injects the SVG after hydration — a visible
+ * placeholder during SSR and only injects the SVG after hydration | a visible
  * icon flash + layout shift. Emitting the SVG directly renders identically on the
  * server and client: no flash, no hydration mismatch, and no client boundary, so
  * the same component works in Server and Client Components alike.

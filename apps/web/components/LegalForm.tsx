@@ -52,7 +52,7 @@ export function LegalForm({
   if (state === "done") {
     return (
       <p className="notice notice-ok">
-        Recebemos sua mensagem — obrigado! Responderemos assim que possível.
+        Recebemos sua mensagem | obrigado! Responderemos assim que possível.
       </p>
     );
   }
@@ -99,7 +99,7 @@ export function LegalForm({
         ),
       )}
 
-      {/* honeypot — bots fill it, humans don't */}
+      {/* honeypot | bots fill it, humans don't */}
       <input
         type="text"
         name="hp"

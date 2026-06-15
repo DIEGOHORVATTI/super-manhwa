@@ -16,13 +16,13 @@ const norm = (s: string) =>
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "");
 
-/** Chapters rendered before the "ver todos" link — keeps first paint cheap. */
+/** Chapters rendered before the "ver todos" link | keeps first paint cheap. */
 const INITIAL = 21;
 
 /**
  * Chapter grid for the detail page. `use()`s the streamed chapters promise, so
  * it suspends (behind a skeleton) while the cross-source fan-out resolves while
- * the rest of the page — hero, tabs — is already painted. Owns the per-source
+ * the rest of the page | hero, tabs | is already painted. Owns the per-source
  * flag + read-state styling; the live filter `query` is driven from `DetailView`.
  */
 export function ChapterList({

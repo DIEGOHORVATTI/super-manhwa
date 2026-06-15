@@ -37,7 +37,7 @@ export default function VerifyEmailPage() {
           </p>
 
           <p className="auth-subtitle">
-            Enviamos um link de confirmação para o seu e-mail. Clique nele para ativar sua conta — e
+            Enviamos um link de confirmação para o seu e-mail. Clique nele para ativar sua conta | e
             dá uma olhada na caixa de spam, vai que.
           </p>
 

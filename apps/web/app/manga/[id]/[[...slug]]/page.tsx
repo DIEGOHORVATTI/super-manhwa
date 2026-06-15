@@ -18,7 +18,7 @@ import { api } from "@/lib/orpc.server";
 import { deslugify, slugify } from "@/lib/slug";
 import { translatePt } from "@/lib/translate";
 
-/** Markdown/HTML → plain text, clamped — used for the header sinopse teaser. */
+/** Markdown/HTML → plain text, clamped | used for the header sinopse teaser. */
 const toPreview = (text: string, max = 240) => {
   const plain = text
     .replace(/<[^>]+>/g, " ") // html tags
@@ -40,7 +40,7 @@ type SP = Promise<{ n?: string }>;
 const nameHint = (slug: string[] | undefined, n: string | undefined): string | undefined =>
   n ?? (slug?.[0] ? deslugify(slug[0]) : undefined);
 
-/** URL-friendly slug for the genre route — must round-trip with the backend's normGenre. */
+/** URL-friendly slug for the genre route | must round-trip with the backend's normGenre. */
 const slugifyGenre = (g: string) =>
   g
     .toLowerCase()
@@ -63,7 +63,7 @@ export async function generateMetadata({
 
   const title = core?.title ?? name ?? "Mangá";
   // Keyword-rich title so the work ranks for "<título>" and "super manhwa <título>".
-  const metaTitle = `${title} — Ler Online em Português`;
+  const metaTitle = `${title} | Ler Online em Português`;
   const description = core?.description
     ? toPreview(await translatePt(core.description), 200)
     : `Leia ${title} online de graça, em português, com capítulos atualizados no Super Manhwa.`;
@@ -89,7 +89,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const [{ id, slug }, { n }] = await Promise.all([params, searchParams]);
   const name = nameHint(slug, n);
 
-  // Fast half: work metadata (AniList, cached) — paints the hero immediately.
+  // Fast half: work metadata (AniList, cached) | paints the hero immediately.
   let coreData: Awaited<ReturnType<typeof api.manga.core>> | undefined;
   let error: string | null = null;
   try {
@@ -134,7 +134,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const canonicalSlug = slugify(title);
   if (slug?.[0] !== canonicalSlug) permanentRedirect(`/manga/${id}/${canonicalSlug}`);
 
-  // Slow half: cross-source chapter fan-out — streamed, NOT awaited. The promise
+  // Slow half: cross-source chapter fan-out | streamed, NOT awaited. The promise
   // is handed to the client components, which suspend behind skeletons while it
   // resolves. A failure degrades to an empty list so the page still renders.
   const chaptersPromise = api.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
@@ -149,7 +149,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   });
 
   // Characters are the heavy half of the metadata and only feed the "Personagens"
-  // tab — streamed, NOT awaited, so they never hold up the hero.
+  // tab | streamed, NOT awaited, so they never hold up the hero.
   const charactersPromise = api.manga
     .characters({ name: title })
     // Translate each bio to pt-br (cached). Names/roles stay as-is; this streams
@@ -163,12 +163,12 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     )
     .catch(() => []);
 
-  // Rich metadata (AniList) — best-effort, never blocks the page meaningfully.
+  // Rich metadata (AniList) | best-effort, never blocks the page meaningfully.
   const { meta } = await api.manga.meta({ name: title }).catch(() => ({
     meta: { tags: [], relations: [] } as Awaited<ReturnType<typeof api.manga.meta>>["meta"],
   }));
 
-  // Synopsis translated to pt-br once (server-side, cached) — reused by the
+  // Synopsis translated to pt-br once (server-side, cached) | reused by the
   // header teaser, the "Sobre" tab, the SEO metadata and the JSON-LD. Falls back
   // to the original text if the translation proxy fails.
   const rawDesc = core.description || meta.description || "";
@@ -251,7 +251,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     </div>
   );
 
-  // Header sinopse teaser — plain text, since the full markdown lives in "Sobre".
+  // Header sinopse teaser | plain text, since the full markdown lives in "Sobre".
   const descPreview = desc ? toPreview(desc) : undefined;
 
   // Structured data so search engines render a rich book result (cover, rating,

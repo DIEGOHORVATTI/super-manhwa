@@ -264,7 +264,7 @@ export const learnRouter = {
     };
   }),
 
-  /** Sentence mining — turn a real sentence into a review card. Premium feature. */
+  /** Sentence mining | turn a real sentence into a review card. Premium feature. */
   mine: authed.input(mineSentenceSchema).handler(async ({ input, context }) => {
     const plan = planOf(context.user, new Date());
     if (!entitlementsFor(plan, { newWords: 0, reviews: 0 }).canMineSentences) {
@@ -425,7 +425,7 @@ export const learnRouter = {
     const sub = await createSubscription({
       email: user.email,
       amount: PREMIUM_PRICE_BRL,
-      reason: "Super Manhwa — Premium (aprendizado de idiomas)",
+      reason: "Super Manhwa | Premium (aprendizado de idiomas)",
       backUrl: `${origin}/learn?upgraded=1`,
     });
 
