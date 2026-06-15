@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Comments } from "@/components/Comments";
 import { DownloadChapterButton } from "@/components/DownloadChapterButton";
-import { LearnCta } from "@/components/LearnCta";
 import { Icon } from "@/components/Icon";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
@@ -93,8 +92,6 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
       {hasContext && (
         <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       )}
-
-      <LearnCta />
 
       <Comments targetType="chapter" targetId={id} />
     </>

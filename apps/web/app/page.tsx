@@ -4,7 +4,6 @@ import { ContinueReading } from "@/components/ContinueReading";
 import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
 import { InfiniteList } from "@/components/InfiniteList";
-import { LearnCta } from "@/components/LearnCta";
 import { PosterRow } from "@/components/PosterRow";
 import { PremiumBanner } from "@/components/PremiumBanner";
 import { api } from "@/lib/orpc.server";
@@ -77,7 +76,6 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         <>
           {/* Continue reading now sits below the search/filters. */}
           <ContinueReading />
-          <LearnCta />
           <PremiumBanner compact />
           <PosterRow
             title="Em tendência"
