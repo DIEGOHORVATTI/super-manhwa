@@ -1,108 +1,107 @@
-import { and, desc, eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 
+import { AnilistPanel } from "@/components/profile/AnilistPanel";
+import { ProfileStats } from "@/components/profile/ProfileStats";
+import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
 import { badgesFor } from "@/lib/badges";
-import { dbEnabled, getDb, schema } from "@/lib/db";
+import { loadProfileData } from "@/lib/profile-data";
+import { publicUrlFor, r2Enabled } from "@/lib/r2";
 import { routes } from "@/lib/routes";
 
 type Params = Promise<{ handle: string }>;
-
-async function loadProfile(handle: string) {
-  if (!dbEnabled) return null;
-  const db = getDb();
-  const { user, userWorks, userAchievements } = schema;
-  const [u] = await db
-    .select({
-      id: user.id,
-      name: user.name,
-      handle: user.handle,
-      bio: user.bio,
-      image: user.image,
-      role: user.role,
-      plan: user.plan,
-      xp: user.xp,
-      streakDays: user.streakDays,
-      createdAt: user.createdAt,
-    })
-    .from(user)
-    .where(eq(user.handle, handle))
-    .limit(1);
-  if (!u) return null;
-
-  const works = await db
-    .select({
-      id: userWorks.id,
-      title: userWorks.title,
-      slug: userWorks.slug,
-      coverR2Key: userWorks.coverR2Key,
-    })
-    .from(userWorks)
-    .where(and(eq(userWorks.ownerId, u.id), eq(userWorks.status, "published")))
-    .orderBy(desc(userWorks.createdAt))
-    .limit(24);
-
-  const ach = await db
-    .select({ key: userAchievements.achievementKey })
-    .from(userAchievements)
-    .where(eq(userAchievements.userId, u.id));
-
-  return { user: u, works, achievements: ach.map((a) => a.key) };
-}
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { handle } = await params;
   return { title: `@${handle}` };
 }
 
+const memberSince = (d: Date) =>
+  new Date(d).toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+
 export default async function ProfilePage({ params }: { params: Params }) {
   const { handle } = await params;
-  const data = await loadProfile(handle);
+  const data = await loadProfileData(handle);
   if (!data) notFound();
-  const { user, works, achievements } = data;
-  const initial = (user.name ?? "?").charAt(0).toUpperCase();
+
+  const { user, works, achievements, reading, wordsLearned, anilist } = data;
+
+  // Canonical URL: if reached by id but a @handle exists, redirect to the pretty one.
+  if (user.handle && handle !== user.handle) redirect(routes.user(user.handle));
+
   const badges = badgesFor({ role: user.role, plan: user.plan, achievements });
+  const al = anilist.profile;
+  const bannerUrl =
+    user.bannerR2Key && r2Enabled ? publicUrlFor(user.bannerR2Key) : (al?.banner ?? null);
+  const avatarUrl = user.image ?? al?.avatar ?? null;
+  const initial = (user.name ?? "?").charAt(0).toUpperCase();
 
   return (
     <div className="profile-wrap">
-      <header className="profile-head">
-        <div className="profile-avatar">
-          {user.image ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.image} alt="" />
-          ) : (
-            <span>{initial}</span>
-          )}
-        </div>
-        <div className="profile-info">
-          <h1 className="profile-name">{user.name}</h1>
-          <p className="profile-handle">@{user.handle}</p>
-          {badges.length > 0 && (
-            <div className="profile-badges">
-              {badges.map((b) => (
-                <span key={b.key} className={`badge badge-${b.tone}`}>
-                  {b.label}
-                </span>
-              ))}
-            </div>
-          )}
-          {user.bio && <p className="profile-bio">{user.bio}</p>}
+      <header className="profile-header">
+        <div
+          className={`profile-banner${bannerUrl ? "" : " profile-banner-empty"}`}
+          style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
+        />
+        <div className="profile-id">
+          <div className="profile-avatar profile-avatar-lg">
+            {avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={avatarUrl} alt="" />
+            ) : (
+              <span>{initial}</span>
+            )}
+          </div>
+          <div className="profile-info">
+            <h1 className="profile-name">{user.name}</h1>
+            <p className="profile-handle">
+              {user.handle ? `@${user.handle}` : "sem @ definido"} · membro desde{" "}
+              {memberSince(user.createdAt)}
+            </p>
+            {badges.length > 0 && (
+              <div className="profile-badges">
+                {badges.map((b) => (
+                  <span key={b.key} className={`badge badge-${b.tone}`}>
+                    {b.label}
+                  </span>
+                ))}
+              </div>
+            )}
+            {user.bio && <p className="profile-bio">{user.bio}</p>}
+          </div>
         </div>
       </header>
 
-      <h2 className="section">Obras publicadas</h2>
-      {works.length === 0 ? (
-        <p className="muted">Nenhuma obra publicada ainda.</p>
-      ) : (
-        <div className="profile-works">
-          {works.map((w) => (
-            <Link key={w.id} href={routes.obra(w.slug)} className="profile-work">
-              {w.title}
-            </Link>
-          ))}
-        </div>
-      )}
+      <ProfileStats
+        stats={[
+          { label: "capítulos lidos", value: reading.chapters, icon: "📖" },
+          { label: "obras lidas", value: reading.works, icon: "📚" },
+          { label: "XP", value: user.xp, icon: "✨" },
+          { label: "dias de streak", value: user.streakDays, icon: "🔥" },
+          { label: "palavras", value: wordsLearned, icon: "🧠" },
+          { label: "obras publicadas", value: works.length, icon: "🎨" },
+        ]}
+      />
+
+      <ReadingHeatmap events={reading.events} />
+
+      <AnilistPanel username={anilist.username} profile={al} />
+
+      <section className="profile-section">
+        <h2 className="section">Obras publicadas</h2>
+        {works.length === 0 ? (
+          <p className="muted">Nenhuma obra publicada ainda.</p>
+        ) : (
+          <div className="profile-works">
+            {works.map((w) => (
+              <Link key={w.id} href={routes.obra(w.slug)} className="profile-work">
+                {w.title}
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

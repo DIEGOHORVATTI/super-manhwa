@@ -43,6 +43,13 @@
       "when": 1781433873248,
       "tag": "0005_aberrant_multiple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1781616507522,
+      "tag": "0006_dapper_whirlwind",
+      "breakpoints": true
     }
   ]
 }

@@ -75,6 +75,8 @@ export const user = pgTable("user", {
   /** Public handle for /u/[handle]; nullable until chosen (defaults to id). */
   handle: text("handle").unique(),
   bio: text("bio"),
+  /** Profile cover banner (R2 object key); falls back to AniList banner / gradient. */
+  bannerR2Key: text("banner_r2_key"),
   role: text("role").notNull().default("user"), // user | staff | admin
   banned: boolean("banned").notNull().default(false),
   // Language-learning profile (gamification + plan).

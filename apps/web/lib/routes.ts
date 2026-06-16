@@ -91,5 +91,9 @@ export const routes = {
       chapters: (workId: string | number) => `/api/studio/works/${workId}/chapters`,
       pages: (chapterId: string | number) => `/api/studio/chapters/${chapterId}/pages`,
     },
+    profile: {
+      banner: "/api/profile/banner",
+      avatar: "/api/profile/avatar",
+    },
   },
 } as const;
