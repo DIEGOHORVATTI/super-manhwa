@@ -61,8 +61,6 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
 
   return (
     <>
-      {isLanding && <DiscordCard />}
-
       <ExploreFilters
         genres={genresRes.genres}
         q={q}
