@@ -16,3 +16,8 @@ apps/web/next.config.ts
 apps/web/tsconfig.json
 apps/web/next-env.d.ts
 *.log
+# Never bake secrets into the image — Railway provides env vars at runtime.
+.env
+.env.*
+*.env
+*.prod.env

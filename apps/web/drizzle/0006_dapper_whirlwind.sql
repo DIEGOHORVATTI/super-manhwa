@@ -1,0 +1,1 @@
+ALTER TABLE "user" ADD COLUMN "banner_r2_key" text;

@@ -1,7 +1,6 @@
 import type { MangaSort, MangaStatus } from "@packages/contracts";
 import type { Metadata } from "next";
 import { ContinueReading } from "@/components/ContinueReading";
-import { DiscordCard } from "@/components/DiscordCard";
 import { ExploreFilters } from "@/components/ExploreFilters";
 import { InfiniteList } from "@/components/InfiniteList";
 import { PosterRow } from "@/components/PosterRow";

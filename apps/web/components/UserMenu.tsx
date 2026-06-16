@@ -31,6 +31,7 @@ export function UserMenu() {
 
   const user = data?.user as
     | {
+        id?: string;
         name?: string;
         email?: string;
         image?: string | null;
@@ -75,7 +76,7 @@ export function UserMenu() {
             <span className="user-menu-email">{user.email}</span>
           </div>
           <Link
-            href={routes.user(user.handle || "")}
+            href={routes.user(user.handle || user.id || "")}
             role="menuitem"
             onClick={() => setOpen(false)}
           >
