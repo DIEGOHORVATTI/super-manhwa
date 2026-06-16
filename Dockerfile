@@ -12,5 +12,7 @@ ENV NODE_ENV=production
 # Railway injects $PORT; the server reads env.PORT and binds 0.0.0.0.
 EXPOSE 8787
 
-# Mirror `apps/backend`'s `start` script (bun src/index.ts) from its own dir.
-CMD ["sh", "-c", "cd apps/backend && bun src/index.ts"]
+# Run from the backend dir (no `cd &&` — Railway may exec the start command
+# without a shell). Workspace deps still resolve via /app/node_modules.
+WORKDIR /app/apps/backend
+CMD ["bun", "src/index.ts"]
