@@ -15,6 +15,7 @@ type Stage = "form" | "pix" | "done";
 export function DonateView() {
   const [amount, setAmount] = useState(1000);
   const [custom, setCustom] = useState("");
+  const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [stage, setStage] = useState<Stage>("form");
   const [busy, setBusy] = useState(false);
@@ -42,6 +43,7 @@ export function DonateView() {
       const data = await rpc.donations.create({
         amountCents: cents,
         message: message || undefined,
+        name: name || undefined,
       });
       if (!data.qrCode) throw new Error("Pix indisponível no momento.");
       setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 ?? "" });
@@ -100,6 +102,15 @@ export function DonateView() {
               value={custom}
               onChange={(e) => setCustom(e.target.value)}
               placeholder="Ex.: 15"
+            />
+          </label>
+          <label className="auth-field">
+            <span>Seu nome no mural (opcional)</span>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              placeholder="Anônimo"
             />
           </label>
           <label className="auth-field">

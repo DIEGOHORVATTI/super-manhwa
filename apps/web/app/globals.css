@@ -3662,6 +3662,58 @@ a:hover {
   margin: 0 0 20px;
   line-height: 1.5;
 }
+
+/* Donations wall (Ko-fi-style supporters feed). */
+.donate-wall {
+  margin-top: 8px;
+}
+.donate-wall-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.donate-wall-item {
+  display: flex;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border, #262a33);
+  border-radius: 12px;
+  background: var(--card, #14171d);
+}
+.donate-wall-avatar {
+  flex: 0 0 auto;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+}
+.donate-wall-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.donate-wall-body {
+  min-width: 0;
+}
+.donate-wall-head {
+  margin: 0;
+  font-size: 14px;
+}
+.donate-wall-msg {
+  margin: 4px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
 .donate-presets {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

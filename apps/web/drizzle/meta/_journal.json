@@ -57,6 +57,13 @@
       "when": 1781648887203,
       "tag": "0007_military_jack_flag",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781698982491,
+      "tag": "0008_wild_bloodstrike",
+      "breakpoints": true
     }
   ]
 }

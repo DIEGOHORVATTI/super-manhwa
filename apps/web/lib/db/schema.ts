@@ -189,6 +189,8 @@ export const donations = pgTable("donations", {
   pixQr: text("pix_qr"), // copia-e-cola
   pixQrBase64: text("pix_qr_base64"), // imagem do QR
   message: text("message"),
+  displayName: text("display_name"), // nome público escolhido pelo doador (anônimo ou não)
+  hidden: boolean("hidden").notNull().default(false), // staff oculta mensagens abusivas do mural
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

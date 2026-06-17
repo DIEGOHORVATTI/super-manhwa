@@ -91,6 +91,8 @@ const donationsRouter = {
         amountCents: donations.amountCents,
         status: donations.status,
         message: donations.message,
+        displayName: donations.displayName,
+        hidden: donations.hidden,
         createdAt: donations.createdAt,
       })
       .from(donations)
@@ -101,6 +103,23 @@ const donationsRouter = {
       .filter((r) => r.status === "approved")
       .reduce((sum, r) => sum + r.amountCents, 0);
     return { donations: rows, totalApprovedCents };
+  }),
+
+  /** Hide/unhide a donation message from the public wall. */
+  hide: staff
+    .input(z.object({ id: z.number().int(), hidden: z.boolean() }))
+    .handler(async ({ input, context }) => {
+      await context.db
+        .update(schema.donations)
+        .set({ hidden: input.hidden })
+        .where(eq(schema.donations.id, input.id));
+      return { ok: true };
+    }),
+
+  /** Delete a donation record (moderation / test cleanup). */
+  remove: staff.input(z.object({ id: z.number().int() })).handler(async ({ input, context }) => {
+    await context.db.delete(schema.donations).where(eq(schema.donations.id, input.id));
+    return { ok: true };
   }),
 };
 
