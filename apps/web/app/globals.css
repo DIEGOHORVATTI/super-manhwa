@@ -3466,39 +3466,6 @@ a:hover {
   gap: 8px;
   margin-top: 12px;
 }
-
-/* Library: content + a fixed donation rail on the right (desktop only). */
-.library-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-}
-.library-aside {
-  display: none;
-}
-@media (min-width: 980px) {
-  .library-layout {
-    grid-template-columns: minmax(0, 1fr) 240px;
-    align-items: start;
-  }
-  .library-aside {
-    display: block;
-    position: sticky;
-    top: 84px;
-  }
-}
-.library-donate-card {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 16px;
-  border: 1px solid var(--border, #262a33);
-  border-radius: 12px;
-  background: var(--card, #14171d);
-}
-.library-donate-card .footer-donate {
-  justify-content: center;
-}
 .profile-works {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
