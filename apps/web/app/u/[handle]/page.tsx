@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { AnilistPanel } from "@/components/profile/AnilistPanel";
+import { ProfileComments } from "@/components/profile/ProfileComments";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
 import { EditProfileButton } from "@/components/EditProfileButton";
@@ -28,7 +29,17 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const data = await loadProfileData(handle);
   if (!data) notFound();
 
-  const { user, works, achievements, reading, wordsLearned, anilist } = data;
+  const {
+    user,
+    works,
+    achievements,
+    reading,
+    wordsLearned,
+    anilist,
+    reputation,
+    commentsCount,
+    recentComments,
+  } = data;
 
   // Canonical URL: if reached by id but a @handle exists, redirect to the pretty one.
   if (user.handle && handle !== user.handle) redirect(routes.user(user.handle));
@@ -38,7 +49,14 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const me = await getCurrentUser();
   const isOwn = me?.id === user.id;
 
-  const badges = badgesFor({ role: user.role, plan: user.plan, achievements });
+  const badges = badgesFor({
+    role: user.role,
+    plan: user.plan,
+    achievements,
+    reputation,
+    commentsCount,
+    createdAt: user.createdAt,
+  });
   const al = anilist.profile;
   const bannerUrl =
     user.bannerR2Key && r2Enabled ? publicUrlFor(user.bannerR2Key) : (al?.banner ?? null);
@@ -60,7 +78,7 @@ export default async function ProfilePage({ params }: { params: Params }) {
             {badges.length > 0 && (
               <div className="profile-badges">
                 {badges.map((b) => (
-                  <span key={b.key} className={`badge badge-${b.tone}`}>
+                  <span key={b.key} className={`badge badge-${b.tone}`} title={b.description}>
                     {b.label}
                   </span>
                 ))}
@@ -82,6 +100,8 @@ export default async function ProfilePage({ params }: { params: Params }) {
 
       <ProfileStats
         stats={[
+          { label: "reputação", value: reputation, icon: "⭐" },
+          { label: "comentários", value: commentsCount, icon: "💬" },
           { label: "capítulos lidos", value: reading.chapters, icon: "📖" },
           { label: "obras lidas", value: reading.works, icon: "📚" },
           { label: "XP", value: user.xp, icon: "✨" },
@@ -94,6 +114,8 @@ export default async function ProfilePage({ params }: { params: Params }) {
       <ReadingHeatmap events={reading.events} />
 
       <AnilistPanel username={anilist.username} profile={al} />
+
+      <ProfileComments comments={recentComments} />
 
       <section className="profile-section">
         <h2 className="section">Obras publicadas</h2>

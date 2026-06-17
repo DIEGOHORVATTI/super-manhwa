@@ -6,13 +6,37 @@
  * `tone` drives the color and which surfaces show it: chat shows only the
  * "status" tones (admin/staff/premium); the profile shows everything.
  */
-export type BadgeTone = "admin" | "staff" | "premium" | "lang" | "reading";
+export type BadgeTone =
+  | "admin"
+  | "staff"
+  | "premium"
+  | "lang"
+  | "reading"
+  | "rep"
+  | "activity"
+  | "special";
 
 export interface Badge {
   key: string;
   label: string;
   tone: BadgeTone;
+  /** Optional rule explanation, shown as a tooltip on the profile. */
+  description?: string;
 }
+
+/** Reputation ladder (sum of upvotes on the user's comments). Highest match wins. */
+const REP_TIERS: ReadonlyArray<{ min: number; label: string }> = [
+  { min: 2000, label: "Onisciente" },
+  { min: 500, label: "Veterano" },
+  { min: 100, label: "Conhecido" },
+];
+/** Comment-count ladder. Highest match wins. */
+const COMMENT_TIERS: ReadonlyArray<{ min: number; label: string }> = [
+  { min: 200, label: "Keyboard Warrior" },
+  { min: 50, label: "Comentarista" },
+];
+/** Accounts created before this date earn the Early Adopter badge. */
+const EARLY_ADOPTER_BEFORE = new Date("2027-01-01");
 
 /** Achievement-key → badge label + tone (shared with gamification unlock keys). */
 export const ACHIEVEMENT_BADGES: Record<string, { label: string; tone: BadgeTone }> = {
@@ -35,11 +59,46 @@ export function badgesFor(input: {
   role?: string | null;
   plan?: string | null;
   achievements?: readonly string[];
+  reputation?: number;
+  commentsCount?: number;
+  createdAt?: Date | string | null;
 }): Badge[] {
   const out: Badge[] = [];
   if (input.role === "admin") out.push({ key: "admin", label: "Admin", tone: "admin" });
   else if (input.role === "staff") out.push({ key: "staff", label: "Moderador", tone: "staff" });
   if (input.plan === "premium") out.push({ key: "premium", label: "Premium", tone: "premium" });
+
+  const rep = input.reputation ?? 0;
+  const repTier = REP_TIERS.find((t) => rep >= t.min);
+  if (repTier) {
+    out.push({
+      key: "rep",
+      label: repTier.label,
+      tone: "rep",
+      description: `Reputação ${rep} — votos positivos nos seus comentários`,
+    });
+  }
+
+  const comments = input.commentsCount ?? 0;
+  const cTier = COMMENT_TIERS.find((t) => comments >= t.min);
+  if (cTier) {
+    out.push({
+      key: "keyboard-warrior",
+      label: cTier.label,
+      tone: "activity",
+      description: `${comments} comentários publicados`,
+    });
+  }
+
+  if (input.createdAt && new Date(input.createdAt) < EARLY_ADOPTER_BEFORE) {
+    out.push({
+      key: "early-adopter",
+      label: "Early Adopter",
+      tone: "special",
+      description: "Entrou no comecinho do projeto",
+    });
+  }
+
   for (const k of input.achievements ?? []) {
     const def = ACHIEVEMENT_BADGES[k];
     if (def) out.push({ key: k, label: def.label, tone: def.tone });
