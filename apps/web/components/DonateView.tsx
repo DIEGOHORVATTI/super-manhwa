@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { SideRays } from "@/components/SideRays";
 import { rpc } from "@/lib/rpc/client";
 
 /**
@@ -69,10 +70,16 @@ export function DonateView() {
 
   return (
     <div className="donate-wrap">
-      <h1 className="donate-title">Apoie a Super Manhwa</h1>
-      <p className="donate-sub">
-        Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Obrigado! 💜
-      </p>
+      <SideRays />
+      <header className="donate-hero">
+        <div className="donate-hero-bg" style={{ backgroundImage: "url(/banner_1500x500.jpeg)" }} />
+        <div className="donate-hero-inner">
+          <h1 className="donate-title">Apoie a Super Manhwa</h1>
+          <p className="donate-sub">
+            Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Obrigado! 💜
+          </p>
+        </div>
+      </header>
 
       {stage === "form" && (
         <div className="settings-card">

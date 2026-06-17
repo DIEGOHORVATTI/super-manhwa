@@ -3651,6 +3651,12 @@ a:hover {
   max-width: 560px;
   margin: 0 auto;
   padding: 24px 0 60px;
+  position: relative;
+  isolation: isolate;
+}
+.donate-wrap > * {
+  position: relative;
+  z-index: 1;
 }
 .donate-title {
   font-size: 26px;
@@ -3661,6 +3667,109 @@ a:hover {
   color: var(--muted);
   margin: 0 0 20px;
   line-height: 1.5;
+}
+
+/* Animated "side rays" backdrop (CSS take on reactbits' Side Rays). */
+.side-rays {
+  position: absolute;
+  top: -40px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 520px;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: linear-gradient(to bottom, #000 55%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent);
+}
+.side-rays::before,
+.side-rays::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 70%;
+  height: 100%;
+  filter: blur(4px);
+  opacity: 0.55;
+  animation: side-rays-sweep 11s ease-in-out infinite alternate;
+}
+.side-rays::before {
+  left: 0;
+  transform-origin: top left;
+  background: repeating-conic-gradient(
+    from -22deg at 0% 30%,
+    transparent 0deg,
+    rgba(255, 62, 110, 0.16) 1.6deg,
+    transparent 4.4deg,
+    transparent 11deg
+  );
+}
+.side-rays::after {
+  right: 0;
+  transform-origin: top right;
+  animation-delay: -5.5s;
+  background: repeating-conic-gradient(
+    from 158deg at 100% 30%,
+    transparent 0deg,
+    rgba(255, 62, 110, 0.16) 1.6deg,
+    transparent 4.4deg,
+    transparent 11deg
+  );
+}
+@keyframes side-rays-sweep {
+  from {
+    transform: rotate(-7deg);
+    opacity: 0.3;
+  }
+  to {
+    transform: rotate(7deg);
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .side-rays::before,
+  .side-rays::after {
+    animation: none;
+  }
+}
+
+/* Donation banner hero (uses the public banner). */
+.donate-hero {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 180px;
+  margin-bottom: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.donate-hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.02);
+}
+.donate-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(10, 11, 15, 0.94) 0%,
+    rgba(10, 11, 15, 0.5) 55%,
+    rgba(10, 11, 15, 0.2) 100%
+  );
+}
+.donate-hero-inner {
+  position: relative;
+  z-index: 1;
+  padding: 20px 22px;
+}
+.donate-hero .donate-sub {
+  margin: 4px 0 0;
 }
 .donate-presets {
   display: grid;
