@@ -1,5 +1,6 @@
 "use client";
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 
 import { Icon } from "@/components/Icon";
 import { SettingsView } from "@/components/SettingsView";
@@ -19,8 +20,11 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
-  return (
+  if (!open || typeof document === "undefined") return null;
+
+  // Portal to <body> | the header has a transform/backdrop-filter, which would
+  // otherwise make this fixed overlay anchor to the header instead of the viewport.
+  return createPortal(
     // biome-ignore lint/a11y/useKeyWithClickEvents: overlay close mirrors the Esc handler above
     <div className="modal-overlay" onClick={onClose}>
       <div
@@ -37,6 +41,7 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
           <SettingsView />
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
