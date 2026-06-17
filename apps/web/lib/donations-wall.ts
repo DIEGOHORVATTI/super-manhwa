@@ -9,6 +9,7 @@ export type WallDonation = {
   message: string | null;
   name: string;
   image: string | null;
+  handle: string | null;
   createdAt: Date;
 };
 
@@ -31,6 +32,7 @@ export async function loadDonationWall(limit = 20): Promise<WallDonation[]> {
         createdAt: donations.createdAt,
         userName: user.name,
         userImage: user.image,
+        userHandle: user.handle,
       })
       .from(donations)
       .leftJoin(user, eq(donations.userId, user.id))
@@ -38,14 +40,20 @@ export async function loadDonationWall(limit = 20): Promise<WallDonation[]> {
       .orderBy(desc(donations.createdAt))
       .limit(limit);
 
-    return rows.map((r) => ({
-      id: r.id,
-      amountCents: r.amountCents,
-      message: r.message,
-      name: r.displayName || r.userName || "Anônimo",
-      image: r.userImage ?? null,
-      createdAt: r.createdAt,
-    }));
+    return rows.map((r) => {
+      // "Anônimo" donors show no avatar/link even if signed in; an attributed
+      // account shows its name + avatar + profile link.
+      const anon = r.displayName === "Anônimo";
+      return {
+        id: r.id,
+        amountCents: r.amountCents,
+        message: r.message,
+        name: r.displayName || r.userName || "Anônimo",
+        image: anon ? null : (r.userImage ?? null),
+        handle: anon ? null : (r.userHandle ?? null),
+        createdAt: r.createdAt,
+      };
+    });
   } catch {
     return [];
   }

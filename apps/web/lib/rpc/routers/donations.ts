@@ -106,15 +106,18 @@ export const donationsRouter = {
         .limit(input.limit);
 
       return {
-        donations: rows.map((r) => ({
-          id: r.id,
-          amountCents: r.amountCents,
-          message: r.message,
-          name: r.displayName || r.userName || "Anônimo",
-          handle: r.userHandle ?? null,
-          image: r.userImage ?? null,
-          createdAt: r.createdAt,
-        })),
+        donations: rows.map((r) => {
+          const anon = r.displayName === "Anônimo";
+          return {
+            id: r.id,
+            amountCents: r.amountCents,
+            message: r.message,
+            name: r.displayName || r.userName || "Anônimo",
+            handle: anon ? null : (r.userHandle ?? null),
+            image: anon ? null : (r.userImage ?? null),
+            createdAt: r.createdAt,
+          };
+        }),
       };
     }),
 };

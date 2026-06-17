@@ -3720,6 +3720,13 @@ a:hover {
   margin: 0;
   font-size: 14px;
 }
+.donate-wall-name {
+  color: var(--accent);
+  font-weight: 700;
+}
+.donate-wall-name:hover {
+  text-decoration: underline;
+}
 .donate-wall-msg {
   margin: 4px 0 0;
   font-size: 14px;
