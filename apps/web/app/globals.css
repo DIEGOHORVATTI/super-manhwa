@@ -4974,6 +4974,47 @@ a:hover {
 .reader-settings {
   position: relative;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* Auto-scroll control (toggle + speed range). In the panel on mobile, inline
+   beside the gear on desktop. */
+.reader-autoscroll {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reader-autoscroll .reader-range {
+  width: 96px;
+}
+.reader-autoscroll-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.reader-autoscroll-toggle.is-on {
+  background: var(--accent);
+  border-color: transparent;
+  color: #fff;
+}
+.reader-autoscroll-inline {
+  display: none;
+}
+@media (min-width: 768px) {
+  .reader-autoscroll-inline {
+    display: flex;
+  }
+  .reader-autoscroll-panel {
+    display: none;
+  }
 }
 .reader-btn.is-active {
   background: var(--surface-2);

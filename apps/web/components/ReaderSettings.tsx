@@ -3,11 +3,23 @@ import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 
 type BgTheme = "dark" | "sepia" | "white";
-type Prefs = { bg: BgTheme; intensity: number; fontSize: number; fontColor: string };
+type Prefs = {
+  bg: BgTheme;
+  intensity: number;
+  fontSize: number;
+  fontColor: string;
+  scrollSpeed: number;
+};
 
 const KEY = "reader:prefs";
 const FONT_STEPS = [14, 16, 18, 20, 24, 28, 32, 36];
-const DEFAULT: Prefs = { bg: "dark", intensity: 50, fontSize: 18, fontColor: "auto" };
+const DEFAULT: Prefs = {
+  bg: "dark",
+  intensity: 50,
+  fontSize: 18,
+  fontColor: "auto",
+  scrollSpeed: 40,
+};
 
 const BG_OPTIONS: { value: BgTheme; label: string; baseColor: string }[] = [
   { value: "dark", label: "Escuro", baseColor: "#191b1c" },
@@ -51,6 +63,8 @@ function applyPrefs(p: Prefs) {
 export function ReaderSettings() {
   const [open, setOpen] = useState(false);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT);
+  // Auto-scroll is transient (not persisted) | each chapter opens stopped.
+  const [autoScroll, setAutoScroll] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -60,6 +74,27 @@ export function ReaderSettings() {
       applyPrefs(stored);
     } catch {}
   }, []);
+
+  // Smooth auto-scroll at `scrollSpeed` px/s; stops at the bottom of the page.
+  useEffect(() => {
+    if (!autoScroll) return;
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      window.scrollBy(0, prefs.scrollSpeed * dt);
+      const atBottom =
+        window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+      if (atBottom) {
+        setAutoScroll(false);
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [autoScroll, prefs.scrollSpeed]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -78,8 +113,35 @@ export function ReaderSettings() {
 
   const fontIdx = FONT_STEPS.indexOf(prefs.fontSize);
 
+  const autoScrollControl = (
+    <>
+      <button
+        type="button"
+        className={`reader-autoscroll-toggle${autoScroll ? " is-on" : ""}`}
+        onClick={() => setAutoScroll((v) => !v)}
+        aria-pressed={autoScroll}
+        title={autoScroll ? "Pausar rolagem" : "Rolagem automática"}
+      >
+        <Icon name="arrow-down-up" size={15} />
+      </button>
+      <input
+        type="range"
+        min={10}
+        max={200}
+        step={5}
+        value={prefs.scrollSpeed}
+        onChange={(e) => update({ scrollSpeed: Number(e.target.value) })}
+        className="reader-range"
+        aria-label="Velocidade da rolagem automática"
+      />
+    </>
+  );
+
   return (
     <div className="reader-settings" ref={ref}>
+      {/* Desktop: auto-scroll lives beside the gear for one-tap access. */}
+      <div className="reader-autoscroll reader-autoscroll-inline">{autoScrollControl}</div>
+
       <button
         type="button"
         className={`reader-btn reader-btn-icon${open ? " is-active" : ""}`}
@@ -202,6 +264,11 @@ export function ReaderSettings() {
               A+
             </button>
           </div>
+
+          <p className="reader-settings-label reader-autoscroll-panel" style={{ marginTop: 14 }}>
+            Rolagem automática
+          </p>
+          <div className="reader-autoscroll reader-autoscroll-panel">{autoScrollControl}</div>
         </div>
       )}
     </div>
