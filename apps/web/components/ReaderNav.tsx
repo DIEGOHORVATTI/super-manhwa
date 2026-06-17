@@ -3,8 +3,8 @@ import type { Chapter } from "@packages/contracts";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
+import { ReaderSettings } from "@/components/ReaderSettings";
 import { chapterHref, chapterNav } from "@/lib/reader";
 import { routes } from "@/lib/routes";
 
@@ -21,13 +21,11 @@ export function ReaderNav({
   currentId,
   mangaId,
   mangaName,
-  pages,
 }: {
   chapters: Chapter[];
   currentId: string;
   mangaId: string;
   mangaName: string;
-  pages: string[];
 }) {
   const router = useRouter();
   const { idx, prev, next, current } = chapterNav(chapters, currentId);
@@ -115,7 +113,7 @@ export function ReaderNav({
           <span className="reader-series-name">{mangaName}</span>
         </Link>
 
-        <DownloadChapterButton pages={pages} chapterId={currentId} />
+        <ReaderSettings />
 
         <div className="reader-nav-spacer" />
 

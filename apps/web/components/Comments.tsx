@@ -1,22 +1,16 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
+import { parseBody, UNICODE_EMOJIS } from "@/lib/emojis";
 import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
-/**
- * Native threaded comments (replaces Disqus). Lists a work's or chapter's
- * comments, lets signed-in users post/reply/edit/delete and vote. Anonymous
- * visitors see the thread plus a "sign in to comment" CTA. One reply level.
- */
 type Target = "work" | "chapter";
-
-/** Shape comes straight from the procedure | no hand-kept duplicate. */
 type Comment = Awaited<ReturnType<typeof rpc.comments.list>>["comments"][number];
 
 function timeAgo(iso: string | Date): string {
@@ -26,6 +20,118 @@ function timeAgo(iso: string | Date): string {
   if (s < 3600) return `${Math.floor(s / 60)} min`;
   if (s < 86400) return `${Math.floor(s / 3600)} h`;
   return `${Math.floor(s / 86400)} d`;
+}
+
+function CommentBody({ text }: { text: string }) {
+  const segments = parseBody(text);
+  return (
+    <p className="comment-body">
+      {segments.map((seg, i) =>
+        typeof seg === "string" ? (
+          seg
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            key={i}
+            src={seg.path}
+            alt={`:${seg.name}:`}
+            title={`:${seg.name}:`}
+            className="comment-emoji"
+          />
+        ),
+      )}
+    </p>
+  );
+}
+
+function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  return (
+    <div className="emoji-picker-wrap" ref={ref}>
+      <button
+        type="button"
+        className="emoji-trigger"
+        onClick={() => setOpen((o) => !o)}
+        title="Emojis"
+        aria-label="Abrir seletor de emojis"
+      >
+        😊
+      </button>
+      {open && (
+        <div className="emoji-picker" role="listbox" aria-label="Emojis">
+          {UNICODE_EMOJIS.map((e) => (
+            <button
+              key={e}
+              type="button"
+              role="option"
+              aria-selected={false}
+              className="emoji-btn"
+              onMouseDown={(ev) => {
+                ev.preventDefault();
+                onPick(e);
+                setOpen(false);
+              }}
+            >
+              {e}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComposerArea({
+  value,
+  onChange,
+  rows,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  rows: number;
+  placeholder?: string;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  const insertEmoji = (emoji: string) => {
+    const el = ref.current;
+    if (!el) {
+      onChange(value + emoji);
+      return;
+    }
+    const start = el.selectionStart ?? value.length;
+    const end = el.selectionEnd ?? value.length;
+    const next = value.slice(0, start) + emoji + value.slice(end);
+    onChange(next);
+    requestAnimationFrame(() => {
+      el.selectionStart = el.selectionEnd = start + emoji.length;
+      el.focus();
+    });
+  };
+
+  return (
+    <div className="composer-area">
+      <textarea
+        ref={ref}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        rows={rows}
+        placeholder={placeholder}
+      />
+      <EmojiPicker onPick={insertEmoji} />
+    </div>
+  );
 }
 
 export function Comments({ targetType, targetId }: { targetType: Target; targetId: string }) {
@@ -108,7 +214,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
 
           {editing === c.id ? (
             <div className="comment-editor">
-              <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={3} />
+              <ComposerArea value={draft} onChange={setDraft} rows={3} />
               <div className="comment-editor-actions">
                 <button type="button" onClick={() => saveEdit(c.id, draft)}>
                   Salvar
@@ -118,8 +224,12 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
                 </button>
               </div>
             </div>
+          ) : removed ? (
+            <p className="comment-body">
+              <em>comentário removido</em>
+            </p>
           ) : (
-            <p className="comment-body">{removed ? <em>comentário removido</em> : c.body}</p>
+            <CommentBody text={c.body ?? ""} />
           )}
 
           {!removed && (
@@ -155,9 +265,9 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
 
           {replyTo === c.id && (
             <div className="comment-editor">
-              <textarea
+              <ComposerArea
                 value={reply}
-                onChange={(e) => setReply(e.target.value)}
+                onChange={setReply}
                 rows={2}
                 placeholder="Escreva uma resposta…"
               />
@@ -181,9 +291,9 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
 
       {me ? (
         <div className="comment-composer">
-          <textarea
+          <ComposerArea
             value={body}
-            onChange={(e) => setBody(e.target.value)}
+            onChange={setBody}
             rows={3}
             placeholder="Adicione um comentário…"
           />
