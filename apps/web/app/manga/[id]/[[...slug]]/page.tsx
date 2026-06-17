@@ -329,6 +329,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         charactersPromise={charactersPromise}
         about={aboutTab}
         comments={<Comments targetType="work" targetId={id} />}
+        relations={meta.relations}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={

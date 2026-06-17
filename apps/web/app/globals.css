@@ -1520,8 +1520,13 @@ a:hover {
   gap: 12px;
 }
 .comment-reply {
-  margin-left: 46px;
   margin-top: 14px;
+}
+/* Nested replies (any depth): progressive indent + a thread line. */
+.comment-replies {
+  margin-left: 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border);
 }
 .comment-avatar {
   flex: none;
@@ -2604,6 +2609,26 @@ a:hover {
   border-radius: 999px;
   padding: 1px 7px;
   margin-right: 6px;
+}
+
+/* Related works section */
+.related-works {
+  margin-top: 48px;
+}
+.relation-badge {
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 62, 110, 0.35);
+  border-radius: 999px;
+  padding: 1px 7px;
+  z-index: 1;
+  pointer-events: none;
 }
 
 /* Footer */

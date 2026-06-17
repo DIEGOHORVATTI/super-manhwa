@@ -1,10 +1,12 @@
 "use client";
-import type { MangaCharacter } from "@packages/contracts";
+import type { MangaCharacter, MangaRelation } from "@packages/contracts";
 import Image from "next/image";
+import Link from "next/link";
 import { type ReactNode, Suspense, useEffect, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
 import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
+import { Cover } from "@/components/Cover";
 import { Icon } from "@/components/Icon";
 import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
@@ -22,6 +24,45 @@ type ChaptersResult = { chapters: Chapter[]; lang: string };
  * Suspense boundary by {@link ChapterList}, so the hero and tab bar paint
  * immediately while the cross-source chapter fan-out resolves behind a skeleton.
  */
+const RELATION_LABELS: Record<string, string> = {
+  SEQUEL: "Sequência",
+  PREQUEL: "Prelúdio",
+  SIDE_STORY: "História paralela",
+  ALTERNATIVE: "Alternativo",
+  ADAPTATION: "Adaptação",
+  SPIN_OFF: "Spin-off",
+  CHARACTER: "Personagem",
+  SUMMARY: "Resumo",
+  OTHER: "Relacionado",
+};
+
+function RelatedWorks({ relations }: { relations: MangaRelation[] }) {
+  if (relations.length === 0) return null;
+  return (
+    <section className="related-works">
+      <h2 className="section">Obras relacionadas</h2>
+      <div className="poster-grid">
+        {relations.map((r, i) => {
+          const href = `/?q=${encodeURIComponent(r.title)}`;
+          const label = RELATION_LABELS[r.relation] ?? r.relation;
+          return (
+            <div key={`${r.relation}-${i}`} className="poster">
+              <div className="poster-cover">
+                <Cover src={undefined} alt={r.title} sizes="160px" />
+                <span className="relation-badge">{label}</span>
+                <Link className="poster-hit" href={href} aria-label={r.title} tabIndex={-1} />
+              </div>
+              <Link className="poster-name" href={href}>
+                {r.title}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 export function DetailView({
   backdrop,
   cover,
@@ -35,6 +76,7 @@ export function DetailView({
   charactersPromise,
   about,
   comments,
+  relations,
 }: {
   backdrop?: string;
   cover: ReactNode;
@@ -48,6 +90,7 @@ export function DetailView({
   charactersPromise: Promise<MangaCharacter[]>;
   about: ReactNode;
   comments?: ReactNode;
+  relations?: MangaRelation[];
 }) {
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",
@@ -195,6 +238,8 @@ export function DetailView({
       {comments && (
         <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
       )}
+
+      {relations && relations.length > 0 && <RelatedWorks relations={relations} />}
     </>
   );
 }
