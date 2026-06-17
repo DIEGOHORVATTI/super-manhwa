@@ -4983,26 +4983,32 @@ a:hover {
 .reader-autoscroll {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 9px;
+  padding: 3px 12px 3px 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
 }
 .reader-autoscroll .reader-range {
-  width: 96px;
+  width: 92px;
 }
 .reader-autoscroll-toggle {
   display: grid;
   place-items: center;
   flex: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .reader-autoscroll-toggle.is-on {
   background: var(--accent);
-  border-color: transparent;
   color: #fff;
 }
 .reader-autoscroll-inline {
