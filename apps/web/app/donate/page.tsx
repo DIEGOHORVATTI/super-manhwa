@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 
 import { DonateView } from "@/components/DonateView";
-import { DonationGoal } from "@/components/DonationGoal";
 import { DonationWall } from "@/components/DonationWall";
-import { loadDonationGoal } from "@/lib/donation-goal";
 import { loadDonationWall } from "@/lib/donations-wall";
 
 export const metadata: Metadata = {
@@ -12,16 +10,13 @@ export const metadata: Metadata = {
 };
 
 export default async function DonatePage() {
-  const [donations, goal] = await Promise.all([loadDonationWall(), loadDonationGoal()]);
+  const donations = await loadDonationWall();
   return (
-    <div className="donate-layout">
-      <div className="donate-main">
-        <DonateView />
+    <>
+      <DonateView />
+      <div className="donate-wrap">
         <DonationWall donations={donations} />
       </div>
-      <aside className="donate-side">
-        <DonationGoal goal={goal} />
-      </aside>
-    </div>
+    </>
   );
 }
