@@ -1,28 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { fetchEmojis } from "@/lib/emoji-client";
 import { UNICODE_EMOJIS } from "@/lib/emojis";
 
 type CustomEmoji = { name: string; url: string };
-
-// Module-level cache — fetched once per page load, shared across all pickers.
-let customCache: CustomEmoji[] | null = null;
-let fetchPromise: Promise<CustomEmoji[]> | null = null;
-
-async function fetchCustomEmojis(): Promise<CustomEmoji[]> {
-  if (customCache !== null) return customCache;
-  if (fetchPromise) return fetchPromise;
-  fetchPromise = fetch("/api/emojis")
-    .then((r) => r.json())
-    .then((d) => {
-      customCache = (d.emojis ?? []) as CustomEmoji[];
-      return customCache;
-    })
-    .catch(() => {
-      customCache = [];
-      return customCache as CustomEmoji[];
-    });
-  return fetchPromise;
-}
 
 function EmojiPicker({ onPick }: { onPick: (text: string) => void }) {
   const [open, setOpen] = useState(false);
@@ -32,7 +13,7 @@ function EmojiPicker({ onPick }: { onPick: (text: string) => void }) {
 
   useEffect(() => {
     if (!open) return;
-    fetchCustomEmojis().then(setCustom);
+    fetchEmojis().then(setCustom);
   }, [open]);
 
   useEffect(() => {

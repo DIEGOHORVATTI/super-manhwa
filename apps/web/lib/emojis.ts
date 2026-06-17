@@ -1,10 +1,4 @@
-export type CustomEmoji = { name: string; path: string };
-
-// Custom image emojis served from /public/emojis/
-// Add entries here as you add files to the public/emojis/ directory.
-export const CUSTOM_EMOJIS: Record<string, CustomEmoji> = {};
-
-// Quick-access Unicode emojis shown in the picker
+// Quick-access Unicode emojis shown in the picker (no network needed)
 export const UNICODE_EMOJIS = [
   "😂",
   "😭",
@@ -42,24 +36,26 @@ export const UNICODE_EMOJIS = [
 
 /**
  * Parse comment text into segments: plain string or a custom image emoji.
- * Unicode emojis are already in the text as characters — no parsing needed.
+ * Custom emojis are written as :name: and resolved via the API at render time.
+ * Unicode emojis are already inline characters — no parsing needed.
  */
 export function parseBody(
   text: string,
-): Array<string | { type: "emoji"; name: string; path: string }> {
+  emojiMap: Record<string, string> = {},
+): Array<string | { type: "emoji"; name: string; url: string }> {
   if (!/:([a-z0-9_-]+):/i.test(text)) return [text];
 
   const re = /:([a-z0-9_-]+):/gi;
-  const parts: Array<string | { type: "emoji"; name: string; path: string }> = [];
+  const parts: Array<string | { type: "emoji"; name: string; url: string }> = [];
   let last = 0;
   let match: RegExpExecArray | null;
 
   while ((match = re.exec(text)) !== null) {
     if (match.index > last) parts.push(text.slice(last, match.index));
     const key = match[1].toLowerCase();
-    const emoji = CUSTOM_EMOJIS[key];
-    if (emoji) {
-      parts.push({ type: "emoji", name: emoji.name, path: `/${emoji.path}` });
+    const url = emojiMap[key];
+    if (url) {
+      parts.push({ type: "emoji", name: key, url });
     } else {
       parts.push(match[0]);
     }

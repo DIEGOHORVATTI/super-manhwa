@@ -3599,9 +3599,12 @@ a:hover {
 }
 .profile-id {
   display: flex;
-  gap: 18px;
-  align-items: flex-end;
-  margin-top: -46px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  /* Pull only this block up so the avatar overlaps the banner; the name/handle
+     flow BELOW the avatar and are never clipped into the banner. */
+  margin-top: -56px;
   padding: 0 22px;
 }
 .profile-avatar-lg {
@@ -3613,7 +3616,7 @@ a:hover {
 }
 .profile-info {
   min-width: 0;
-  padding-bottom: 6px;
+  width: 100%;
 }
 .profile-badges {
   display: flex;
@@ -5087,7 +5090,9 @@ a:hover {
   font-size: 16px;
   cursor: pointer;
   color: var(--muted);
-  transition: background 0.1s, color 0.1s;
+  transition:
+    background 0.1s,
+    color 0.1s;
 }
 .emoji-tab.is-active {
   background: var(--surface-2);

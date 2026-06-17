@@ -7,6 +7,7 @@ import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
+import { fetchEmojiMap } from "@/lib/emoji-client";
 import { parseBody } from "@/lib/emojis";
 import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
@@ -23,8 +24,8 @@ function timeAgo(iso: string | Date): string {
   return `${Math.floor(s / 86400)} d`;
 }
 
-function CommentBody({ text }: { text: string }) {
-  const segments = parseBody(text);
+function CommentBody({ text, emojiMap }: { text: string; emojiMap: Record<string, string> }) {
+  const segments = parseBody(text, emojiMap);
   return (
     <p className="comment-body">
       {segments.map((seg, i) =>
@@ -34,7 +35,7 @@ function CommentBody({ text }: { text: string }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             key={i}
-            src={seg.path}
+            src={seg.url}
             alt={`:${seg.name}:`}
             title={`:${seg.name}:`}
             className="comment-emoji"
@@ -53,6 +54,11 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
   const [busy, setBusy] = useState(false);
   const [replyTo, setReplyTo] = useState<number | null>(null);
   const [editing, setEditing] = useState<number | null>(null);
+  const [emojiMap, setEmojiMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    void fetchEmojiMap().then(setEmojiMap);
+  }, []);
 
   const load = useCallback(async () => {
     const json = await rpc.comments.list({ targetType, targetId });
@@ -140,7 +146,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
               <em>comentário removido</em>
             </p>
           ) : (
-            <CommentBody text={c.body ?? ""} />
+            <CommentBody text={c.body ?? ""} emojiMap={emojiMap} />
           )}
 
           {!removed && (
