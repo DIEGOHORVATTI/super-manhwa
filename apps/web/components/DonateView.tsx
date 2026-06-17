@@ -84,78 +84,80 @@ export function DonateView() {
         falloff={1.6}
         opacity={1}
       />
-      <header className="donate-head">
-        <h1 className="donate-title">Apoie a Super Manhwa</h1>
-        <p className="donate-sub">
-          Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Cada real conta —
-          obrigado por fazer parte. 💜
-        </p>
-      </header>
-
-      {stage === "form" && (
-        <div className="settings-card">
-          <div className="donate-presets">
-            {PRESETS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                className={`donate-preset${!custom && amount === p ? " is-active" : ""}`}
-                onClick={() => {
-                  setAmount(p);
-                  setCustom("");
-                }}
-              >
-                R${(p / 100).toFixed(0)}
-              </button>
-            ))}
-          </div>
-          <label className="auth-field">
-            <span>Outro valor (R$)</span>
-            <input
-              type="number"
-              min={1}
-              step={1}
-              value={custom}
-              onChange={(e) => setCustom(e.target.value)}
-              placeholder="Ex.: 15"
-            />
-          </label>
-          <label className="auth-field">
-            <span>Mensagem (opcional)</span>
-            <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={200} />
-          </label>
-          {error && <p className="auth-error">{error}</p>}
-          <button type="button" className="auth-submit" onClick={start} disabled={busy}>
-            {busy ? "Gerando Pix…" : `Doar R$${(cents / 100).toFixed(2)}`}
-          </button>
-        </div>
-      )}
-
-      {stage === "pix" && pix && (
-        <div className="settings-card donate-pix">
-          <p className="muted">Escaneie o QR Code no app do seu banco ou copie o código Pix:</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            className="donate-qr"
-            src={`data:image/png;base64,${pix.qrCodeBase64}`}
-            alt="QR Code Pix"
-          />
-          <button type="button" className="auth-google" onClick={copyCode}>
-            <Icon name="download" size={16} /> {copied ? "Copiado!" : "Copiar código Pix"}
-          </button>
-          <p className="donate-waiting">
-            <span className="donate-spinner" /> Aguardando confirmação do pagamento…
+      <div className="donate-content">
+        <header className="donate-head">
+          <h1 className="donate-title">Apoie a Super Manhwa</h1>
+          <p className="donate-sub">
+            Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Cada real conta —
+            obrigado por fazer parte. 💜
           </p>
-        </div>
-      )}
+        </header>
 
-      {stage === "done" && (
-        <div className="settings-card donate-done">
-          <Icon name="circle-check-big" size={48} />
-          <h2>Doação confirmada!</h2>
-          <p className="muted">Muito obrigado pelo seu apoio. 💜</p>
-        </div>
-      )}
+        {stage === "form" && (
+          <div className="settings-card">
+            <div className="donate-presets">
+              {PRESETS.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  className={`donate-preset${!custom && amount === p ? " is-active" : ""}`}
+                  onClick={() => {
+                    setAmount(p);
+                    setCustom("");
+                  }}
+                >
+                  R${(p / 100).toFixed(0)}
+                </button>
+              ))}
+            </div>
+            <label className="auth-field">
+              <span>Outro valor (R$)</span>
+              <input
+                type="number"
+                min={1}
+                step={1}
+                value={custom}
+                onChange={(e) => setCustom(e.target.value)}
+                placeholder="Ex.: 15"
+              />
+            </label>
+            <label className="auth-field">
+              <span>Mensagem (opcional)</span>
+              <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={200} />
+            </label>
+            {error && <p className="auth-error">{error}</p>}
+            <button type="button" className="auth-submit" onClick={start} disabled={busy}>
+              {busy ? "Gerando Pix…" : `Doar R$${(cents / 100).toFixed(2)}`}
+            </button>
+          </div>
+        )}
+
+        {stage === "pix" && pix && (
+          <div className="settings-card donate-pix">
+            <p className="muted">Escaneie o QR Code no app do seu banco ou copie o código Pix:</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="donate-qr"
+              src={`data:image/png;base64,${pix.qrCodeBase64}`}
+              alt="QR Code Pix"
+            />
+            <button type="button" className="auth-google" onClick={copyCode}>
+              <Icon name="download" size={16} /> {copied ? "Copiado!" : "Copiar código Pix"}
+            </button>
+            <p className="donate-waiting">
+              <span className="donate-spinner" /> Aguardando confirmação do pagamento…
+            </p>
+          </div>
+        )}
+
+        {stage === "done" && (
+          <div className="settings-card donate-done">
+            <Icon name="circle-check-big" size={48} />
+            <h2>Doação confirmada!</h2>
+            <p className="muted">Muito obrigado pelo seu apoio. 💜</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
