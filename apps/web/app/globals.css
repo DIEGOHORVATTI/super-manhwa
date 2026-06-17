@@ -3653,7 +3653,7 @@ a:hover {
   padding: 40px 0 64px;
   position: relative;
   isolation: isolate;
-  min-height: 78vh;
+  min-height: calc(100dvh - 70px);
 }
 .donate-wrap > * {
   position: relative;
@@ -3670,10 +3670,14 @@ a:hover {
   line-height: 1.5;
 }
 
-/* WebGL "side rays" backdrop (reactbits SideRays) | fills the donation stage. */
+/* WebGL "side rays" backdrop (reactbits SideRays) | full-bleed over the stage. */
 .side-rays {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
   z-index: 0;
   pointer-events: none;
 }
@@ -3685,7 +3689,11 @@ a:hover {
    so the whole donation screen feels like it sits inside the artwork. */
 .donate-bg {
   position: absolute;
-  inset: 0;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 100vw;
+  transform: translateX(-50%);
   z-index: 0;
   background-size: cover;
   background-position: center;
