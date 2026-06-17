@@ -71,7 +71,19 @@ export function DonateView() {
   return (
     <div className="donate-wrap">
       <div className="donate-bg" style={{ backgroundImage: "url(/banner_1500x500.jpeg)" }} />
-      <SideRays />
+      <SideRays
+        speed={2.5}
+        rayColor1="#EAB308"
+        rayColor2="#96c8ff"
+        intensity={2}
+        spread={2}
+        origin="top-right"
+        tilt={0}
+        saturation={1.5}
+        blend={0.75}
+        falloff={1.6}
+        opacity={1}
+      />
       <header className="donate-head">
         <h1 className="donate-title">Apoie a Super Manhwa</h1>
         <p className="donate-sub">
