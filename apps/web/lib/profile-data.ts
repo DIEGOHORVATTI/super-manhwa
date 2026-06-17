@@ -99,6 +99,17 @@ export async function loadProfileData(handle: string): Promise<ProfileData | nul
   const profile =
     link?.token != null ? await anilistProfile(link.accountId, link.token).catch(() => null) : null;
 
+  // Persist the AniList avatar into user.image once, so it shows everywhere the
+  // account is rendered (donations wall, comments, header) without a live fetch.
+  if (!u.image && profile?.avatar) {
+    u.image = profile.avatar;
+    await db
+      .update(user)
+      .set({ image: profile.avatar })
+      .where(eq(user.id, u.id))
+      .catch(() => {});
+  }
+
   return {
     user: u,
     works,
