@@ -3734,6 +3734,67 @@ a:hover {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+/* Donation page layout: form + wall (main) with the funding goal on the side. */
+.donate-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+.donate-main {
+  min-width: 0;
+}
+@media (min-width: 920px) {
+  .donate-layout {
+    grid-template-columns: minmax(0, 560px) 300px;
+    justify-content: center;
+    align-items: start;
+  }
+  .donate-side {
+    position: sticky;
+    top: 88px;
+  }
+}
+.donate-goal {
+  padding: 18px;
+  border: 1px solid var(--border, #262a33);
+  border-radius: 14px;
+  background: var(--card, #14171d);
+}
+.donate-goal-title {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+.donate-goal-bar {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+.donate-goal-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.4s ease;
+}
+.donate-goal-pct {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.donate-goal-pct strong {
+  color: #fff;
+  font-size: 15px;
+}
+.donate-goal-desc {
+  margin: 12px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
 .donate-presets {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
