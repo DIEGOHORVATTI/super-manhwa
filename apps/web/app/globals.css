@@ -3663,6 +3663,19 @@ a:hover {
   line-height: 1.5;
 }
 
+.donate-anon {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -6px 0 2px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.donate-anon input {
+  width: auto;
+}
+
 /* Donations wall (Ko-fi-style supporters feed). */
 .donate-wall {
   margin-top: 8px;

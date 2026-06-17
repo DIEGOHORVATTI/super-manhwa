@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { useSession } from "@/lib/auth/client";
 import { rpc } from "@/lib/rpc/client";
 
 /**
@@ -13,10 +14,18 @@ const PRESETS = [500, 1000, 2500, 5000]; // cents
 type Stage = "form" | "pix" | "done";
 
 export function DonateView() {
+  const { data: session } = useSession();
   const [amount, setAmount] = useState(1000);
   const [custom, setCustom] = useState("");
   const [name, setName] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Prefill the wall name with the signed-in account name (the donor can still
+  // edit it or opt to appear anonymous).
+  useEffect(() => {
+    if (session?.user?.name) setName(session.user.name);
+  }, [session?.user?.name]);
   const [stage, setStage] = useState<Stage>("form");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +52,7 @@ export function DonateView() {
       const data = await rpc.donations.create({
         amountCents: cents,
         message: message || undefined,
-        name: name || undefined,
+        name: anonymous ? "Anônimo" : name.trim() || undefined,
       });
       if (!data.qrCode) throw new Error("Pix indisponível no momento.");
       setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 ?? "" });
@@ -105,13 +114,22 @@ export function DonateView() {
             />
           </label>
           <label className="auth-field">
-            <span>Seu nome no mural (opcional)</span>
+            <span>Seu nome no mural</span>
             <input
-              value={name}
+              value={anonymous ? "" : name}
               onChange={(e) => setName(e.target.value)}
               maxLength={40}
               placeholder="Anônimo"
+              disabled={anonymous}
             />
+          </label>
+          <label className="donate-anon">
+            <input
+              type="checkbox"
+              checked={anonymous}
+              onChange={(e) => setAnonymous(e.target.checked)}
+            />
+            <span>Aparecer como anônimo</span>
           </label>
           <label className="auth-field">
             <span>Mensagem (opcional)</span>
