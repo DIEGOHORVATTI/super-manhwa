@@ -74,7 +74,7 @@ export default async function ProfilePage({ params }: { params: Params }) {
       {isOwn && (
         <div className="profile-actions">
           <Link href={routes.studio} className="btn btn-primary">
-            Criar obra
+            Gerenciar obras
           </Link>
           <EditProfileButton />
         </div>
