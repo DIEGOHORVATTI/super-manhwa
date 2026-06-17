@@ -3508,8 +3508,7 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-left: auto;
-  align-self: flex-start;
+  margin-top: 16px;
 }
 
 /* Inline image editing (banner + avatar) on the owner's profile. */

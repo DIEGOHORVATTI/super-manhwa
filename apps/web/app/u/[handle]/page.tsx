@@ -68,16 +68,17 @@ export default async function ProfilePage({ params }: { params: Params }) {
             )}
             {user.bio && <p className="profile-bio">{user.bio}</p>}
           </div>
-          {isOwn && (
-            <div className="profile-actions">
-              <Link href={routes.studio} className="btn btn-primary">
-                Criar obra
-              </Link>
-              <EditProfileButton />
-            </div>
-          )}
         </div>
       </header>
+
+      {isOwn && (
+        <div className="profile-actions">
+          <Link href={routes.studio} className="btn btn-primary">
+            Criar obra
+          </Link>
+          <EditProfileButton />
+        </div>
+      )}
 
       <ProfileStats
         stats={[
