@@ -20,7 +20,6 @@ import { routes } from "@/lib/routes";
  */
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
   { href: routes.home, label: "Explorar", icon: "house", sort: null },
-  { href: routes.updates, label: "Recentes", icon: "clock", sort: null },
   { href: routes.library, label: "Biblioteca", icon: "heart", sort: null },
   { href: routes.donate, label: "Doação", icon: "hand-heart", sort: null },
 ];

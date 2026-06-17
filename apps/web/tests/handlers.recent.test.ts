@@ -62,7 +62,6 @@ mock.module("@/lib/orpc.server", () => ({
     manga: {
       popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
       search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
-      latest: async () => ({ list: [{ id: "latest" }], hasNextPage: true }),
     },
   },
 }));
@@ -107,10 +106,6 @@ beforeEach(() => {
 });
 
 describe("GET /api/list (native catalog proxy)", () => {
-  it("routes feed=latest to the latest feed", async () => {
-    const res = await list.GET(get("http://t/api/list?feed=latest&page=2"));
-    expect((await res.json()).list[0].id).toBe("latest");
-  });
   it("uses search when q has 2+ chars", async () => {
     const res = await list.GET(get("http://t/api/list?feed=browse&q=naruto"));
     expect((await res.json()).list[0].id).toBe("search");

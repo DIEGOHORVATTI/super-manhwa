@@ -124,20 +124,6 @@ describe("catalog / detail + pages flow", () => {
     expect(ms).toBeLessThan(60_000);
   }, 90_000);
 
-  it("latest returns recently-updated works (and reports timing)", async () => {
-    const t0 = performance.now();
-    const r = await apiClient.manga.latest({ lang: "pt-br" });
-    const ms = Math.round(performance.now() - t0);
-    console.log(`[timing] latest feed → ${ms}ms (${r.list.length} works)`);
-
-    expect(r.list.length).toBeGreaterThan(0);
-    for (const m of r.list.slice(0, 5)) {
-      expect(typeof m.name).toBe("string");
-      expect(typeof m.id).toBe("string");
-      expect(typeof m.lang).toBe("string");
-    }
-  }, 30_000);
-
   it("pages from TWO different chapters return opaque /api/img/<token> paths (and the bytes are real images)", async () => {
     const popular = await apiClient.manga.popular();
     const targets = pickTitles(popular.list);

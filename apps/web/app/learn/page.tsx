@@ -1,9 +1,10 @@
-import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 
-import { LearnDashboard } from "@/components/learn/LearnDashboard";
+import { getCurrentUser } from "@/lib/auth/session";
+import { routes } from "@/lib/routes";
 
-export const metadata: Metadata = { title: "Aprender" };
-
-export default function LearnPage() {
-  return <LearnDashboard />;
+/** The learn dashboard is gone | reading KPIs live on the profile now. */
+export default async function LearnPage() {
+  const me = (await getCurrentUser()) as { id: string; handle?: string | null } | null;
+  redirect(me ? routes.user(me.handle || me.id) : routes.home);
 }

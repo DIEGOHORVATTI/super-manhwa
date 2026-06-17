@@ -3,7 +3,6 @@ export * from "./get-manga-chapters";
 export * from "./get-manga-core";
 export * from "./list-genres";
 export * from "./list-langs";
-export * from "./list-latest";
 export * from "./list-popular";
 export * from "./search-manga";
 export * from "./suggest-manga";

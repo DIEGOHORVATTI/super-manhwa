@@ -28,7 +28,6 @@ export const routes = {
   cookies: "/cookies",
   terms: "/terms",
   library: "/library",
-  updates: "/atualizacoes",
   newsletter: "/newsletter",
   authAnilist: "/auth/anilist",
   authAnilistDone: "/auth/anilist/done",

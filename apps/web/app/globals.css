@@ -3247,6 +3247,7 @@ a:hover {
   text-overflow: ellipsis;
 }
 .user-menu-dropdown a,
+.user-menu-item,
 .user-menu-signout {
   display: flex;
   align-items: center;
@@ -3263,8 +3264,51 @@ a:hover {
   width: 100%;
 }
 .user-menu-dropdown a:hover,
+.user-menu-item:hover,
 .user-menu-signout:hover {
   background: var(--surface-2);
+}
+
+/* Generic modal (settings, …). Overlay + centered dialog, fixed to the viewport. */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  max-height: 88vh;
+  overflow: auto;
+  background: var(--surface, #14171d);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+}
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-2, #1c2027);
+  color: var(--text);
+  cursor: pointer;
+}
+.modal-body {
+  padding: 22px;
 }
 .user-menu-signout {
   color: #ff8a8a;

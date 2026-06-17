@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { AnilistPanel } from "@/components/profile/AnilistPanel";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
+import { EditProfileButton } from "@/components/EditProfileButton";
 import { getCurrentUser } from "@/lib/auth/session";
 import { badgesFor } from "@/lib/badges";
 import { loadProfileData } from "@/lib/profile-data";
@@ -80,9 +81,7 @@ export default async function ProfilePage({ params }: { params: Params }) {
                 <Link href={routes.studio} className="btn btn-primary">
                   Criar obra
                 </Link>
-                <Link href={routes.settings} className="btn btn-ghost">
-                  Editar perfil
-                </Link>
+                <EditProfileButton />
               </div>
             )}
           </div>

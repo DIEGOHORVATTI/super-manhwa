@@ -6,7 +6,6 @@ import {
   getMangaMeta,
   listGenres,
   listLangs,
-  listLatest,
   listPopular,
   searchManga,
   suggestManga,
@@ -19,7 +18,6 @@ import { auth } from "@/context";
  */
 export const listPopularRoute = auth.manga.popular.handler(async ({ input }) => listPopular(input));
 export const searchMangaRoute = auth.manga.search.handler(async ({ input }) => searchManga(input));
-export const listLatestRoute = auth.manga.latest.handler(async ({ input }) => listLatest(input));
 export const suggestMangaRoute = auth.manga.suggest.handler(async ({ input }) =>
   suggestManga(input),
 );
