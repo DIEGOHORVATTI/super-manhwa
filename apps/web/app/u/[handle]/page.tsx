@@ -6,6 +6,7 @@ import { AnilistPanel } from "@/components/profile/AnilistPanel";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
 import { EditProfileButton } from "@/components/EditProfileButton";
+import { EditableAvatar, EditableBanner } from "@/components/profile/EditableProfileImages";
 import { getCurrentUser } from "@/lib/auth/session";
 import { badgesFor } from "@/lib/badges";
 import { loadProfileData } from "@/lib/profile-data";
@@ -47,19 +48,9 @@ export default async function ProfilePage({ params }: { params: Params }) {
   return (
     <div className="profile-wrap">
       <header className="profile-header">
-        <div
-          className={`profile-banner${bannerUrl ? "" : " profile-banner-empty"}`}
-          style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-        />
+        <EditableBanner bannerUrl={bannerUrl} editable={isOwn} />
         <div className="profile-id">
-          <div className="profile-avatar profile-avatar-lg">
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="" />
-            ) : (
-              <span>{initial}</span>
-            )}
-          </div>
+          <EditableAvatar avatarUrl={avatarUrl} initial={initial} editable={isOwn} />
           <div className="profile-info">
             <h1 className="profile-name">{user.name}</h1>
             <p className="profile-handle">
@@ -76,15 +67,15 @@ export default async function ProfilePage({ params }: { params: Params }) {
               </div>
             )}
             {user.bio && <p className="profile-bio">{user.bio}</p>}
-            {isOwn && (
-              <div className="profile-actions">
-                <Link href={routes.studio} className="btn btn-primary">
-                  Criar obra
-                </Link>
-                <EditProfileButton />
-              </div>
-            )}
           </div>
+          {isOwn && (
+            <div className="profile-actions">
+              <Link href={routes.studio} className="btn btn-primary">
+                Criar obra
+              </Link>
+              <EditProfileButton />
+            </div>
+          )}
         </div>
       </header>
 

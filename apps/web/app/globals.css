@@ -3508,7 +3508,46 @@ a:hover {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 12px;
+  margin-left: auto;
+  align-self: flex-start;
+}
+
+/* Inline image editing (banner + avatar) on the owner's profile. */
+.profile-avatar-wrap {
+  position: relative;
+  flex: none;
+}
+.profile-img-edit {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(10, 11, 15, 0.7);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  color: #fff;
+  cursor: pointer;
+}
+.profile-img-edit:hover {
+  background: rgba(10, 11, 15, 0.92);
+}
+.profile-img-edit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.profile-banner-edit {
+  top: 12px;
+  right: 12px;
+}
+.profile-avatar-edit {
+  bottom: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
 }
 .profile-works {
   display: grid;
@@ -3534,6 +3573,7 @@ a:hover {
   margin-bottom: 16px;
 }
 .profile-banner {
+  position: relative;
   height: 210px;
   border-radius: 16px;
   border: 1px solid var(--border);

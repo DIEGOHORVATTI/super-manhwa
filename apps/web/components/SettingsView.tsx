@@ -77,23 +77,6 @@ export function SettingsView() {
     }
   }
 
-  async function uploadImage(kind: "banner" | "avatar", file: File) {
-    setErr(null);
-    setSavedMsg(null);
-    const fd = new FormData();
-    fd.set("image", file);
-    const url = kind === "banner" ? routes.api.profile.banner : routes.api.profile.avatar;
-    try {
-      const res = await fetch(url, { method: "POST", body: fd });
-      if (res.ok) setSavedMsg(`${kind === "banner" ? "Banner" : "Avatar"} atualizado!`);
-      else if (res.status === 503)
-        setErr("Uploads de imagem indisponíveis (armazenamento não configurado).");
-      else setErr("Falha ao enviar a imagem.");
-    } catch {
-      setErr("Falha ao enviar a imagem.");
-    }
-  }
-
   async function changePassword() {
     setPwMsg(null);
     const res = await authClient.changePassword({
@@ -151,30 +134,6 @@ export function SettingsView() {
         <button type="button" className="auth-submit" onClick={saveProfile}>
           Salvar perfil
         </button>
-      </section>
-
-      <section className="settings-card">
-        <h2>Imagens do perfil</h2>
-        <p className="muted">
-          Banner e avatar do seu perfil público. Sem upload, usamos a sua imagem da AniList (se
-          vinculada) ou um gradiente.
-        </p>
-        <label className="auth-field">
-          <span>Banner (capa)</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files?.[0] && uploadImage("banner", e.target.files[0])}
-          />
-        </label>
-        <label className="auth-field">
-          <span>Avatar</span>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => e.target.files?.[0] && uploadImage("avatar", e.target.files[0])}
-          />
-        </label>
       </section>
 
       <section className="settings-card">
