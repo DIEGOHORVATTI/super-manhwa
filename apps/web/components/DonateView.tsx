@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+import { ComposerArea } from "@/components/ComposerArea";
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { rpc } from "@/lib/rpc/client";
@@ -137,7 +138,13 @@ export function DonateView() {
           </label>
           <label className="auth-field">
             <span>Mensagem (opcional)</span>
-            <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={200} />
+            <ComposerArea
+              value={message}
+              onChange={setMessage}
+              rows={2}
+              placeholder="Deixe uma mensagem para o mural…"
+              maxLength={200}
+            />
           </label>
           {error && <p className="auth-error">{error}</p>}
           <button type="button" className="auth-submit" onClick={start} disabled={busy}>

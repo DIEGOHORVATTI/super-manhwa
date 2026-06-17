@@ -1,5 +1,8 @@
-import { CUSTOM_EMOJIS } from "@/lib/emojis";
+import { listEmojisPublic } from "@/lib/emoji-manifest";
 
-export function GET() {
-  return Response.json({ emojis: CUSTOM_EMOJIS });
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  const emojis = await listEmojisPublic();
+  return Response.json({ emojis });
 }

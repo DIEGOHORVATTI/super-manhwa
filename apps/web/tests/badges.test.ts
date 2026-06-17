@@ -37,7 +37,7 @@ describe("badgesFor", () => {
       "Comentarista",
     );
     expect(badgesFor({ commentsCount: 250 }).find((b) => b.key === "keyboard-warrior")?.label).toBe(
-      "Keyboard Warrior",
+      "Guerreiro do Teclado",
     );
     expect(badgesFor({ createdAt: "2026-01-01" }).some((b) => b.key === "early-adopter")).toBe(
       true,

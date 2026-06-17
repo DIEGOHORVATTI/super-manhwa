@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { ComposerArea } from "@/components/ComposerArea";
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
 import { chatBadges } from "@/lib/badges";
 import { buildCommentTree } from "@/lib/comment-tree";
-import { parseBody, UNICODE_EMOJIS } from "@/lib/emojis";
+import { parseBody } from "@/lib/emojis";
 import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
@@ -41,96 +42,6 @@ function CommentBody({ text }: { text: string }) {
         ),
       )}
     </p>
-  );
-}
-
-function EmojiPicker({ onPick }: { onPick: (emoji: string) => void }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const onDoc = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    };
-    document.addEventListener("mousedown", onDoc);
-    return () => document.removeEventListener("mousedown", onDoc);
-  }, []);
-
-  return (
-    <div className="emoji-picker-wrap" ref={ref}>
-      <button
-        type="button"
-        className="emoji-trigger"
-        onClick={() => setOpen((o) => !o)}
-        title="Emojis"
-        aria-label="Abrir seletor de emojis"
-      >
-        😊
-      </button>
-      {open && (
-        <div className="emoji-picker" role="listbox" aria-label="Emojis">
-          {UNICODE_EMOJIS.map((e) => (
-            <button
-              key={e}
-              type="button"
-              role="option"
-              aria-selected={false}
-              className="emoji-btn"
-              onMouseDown={(ev) => {
-                ev.preventDefault();
-                onPick(e);
-                setOpen(false);
-              }}
-            >
-              {e}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function ComposerArea({
-  value,
-  onChange,
-  rows,
-  placeholder,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  rows: number;
-  placeholder?: string;
-}) {
-  const ref = useRef<HTMLTextAreaElement>(null);
-
-  const insertEmoji = (emoji: string) => {
-    const el = ref.current;
-    if (!el) {
-      onChange(value + emoji);
-      return;
-    }
-    const start = el.selectionStart ?? value.length;
-    const end = el.selectionEnd ?? value.length;
-    const next = value.slice(0, start) + emoji + value.slice(end);
-    onChange(next);
-    requestAnimationFrame(() => {
-      el.selectionStart = el.selectionEnd = start + emoji.length;
-      el.focus();
-    });
-  };
-
-  return (
-    <div className="composer-area">
-      <textarea
-        ref={ref}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        rows={rows}
-        placeholder={placeholder}
-      />
-      <EmojiPicker onPick={insertEmoji} />
-    </div>
   );
 }
 

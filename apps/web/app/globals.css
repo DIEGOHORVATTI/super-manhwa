@@ -730,7 +730,7 @@ a:hover {
   top: calc(100% + 4px);
   left: 0;
   right: 0;
-  z-index: 20;
+  z-index: 200;
   max-height: 60vh;
   overflow: auto;
   margin: 0;
@@ -4887,8 +4887,8 @@ a:hover {
   position: absolute;
   top: calc(100% + 10px);
   left: 0;
-  z-index: 50;
-  width: 220px;
+  z-index: 200;
+  width: 240px;
   padding: 16px;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -4897,46 +4897,77 @@ a:hover {
 }
 .reader-settings-label {
   margin: 0 0 10px;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
 }
 .reader-settings-bgs {
   display: flex;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 .reader-bg-swatch {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  border: 2px solid transparent;
+  /* visible border so swatch doesn't vanish against dark bg */
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  outline: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition:
     border-color 0.15s,
-    transform 0.12s;
+    transform 0.12s,
+    box-shadow 0.15s;
   padding: 0;
+  flex-shrink: 0;
 }
 .reader-bg-swatch:hover {
   transform: scale(1.1);
 }
 .reader-bg-swatch.is-active {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 62, 110, 0.25);
+  box-shadow: 0 0 0 3px rgba(255, 62, 110, 0.3);
 }
-/* Checkmark color adapts to swatch background */
-.reader-bg-swatch[style*="#191b1c"] svg,
-.reader-bg-swatch[style*="#f6edd4"] svg {
-  stroke: #333;
+.reader-fc-swatch {
+  width: 28px;
+  height: 28px;
 }
-.reader-bg-swatch[style*="#191b1c"].is-active svg {
+/* Checkmark stroke adapts to brightness */
+.reader-bg-swatch svg {
+  stroke: rgba(0, 0, 0, 0.6);
+}
+.reader-bg-swatch[style*="#191b1c"] svg {
   stroke: var(--accent);
 }
+
+/* Intensity range slider */
+.reader-settings-intensity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.reader-intensity-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.reader-intensity-label-b {
+  font-size: 15px;
+}
+.reader-range {
+  flex: 1;
+  height: 4px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
 .reader-settings-size {
   display: flex;
   align-items: center;
@@ -4971,25 +5002,24 @@ a:hover {
   font-variant-numeric: tabular-nums;
 }
 
-/* Reader background themes (applied via html[data-reader-bg="..."] .pages) */
-[data-reader-bg="sepia"] .pages {
-  background: #f6edd4;
-}
-[data-reader-bg="white"] .pages {
-  background: #fff;
-}
-/* CSS variable for reader font size (applied by ReaderSettings) */
+/* Reader background themes — driven by --reader-bg CSS var set by JS */
 :root {
   --reader-fs: 18px;
+  --reader-bg: transparent;
+  --reader-fc: inherit;
+}
+.pages {
+  background: var(--reader-bg);
+  color: var(--reader-fc);
 }
 
-/* ── Emoji picker (comments) ─────────────────────────────────────────────── */
+/* ── Emoji picker (comments + donate) ───────────────────────────────────── */
 .composer-area {
   position: relative;
 }
 .composer-area textarea {
   width: 100%;
-  padding: 11px 13px;
+  padding: 11px 13px 36px;
   border: 1px solid var(--border);
   border-radius: var(--radius);
   background: var(--surface);
@@ -5018,7 +5048,7 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
+  opacity: 0.65;
   transition:
     opacity 0.12s,
     background 0.12s;
@@ -5033,16 +5063,49 @@ a:hover {
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
-  z-index: 60;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 2px;
+  z-index: 300;
   padding: 8px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  width: 256px;
+  width: 270px;
+}
+.emoji-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+.emoji-tab {
+  flex: 1;
+  height: 28px;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: background 0.1s, color 0.1s;
+}
+.emoji-tab.is-active {
+  background: var(--surface-2);
+  color: var(--accent);
+}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 2px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.emoji-grid::-webkit-scrollbar {
+  width: 4px;
+}
+.emoji-grid::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 .emoji-btn {
   width: 30px;
@@ -5062,7 +5125,12 @@ a:hover {
 .emoji-btn:hover {
   background: var(--surface-2);
 }
-/* Custom image emojis inside comment bodies */
+.emoji-btn-img img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+/* Custom image emojis rendered inside comment bodies */
 .comment-emoji {
   display: inline-block;
   width: 22px;
@@ -5070,9 +5138,4 @@ a:hover {
   vertical-align: middle;
   object-fit: contain;
   margin: 0 1px;
-}
-/* Comment textarea gets padding-bottom so emoji button doesn't overlap text */
-.comment-composer .composer-area textarea,
-.comment-editor .composer-area textarea {
-  padding-bottom: 36px;
 }

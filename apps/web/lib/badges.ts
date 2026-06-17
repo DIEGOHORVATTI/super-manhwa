@@ -32,25 +32,40 @@ const REP_TIERS: ReadonlyArray<{ min: number; label: string }> = [
 ];
 /** Comment-count ladder. Highest match wins. */
 const COMMENT_TIERS: ReadonlyArray<{ min: number; label: string }> = [
-  { min: 200, label: "Keyboard Warrior" },
+  { min: 200, label: "Guerreiro do Teclado" },
   { min: 50, label: "Comentarista" },
 ];
 /** Accounts created before this date earn the Early Adopter badge. */
 const EARLY_ADOPTER_BEFORE = new Date("2027-01-01");
 
-/** Achievement-key → badge label + tone (shared with gamification unlock keys). */
-export const ACHIEVEMENT_BADGES: Record<string, { label: string; tone: BadgeTone }> = {
+/** Achievement-key → badge label + tone + how it was earned (pt-BR). */
+export const ACHIEVEMENT_BADGES: Record<
+  string,
+  { label: string; tone: BadgeTone; description: string }
+> = {
   // Language learning
-  words_100: { label: "100 palavras", tone: "lang" },
-  words_1000: { label: "1.000 palavras", tone: "lang" },
-  streak_7: { label: "7 dias seguidos", tone: "lang" },
-  streak_30: { label: "30 dias seguidos", tone: "lang" },
-  first_chapter: { label: "Primeiro capítulo", tone: "lang" },
+  words_100: { label: "100 palavras", tone: "lang", description: "Aprendeu 100 palavras" },
+  words_1000: { label: "1.000 palavras", tone: "lang", description: "Aprendeu 1.000 palavras" },
+  streak_7: { label: "7 dias seguidos", tone: "lang", description: "Estudou 7 dias seguidos" },
+  streak_30: { label: "30 dias seguidos", tone: "lang", description: "Estudou 30 dias seguidos" },
+  first_chapter: {
+    label: "Primeiro capítulo",
+    tone: "lang",
+    description: "Leu o primeiro capítulo",
+  },
   // Reading
-  read_10_works: { label: "10 obras lidas", tone: "reading" },
-  read_50_works: { label: "50 obras lidas", tone: "reading" },
-  read_100_chapters: { label: "100 capítulos", tone: "reading" },
-  read_500_chapters: { label: "500 capítulos", tone: "reading" },
+  read_10_works: {
+    label: "10 obras lidas",
+    tone: "reading",
+    description: "Leu 10 obras diferentes",
+  },
+  read_50_works: {
+    label: "50 obras lidas",
+    tone: "reading",
+    description: "Leu 50 obras diferentes",
+  },
+  read_100_chapters: { label: "100 capítulos", tone: "reading", description: "Leu 100 capítulos" },
+  read_500_chapters: { label: "500 capítulos", tone: "reading", description: "Leu 500 capítulos" },
 };
 
 const STATUS_TONES: ReadonlySet<BadgeTone> = new Set(["admin", "staff", "premium"]);
@@ -64,9 +79,22 @@ export function badgesFor(input: {
   createdAt?: Date | string | null;
 }): Badge[] {
   const out: Badge[] = [];
-  if (input.role === "admin") out.push({ key: "admin", label: "Admin", tone: "admin" });
-  else if (input.role === "staff") out.push({ key: "staff", label: "Moderador", tone: "staff" });
-  if (input.plan === "premium") out.push({ key: "premium", label: "Premium", tone: "premium" });
+  if (input.role === "admin")
+    out.push({ key: "admin", label: "Admin", tone: "admin", description: "Administra o site" });
+  else if (input.role === "staff")
+    out.push({
+      key: "staff",
+      label: "Moderador",
+      tone: "staff",
+      description: "Modera a comunidade",
+    });
+  if (input.plan === "premium")
+    out.push({
+      key: "premium",
+      label: "Premium",
+      tone: "premium",
+      description: "Assinante Premium",
+    });
 
   const rep = input.reputation ?? 0;
   const repTier = REP_TIERS.find((t) => rep >= t.min);
@@ -93,7 +121,7 @@ export function badgesFor(input: {
   if (input.createdAt && new Date(input.createdAt) < EARLY_ADOPTER_BEFORE) {
     out.push({
       key: "early-adopter",
-      label: "Early Adopter",
+      label: "Pioneiro",
       tone: "special",
       description: "Entrou no comecinho do projeto",
     });
@@ -101,7 +129,7 @@ export function badgesFor(input: {
 
   for (const k of input.achievements ?? []) {
     const def = ACHIEVEMENT_BADGES[k];
-    if (def) out.push({ key: k, label: def.label, tone: def.tone });
+    if (def) out.push({ key: k, label: def.label, tone: def.tone, description: def.description });
   }
   return out;
 }
