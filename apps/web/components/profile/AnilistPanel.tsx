@@ -1,4 +1,7 @@
+import Link from "next/link";
+
 import type { AnilistProfile } from "@/lib/anilist-profile";
+import { routes } from "@/lib/routes";
 
 /**
  * AniList panel — shows the linked account's manga stats + favourite covers.
@@ -50,12 +53,10 @@ export function AnilistPanel({
           {profile.favourites.length > 0 && (
             <div className="anilist-favs">
               {profile.favourites.map((f) => (
-                <a
+                <Link
                   key={f.id}
                   className="anilist-fav"
-                  href={`https://anilist.co/manga/${f.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={routes.manga(String(f.id), f.title)}
                   title={f.title}
                 >
                   {f.cover ? (
@@ -64,7 +65,7 @@ export function AnilistPanel({
                   ) : (
                     <span>{f.title.charAt(0)}</span>
                   )}
-                </a>
+                </Link>
               ))}
             </div>
           )}

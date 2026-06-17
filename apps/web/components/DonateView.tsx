@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
+import { ComposerArea } from "@/components/ComposerArea";
 import { Icon } from "@/components/Icon";
+import { useSession } from "@/lib/auth/client";
 import { rpc } from "@/lib/rpc/client";
 
 /**
@@ -13,9 +15,18 @@ const PRESETS = [500, 1000, 2500, 5000]; // cents
 type Stage = "form" | "pix" | "done";
 
 export function DonateView() {
+  const { data: session } = useSession();
   const [amount, setAmount] = useState(1000);
   const [custom, setCustom] = useState("");
+  const [name, setName] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Prefill the wall name with the signed-in account name (the donor can still
+  // edit it or opt to appear anonymous).
+  useEffect(() => {
+    if (session?.user?.name) setName(session.user.name);
+  }, [session?.user?.name]);
   const [stage, setStage] = useState<Stage>("form");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,6 +53,7 @@ export function DonateView() {
       const data = await rpc.donations.create({
         amountCents: cents,
         message: message || undefined,
+        name: anonymous ? "Anônimo" : name.trim() || undefined,
       });
       if (!data.qrCode) throw new Error("Pix indisponível no momento.");
       setPix({ id: data.id, qrCode: data.qrCode, qrCodeBase64: data.qrCodeBase64 ?? "" });
@@ -69,9 +81,13 @@ export function DonateView() {
 
   return (
     <div className="donate-wrap">
-      <h1 className="donate-title">Apoie a Super Manhwa</h1>
+      <h1 className="donate-title">Gostou do Super Manhwa?</h1>
       <p className="donate-sub">
-        Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Obrigado! 💜
+        Sua doação via Pix ajuda a pagar os servidores e manter todo o catálogo disponível para
+        todos, gratuitamente e sem anúncios.
+        <br />
+        <br />
+        Obrigado por fazer parte desse projeto! 💜
       </p>
 
       {stage === "form" && (
@@ -103,8 +119,32 @@ export function DonateView() {
             />
           </label>
           <label className="auth-field">
+            <span>Seu nome no mural</span>
+            <input
+              value={anonymous ? "" : name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={40}
+              placeholder="Anônimo"
+              disabled={anonymous}
+            />
+          </label>
+          <label className="donate-anon">
+            <input
+              type="checkbox"
+              checked={anonymous}
+              onChange={(e) => setAnonymous(e.target.checked)}
+            />
+            <span>Aparecer como anônimo</span>
+          </label>
+          <label className="auth-field">
             <span>Mensagem (opcional)</span>
-            <input value={message} onChange={(e) => setMessage(e.target.value)} maxLength={200} />
+            <ComposerArea
+              value={message}
+              onChange={setMessage}
+              rows={2}
+              placeholder="Deixe uma mensagem para o mural…"
+              maxLength={200}
+            />
           </label>
           {error && <p className="auth-error">{error}</p>}
           <button type="button" className="auth-submit" onClick={start} disabled={busy}>

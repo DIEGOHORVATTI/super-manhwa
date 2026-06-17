@@ -10,7 +10,6 @@ export const router = {
   health: systemRoutes.getHealthRoute,
   manga: {
     popular: mangaRoutes.listPopularRoute,
-    latest: mangaRoutes.listLatestRoute,
     search: mangaRoutes.searchMangaRoute,
     suggest: mangaRoutes.suggestMangaRoute,
     core: mangaRoutes.getMangaCoreRoute,

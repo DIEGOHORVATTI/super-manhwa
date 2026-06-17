@@ -12,7 +12,6 @@ import {
   makeGetMangaCore,
   makeListGenres,
   makeListLangs,
-  makeListLatest,
   makeListPopular,
   makeSearchManga,
   makeSuggestManga,
@@ -44,10 +43,9 @@ const catalog = makeAniListCatalog();
 
 // Catalog application
 export const listPopular = makeListPopular(catalog, idStore, cache);
-export const listLatest = makeListLatest(connectorRegistry, idStore, cache);
 export const searchManga = makeSearchManga(catalog, idStore, cache);
 export const suggestManga = makeSuggestManga(catalog, idStore, cache);
-export const getMangaCore = makeGetMangaCore(catalog, idStore, cache);
+export const getMangaCore = makeGetMangaCore(catalog, connectorRegistry, idStore, cache);
 export const getMangaChapters = makeGetMangaChapters(catalog, connectorRegistry, idStore, cache);
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);

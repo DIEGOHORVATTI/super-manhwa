@@ -13,7 +13,13 @@ import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
 import { StatusBadge } from "@/components/StatusBadge";
 import { buildAltTitles } from "@/lib/alt-titles";
-import { cacheChaptersOnRead, cacheWorkOnRead, getCachedWork } from "@/lib/cache-works";
+import { isStale } from "@/lib/cache-policy";
+import {
+  cacheChaptersOnRead,
+  cacheWorkOnRead,
+  getCachedChapters,
+  getCachedWork,
+} from "@/lib/cache-works";
 import { api } from "@/lib/orpc.server";
 import { routes } from "@/lib/routes";
 import { deslugify, slugify } from "@/lib/slug";
@@ -90,21 +96,30 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const [{ id, slug }, { n }] = await Promise.all([params, searchParams]);
   const name = nameHint(slug, n);
 
-  // Fast half: work metadata (AniList, cached) | paints the hero immediately.
+  // Catalog-first: serve our own cached metadata when it's fresh | the hero paints
+  // instantly with NO backend hit. Stale/missing → live backend (AniList or the
+  // connector for connector-only works), with the cached row as a downed-source
+  // fallback. The `after()` below refreshes the cache either way.
   let coreData: Awaited<ReturnType<typeof api.manga.core>> | undefined;
   let error: string | null = null;
-  try {
-    coreData = await api.manga.core({ id, name });
-  } catch (e) {
-    error = e instanceof Error ? e.message : String(e);
-    // Read-side fallback: a downed source serves the last cached metadata.
-    const cached = await getCachedWork(id);
-    if (cached) {
-      coreData = {
-        core: { ...cached.core, title: cached.title },
-        lang: "pt-br",
-      } as typeof coreData;
-      error = null;
+  const cached = await getCachedWork(id);
+  const fromCache = (c: NonNullable<typeof cached>): typeof coreData =>
+    ({
+      core: { ...c.core, title: c.title, imageUrl: c.coverUrl ?? c.core.imageUrl },
+      lang: "pt-br",
+    }) as typeof coreData;
+
+  if (cached && !isStale(cached.refreshedAt)) {
+    coreData = fromCache(cached);
+  } else {
+    try {
+      coreData = await api.manga.core({ id, name });
+    } catch (e) {
+      error = e instanceof Error ? e.message : String(e);
+      if (cached) {
+        coreData = fromCache(cached);
+        error = null;
+      }
     }
   }
 
@@ -135,19 +150,14 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   const canonicalSlug = slugify(title);
   if (slug?.[0] !== canonicalSlug) permanentRedirect(routes.manga(id, title));
 
-  // Slow half: cross-source chapter fan-out | streamed, NOT awaited. The promise
-  // is handed to the client components, which suspend behind skeletons while it
-  // resolves. A failure degrades to an empty list so the page still renders.
-  const chaptersPromise = api.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
-
-  // Cache-on-read: persist metadata + cover (R2) now, and the merged chapters
-  // once they resolve. Runs after the response is streamed, so it never delays
-  // the page; all writes are best-effort and idempotent.
-  after(async () => {
-    await cacheWorkOnRead(id, core);
-    const resolved = await chaptersPromise;
-    await cacheChaptersOnRead(id, resolved.chapters);
-  });
+  // Slow half: chapters. Catalog-first | serve the cached merged list instantly
+  // when present; otherwise do the cross-source fan-out (streamed, NOT awaited, so
+  // it suspends behind skeletons). A failure degrades to an empty list.
+  const cachedCh = await getCachedChapters(id);
+  const chaptersFresh = Boolean(cachedCh && !isStale(cachedCh.refreshedAt));
+  const chaptersPromise = cachedCh
+    ? Promise.resolve({ chapters: cachedCh.chapters, lang })
+    : api.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
 
   // Characters are the heavy half of the metadata and only feed the "Personagens"
   // tab | streamed, NOT awaited, so they never hold up the hero.
@@ -174,6 +184,34 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // to the original text if the translation proxy fails.
   const rawDesc = core.description || meta.description || "";
   const desc = await translatePt(rawDesc);
+
+  // Cache-on-read: persist metadata + translated synopsis + cover/banner (R2), and
+  // (re)fresh the chapter list unless we already served a fresh cached one. Runs
+  // after the response is streamed, so it never delays the page; best-effort.
+  after(async () => {
+    await cacheWorkOnRead(id, core, { bannerUrl: meta.bannerImage, descriptionPt: desc });
+    if (chaptersFresh) return; // served a fresh cached list | nothing to refresh
+    // Stale cache or first view → fan out fresh in the background and persist so
+    // the next visit is instant + up to date.
+    const resolved = cachedCh
+      ? await api.manga.chapters({ id, name }).catch(() => ({ chapters: [] }))
+      : await chaptersPromise;
+    await cacheChaptersOnRead(id, resolved.chapters);
+  });
+
+  // Enrich AniList relations with id + cover by searching each title in parallel.
+  // Best-effort: a failed/empty search falls back to the bare relation (title-only).
+  const enrichedRelations = await Promise.all(
+    meta.relations.map(async (r) => {
+      try {
+        const { list } = await api.manga.search({ q: r.title });
+        const match = list[0];
+        return match ? { ...r, id: match.id, imageUrl: match.imageUrl } : r;
+      } catch {
+        return r;
+      }
+    }),
+  );
 
   // Every name the work is known by (official variants + machine pt-BR title).
   // Rendered as real on-page text and fed to JSON-LD, so the obra is found
@@ -305,6 +343,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         charactersPromise={charactersPromise}
         about={aboutTab}
         comments={<Comments targetType="work" targetId={id} />}
+        relations={enrichedRelations}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={

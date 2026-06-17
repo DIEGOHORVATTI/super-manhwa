@@ -3,8 +3,12 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 
 import { AnilistPanel } from "@/components/profile/AnilistPanel";
+import { ProfileComments } from "@/components/profile/ProfileComments";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
+import { EditProfileButton } from "@/components/EditProfileButton";
+import { EditableAvatar, EditableBanner } from "@/components/profile/EditableProfileImages";
+import { getCurrentUser } from "@/lib/auth/session";
 import { badgesFor } from "@/lib/badges";
 import { loadProfileData } from "@/lib/profile-data";
 import { publicUrlFor, r2Enabled } from "@/lib/r2";
@@ -25,12 +29,34 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const data = await loadProfileData(handle);
   if (!data) notFound();
 
-  const { user, works, achievements, reading, wordsLearned, anilist } = data;
+  const {
+    user,
+    works,
+    achievements,
+    reading,
+    wordsLearned,
+    anilist,
+    reputation,
+    commentsCount,
+    recentComments,
+  } = data;
 
   // Canonical URL: if reached by id but a @handle exists, redirect to the pretty one.
   if (user.handle && handle !== user.handle) redirect(routes.user(user.handle));
 
-  const badges = badgesFor({ role: user.role, plan: user.plan, achievements });
+  // Own-profile actions (create works, edit info) live here now | the Studio left
+  // the footer and belongs on the author's own page.
+  const me = await getCurrentUser();
+  const isOwn = me?.id === user.id;
+
+  const badges = badgesFor({
+    role: user.role,
+    plan: user.plan,
+    achievements,
+    reputation,
+    commentsCount,
+    createdAt: user.createdAt,
+  });
   const al = anilist.profile;
   const bannerUrl =
     user.bannerR2Key && r2Enabled ? publicUrlFor(user.bannerR2Key) : (al?.banner ?? null);
@@ -40,19 +66,9 @@ export default async function ProfilePage({ params }: { params: Params }) {
   return (
     <div className="profile-wrap">
       <header className="profile-header">
-        <div
-          className={`profile-banner${bannerUrl ? "" : " profile-banner-empty"}`}
-          style={bannerUrl ? { backgroundImage: `url(${bannerUrl})` } : undefined}
-        />
+        <EditableBanner bannerUrl={bannerUrl} editable={isOwn} />
         <div className="profile-id">
-          <div className="profile-avatar profile-avatar-lg">
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatarUrl} alt="" />
-            ) : (
-              <span>{initial}</span>
-            )}
-          </div>
+          <EditableAvatar avatarUrl={avatarUrl} initial={initial} editable={isOwn} />
           <div className="profile-info">
             <h1 className="profile-name">{user.name}</h1>
             <p className="profile-handle">
@@ -62,19 +78,38 @@ export default async function ProfilePage({ params }: { params: Params }) {
             {badges.length > 0 && (
               <div className="profile-badges">
                 {badges.map((b) => (
-                  <span key={b.key} className={`badge badge-${b.tone}`}>
+                  <span
+                    key={b.key}
+                    className={`badge badge-${b.tone}${b.description ? " has-tip" : ""}`}
+                  >
                     {b.label}
+                    {b.description && (
+                      <span className="badge-tip" role="tooltip">
+                        {b.description}
+                      </span>
+                    )}
                   </span>
                 ))}
               </div>
             )}
-            {user.bio && <p className="profile-bio">{user.bio}</p>}
           </div>
         </div>
+        {user.bio && <p className="profile-bio">{user.bio}</p>}
       </header>
+
+      {isOwn && (
+        <div className="profile-actions">
+          <Link href={routes.studio} className="btn btn-primary">
+            Gerenciar obras
+          </Link>
+          <EditProfileButton />
+        </div>
+      )}
 
       <ProfileStats
         stats={[
+          { label: "reputação", value: reputation, icon: "⭐" },
+          { label: "comentários", value: commentsCount, icon: "💬" },
           { label: "capítulos lidos", value: reading.chapters, icon: "📖" },
           { label: "obras lidas", value: reading.works, icon: "📚" },
           { label: "XP", value: user.xp, icon: "✨" },
@@ -87,6 +122,8 @@ export default async function ProfilePage({ params }: { params: Params }) {
       <ReadingHeatmap events={reading.events} />
 
       <AnilistPanel username={anilist.username} profile={al} />
+
+      <ProfileComments comments={recentComments} />
 
       <section className="profile-section">
         <h2 className="section">Obras publicadas</h2>

@@ -5,6 +5,7 @@ import { ExploreFilters } from "@/components/ExploreFilters";
 import { InfiniteList } from "@/components/InfiniteList";
 import { PosterRow } from "@/components/PosterRow";
 import { api } from "@/lib/orpc.server";
+import { translateSummaries } from "@/lib/translate";
 
 const SHELF_SIZE = 15;
 
@@ -51,6 +52,9 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       : Promise.resolve({ list: [] }),
   ]);
 
+  // Grid descriptions show on hover | translate them to pt-br (rows don't).
+  const list = await translateSummaries(result.list);
+
   // Params for the infinite-scroll endpoint (no `page` | InfiniteList adds it).
   const listParams: Record<string, string> = { feed: "browse" };
   if (q) listParams.q = q;
@@ -94,7 +98,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         <p className="muted">Nenhuma obra encontrada com esses filtros.</p>
       ) : (
         <InfiniteList
-          initial={result.list}
+          initial={list}
           initialPage={page}
           hasNextPage={result.hasNextPage}
           params={listParams}

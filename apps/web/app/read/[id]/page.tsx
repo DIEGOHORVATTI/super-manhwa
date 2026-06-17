@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Comments } from "@/components/Comments";
-import { DownloadChapterButton } from "@/components/DownloadChapterButton";
 import { Icon } from "@/components/Icon";
+import { ReaderSettings } from "@/components/ReaderSettings";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
@@ -61,7 +61,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   return (
     <>
       {hasContext ? (
-        <ReaderNav chapters={chapters} currentId={id} mangaId={m} mangaName={mn} pages={pages} />
+        <ReaderNav chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />
       ) : (
         // Fallback minimal bar when we lack manga context (e.g. URL shared without ?m=)
         <div className="reader-nav">
@@ -69,7 +69,7 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
             <Icon name="house" size={16} />
             <span className="reader-series-name">Início</span>
           </Link>
-          <DownloadChapterButton pages={pages} chapterId={id} />
+          <ReaderSettings />
           <div className="reader-nav-spacer" />
           <span className="reader-count">
             {n ? `${n} · ` : ""}

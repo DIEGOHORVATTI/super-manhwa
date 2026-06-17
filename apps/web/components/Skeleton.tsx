@@ -92,3 +92,72 @@ export function ReaderSkeleton({ count = 4 }: { count?: number }) {
     </div>
   );
 }
+
+/** Donation page placeholder | mirrors the heading + the Pix form card so the
+ *  swap to the real form doesn't shift layout. */
+export function DonateSkeleton() {
+  return (
+    <div className="donate-wrap" aria-hidden="true">
+      <div className="skel skel-line" style={{ width: "55%", height: 26, marginBottom: 12 }} />
+      <div className="skel skel-line" style={{ width: "100%", marginBottom: 6 }} />
+      <div className="skel skel-line" style={{ width: "80%", marginBottom: 20 }} />
+      <div className="settings-card">
+        <div className="donate-presets">
+          {[0, 1, 2, 3].map((i) => (
+            <div key={i} className="skel" style={{ height: 40, borderRadius: 10 }} />
+          ))}
+        </div>
+        {[42, 42, 44].map((h, i) => (
+          <div
+            key={i}
+            className="skel"
+            style={{ height: h, borderRadius: 10, marginTop: i === 0 ? 16 : 12 }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Profile page placeholder | mirrors the banner header, avatar, name/handle,
+ *  the stat-card row and the heatmap so the swap doesn't jump. */
+export function ProfileSkeleton() {
+  return (
+    <div className="profile-wrap" aria-hidden="true">
+      <header className="profile-header">
+        <div className="profile-banner skel" />
+        <div className="profile-id">
+          <div className="profile-avatar profile-avatar-lg skel" />
+          <div className="profile-info">
+            <div className="skel skel-line" style={{ width: 190, height: 26, marginBottom: 10 }} />
+            <div className="skel skel-line" style={{ width: 150, height: 15, marginBottom: 12 }} />
+            <div style={{ display: "flex", gap: 6 }}>
+              {[60, 84].map((w) => (
+                <div
+                  key={w}
+                  className="skel skel-line"
+                  style={{ width: w, height: 22, borderRadius: 999 }}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </header>
+      <div className="profile-stats">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="profile-stat">
+            <div
+              className="skel skel-line"
+              style={{ width: 44, height: 22, margin: "0 auto 8px" }}
+            />
+            <div
+              className="skel skel-line"
+              style={{ width: "65%", height: 11, margin: "0 auto" }}
+            />
+          </div>
+        ))}
+      </div>
+      <div className="skel" style={{ height: 150, borderRadius: 12, marginTop: 22 }} />
+    </div>
+  );
+}

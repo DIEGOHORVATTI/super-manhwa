@@ -2,6 +2,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
+import { Select } from "@/components/Select";
 import { routes } from "@/lib/routes";
 
 /** Status options that map to a real AniList filter (see backend ANILIST_STATUS). */
@@ -124,47 +125,33 @@ export function ExploreFilters({
           )}
         </div>
 
-        <select
-          className="select explore-select"
-          value={genre}
+        <Select
           aria-label="Gênero"
-          onChange={(e) => go({ genre: e.target.value })}
-        >
-          <option value="">Todos os gêneros</option>
-          {genres.map((g) => (
-            <option key={g} value={g}>
-              {g}
-            </option>
-          ))}
-        </select>
+          value={genre}
+          onChange={(v) => go({ genre: v })}
+          options={[
+            { value: "", label: "Todos os gêneros" },
+            ...genres.map((g) => ({ value: g, label: g })),
+          ]}
+          className="explore-select"
+        />
 
-        <select
-          className="select explore-select"
-          value={status}
+        <Select
           aria-label="Status"
-          onChange={(e) => go({ status: e.target.value })}
-        >
-          {STATUS_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          value={status}
+          onChange={(v) => go({ status: v })}
+          options={STATUS_OPTIONS as { value: string; label: string }[]}
+          className="explore-select"
+        />
 
-        <select
-          className="select explore-select"
-          value={sort}
+        <Select
           aria-label="Ordenar por"
+          value={sort}
+          onChange={(v) => go({ sort: v })}
+          options={SORT_OPTIONS as { value: string; label: string }[]}
           disabled={!!query.trim()}
-          title={query.trim() ? "A ordenação não se aplica durante a busca por texto" : undefined}
-          onChange={(e) => go({ sort: e.target.value })}
-        >
-          {SORT_OPTIONS.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+          className="explore-select"
+        />
       </form>
 
       {chips.length > 0 && (

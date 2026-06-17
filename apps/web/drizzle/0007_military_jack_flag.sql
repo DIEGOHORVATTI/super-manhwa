@@ -1,0 +1,1 @@
+ALTER TABLE "cached_works" ADD COLUMN "banner_r2_key" text;

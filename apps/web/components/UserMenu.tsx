@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
+import { SettingsModal } from "@/components/SettingsModal";
 import { authClient, useSession } from "@/lib/auth/client";
 import { routes } from "@/lib/routes";
 
@@ -17,6 +18,7 @@ export function UserMenu() {
   const { data, isPending } = useSession();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -85,18 +87,17 @@ export function UserMenu() {
           <Link href={routes.library} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="heart" size={15} /> Biblioteca
           </Link>
-          <Link href={routes.learn} role="menuitem" onClick={() => setOpen(false)}>
-            <Icon name="book-open" size={15} /> Aprender
-          </Link>
-          <Link href={routes.studio} role="menuitem" onClick={() => setOpen(false)}>
-            <Icon name="pen-line" size={15} /> Studio
-          </Link>
-          <Link href={routes.affiliate} role="menuitem" onClick={() => setOpen(false)}>
-            <Icon name="sparkles" size={15} /> Afiliados
-          </Link>
-          <Link href={routes.settings} role="menuitem" onClick={() => setOpen(false)}>
+          <button
+            type="button"
+            role="menuitem"
+            className="user-menu-item"
+            onClick={() => {
+              setOpen(false);
+              setSettingsOpen(true);
+            }}
+          >
             <Icon name="settings" size={15} /> Configurações
-          </Link>
+          </button>
           {isAdmin && (
             <Link href={routes.admin.root} role="menuitem" onClick={() => setOpen(false)}>
               <Icon name="shield" size={15} /> Admin
@@ -116,6 +117,8 @@ export function UserMenu() {
           </button>
         </div>
       )}
+
+      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { ORPCError } from "@orpc/server";
 import { donationCreateSchema } from "@packages/contracts";
-import { eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
@@ -51,6 +51,7 @@ export const donationsRouter = {
         pixQr: pix.qrCode,
         pixQrBase64: pix.qrCodeBase64,
         message: input.message ?? null,
+        displayName: input.name ?? null,
       })
       .returning({ id: donations.id });
 
@@ -76,4 +77,47 @@ export const donationsRouter = {
     if (!row) throw new ORPCError("NOT_FOUND");
     return { status: row.status };
   }),
+
+  /**
+   * Public donations wall | approved, non-hidden donations newest-first, with the
+   * donor's chosen display name (or their account name, else "Anônimo"). Degrades
+   * to an empty list when the DB is unconfigured.
+   */
+  wall: base
+    .input(z.object({ limit: z.number().int().min(1).max(50).default(20) }))
+    .handler(async ({ input, context }) => {
+      if (!context.db) return { donations: [] };
+      const { donations, user } = schema;
+      const rows = await context.db
+        .select({
+          id: donations.id,
+          amountCents: donations.amountCents,
+          message: donations.message,
+          displayName: donations.displayName,
+          createdAt: donations.createdAt,
+          userName: user.name,
+          userHandle: user.handle,
+          userImage: user.image,
+        })
+        .from(donations)
+        .leftJoin(user, eq(donations.userId, user.id))
+        .where(and(eq(donations.status, "approved"), eq(donations.hidden, false)))
+        .orderBy(desc(donations.createdAt))
+        .limit(input.limit);
+
+      return {
+        donations: rows.map((r) => {
+          const anon = r.displayName === "Anônimo";
+          return {
+            id: r.id,
+            amountCents: r.amountCents,
+            message: r.message,
+            name: r.displayName || r.userName || "Anônimo",
+            handle: anon ? null : (r.userHandle ?? null),
+            image: anon ? null : (r.userImage ?? null),
+            createdAt: r.createdAt,
+          };
+        }),
+      };
+    }),
 };

@@ -35,4 +35,16 @@ describe("buildCommentTree", () => {
   it("handles an empty list", () => {
     expect(buildCommentTree([])).toEqual([]);
   });
+
+  it("nests replies recursively (reply to a reply, any depth)", () => {
+    const list = [
+      c(1, null, "2024-01-01T00:00:00Z"),
+      c(2, 1, "2024-01-02T00:00:00Z"),
+      c(3, 2, "2024-01-03T00:00:00Z"),
+    ];
+    const tree = buildCommentTree(list);
+    expect(tree[0].id).toBe(1);
+    expect(tree[0].replies[0].id).toBe(2);
+    expect(tree[0].replies[0].replies[0].id).toBe(3);
+  });
 });
