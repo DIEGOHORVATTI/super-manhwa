@@ -70,7 +70,6 @@ export function DonateView() {
 
   return (
     <div className="donate-wrap">
-      <div className="donate-bg" style={{ backgroundImage: "url(/banner_1500x500.jpeg)" }} />
       <SideRays
         speed={2.5}
         rayColor1="#EAB308"
