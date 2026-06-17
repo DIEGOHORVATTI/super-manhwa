@@ -76,7 +76,8 @@ a:hover {
     border-radius 0.4s cubic-bezier(0.32, 0.72, 0, 1),
     border-color 0.3s ease,
     background-color 0.3s ease,
-    box-shadow 0.3s ease;
+    box-shadow 0.3s ease,
+    transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .app-header.is-scrolled {
   top: 14px;
@@ -276,6 +277,11 @@ a:hover {
     background: rgba(14, 16, 22, 0.96);
     box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
   }
+  /* Auto-hide on scroll down, reveal on scroll up (mobile only). Keeps the
+     centering translateX while sliding the bar off the top edge. */
+  .app-header.is-hidden {
+    transform: translate(-50%, -115%);
+  }
   /* Cancel the desktop scroll compaction so the top bar stays put. */
   .app-header.is-scrolled .app-header-inner {
     padding: 10px 16px;
@@ -325,6 +331,11 @@ a:hover {
     background: rgba(14, 16, 22, 0.98);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
+    transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+  }
+  /* Slide the tab bar off the bottom on scroll down, back on scroll up. */
+  .bottom-nav.is-hidden {
+    transform: translateY(115%);
   }
 }
 .bottom-nav-item {
@@ -3448,6 +3459,45 @@ a:hover {
   margin: 8px 0 0;
   font-size: 14px;
   line-height: 1.5;
+}
+.profile-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* Library: content + a fixed donation rail on the right (desktop only). */
+.library-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+.library-aside {
+  display: none;
+}
+@media (min-width: 980px) {
+  .library-layout {
+    grid-template-columns: minmax(0, 1fr) 240px;
+    align-items: start;
+  }
+  .library-aside {
+    display: block;
+    position: sticky;
+    top: 84px;
+  }
+}
+.library-donate-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--border, #262a33);
+  border-radius: 12px;
+  background: var(--card, #14171d);
+}
+.library-donate-card .footer-donate {
+  justify-content: center;
 }
 .profile-works {
   display: grid;

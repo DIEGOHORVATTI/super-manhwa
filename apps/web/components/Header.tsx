@@ -97,12 +97,12 @@ function HeaderTabsWithSort() {
  * Mobile-only bottom tab bar (CSS hides it on desktop). Same catalog shortcuts +
  * active logic as the header tabs, laid out app-style with icon over label.
  */
-function BottomNav({ sort }: { sort: string | null }) {
+function BottomNav({ sort, hidden }: { sort: string | null; hidden?: boolean }) {
   const pathname = usePathname();
   const activeIndex = navActiveIndex(pathname, sort);
 
   return (
-    <nav className="bottom-nav" aria-label="Navegação">
+    <nav className={`bottom-nav${hidden ? " is-hidden" : ""}`} aria-label="Navegação">
       {NAV.map((item, i) => {
         const active = i === activeIndex;
         return (
@@ -121,9 +121,9 @@ function BottomNav({ sort }: { sort: string | null }) {
   );
 }
 
-function BottomNavWithSort() {
+function BottomNavWithSort({ hidden }: { hidden?: boolean }) {
   const sort = useSearchParams().get("sort");
-  return <BottomNav sort={sort} />;
+  return <BottomNav sort={sort} hidden={hidden} />;
 }
 
 export function Header() {
@@ -135,10 +135,21 @@ export function Header() {
 
   // Past the threshold the bar detaches from the top into a floating, rounded
   // "island" (width/top/radius/border animate via CSS transition on the class).
+  // On mobile it also auto-hides on scroll down and reveals on scroll up, so the
+  // tall header + bottom tab bar get out of the way while reading the page.
   const [scrolled, setScrolled] = useState(false);
+  const [hidden, setHidden] = useState(false);
   useEffect(() => {
     if (isReader) return;
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 60);
+      if (y > lastY && y > 80)
+        setHidden(true); // scrolling down, past the header
+      else if (y < lastY) setHidden(false); // scrolling up
+      lastY = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -146,7 +157,11 @@ export function Header() {
 
   return (
     <>
-      <header className={`app-header${isReader ? " is-static" : scrolled ? " is-scrolled" : ""}`}>
+      <header
+        className={`app-header${isReader ? " is-static" : scrolled ? " is-scrolled" : ""}${
+          hidden && !isReader ? " is-hidden" : ""
+        }`}
+      >
         <div className="app-header-inner">
           <Link href={routes.home} className="brand">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -171,8 +186,8 @@ export function Header() {
       </header>
 
       {/* Mobile-only bottom tab bar (hidden on desktop via CSS). */}
-      <Suspense fallback={<BottomNav sort={null} />}>
-        <BottomNavWithSort />
+      <Suspense fallback={<BottomNav sort={null} hidden={hidden} />}>
+        <BottomNavWithSort hidden={hidden} />
       </Suspense>
     </>
   );

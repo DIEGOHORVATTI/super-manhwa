@@ -5,6 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { AnilistPanel } from "@/components/profile/AnilistPanel";
 import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
+import { getCurrentUser } from "@/lib/auth/session";
 import { badgesFor } from "@/lib/badges";
 import { loadProfileData } from "@/lib/profile-data";
 import { publicUrlFor, r2Enabled } from "@/lib/r2";
@@ -29,6 +30,11 @@ export default async function ProfilePage({ params }: { params: Params }) {
 
   // Canonical URL: if reached by id but a @handle exists, redirect to the pretty one.
   if (user.handle && handle !== user.handle) redirect(routes.user(user.handle));
+
+  // Own-profile actions (create works, edit info) live here now | the Studio left
+  // the footer and belongs on the author's own page.
+  const me = await getCurrentUser();
+  const isOwn = me?.id === user.id;
 
   const badges = badgesFor({ role: user.role, plan: user.plan, achievements });
   const al = anilist.profile;
@@ -69,6 +75,16 @@ export default async function ProfilePage({ params }: { params: Params }) {
               </div>
             )}
             {user.bio && <p className="profile-bio">{user.bio}</p>}
+            {isOwn && (
+              <div className="profile-actions">
+                <Link href={routes.studio} className="btn btn-primary">
+                  Criar obra
+                </Link>
+                <Link href={routes.settings} className="btn btn-ghost">
+                  Editar perfil
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </header>

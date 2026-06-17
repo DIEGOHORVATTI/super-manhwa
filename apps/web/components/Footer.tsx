@@ -96,9 +96,6 @@ export function Footer() {
           <Link href={routes.about}>Sobre nós</Link>
           <Link href={routes.contact}>Contato</Link>
           <Link href={routes.donate}>Doar</Link>
-          <Link href={routes.studio}>Studio</Link>
-          <Link href={routes.affiliate}>Afiliados</Link>
-          <Link href={routes.pixels}>Anuncie (pixels)</Link>
         </nav>
 
         <nav className="footer-col" aria-label="Legal">
