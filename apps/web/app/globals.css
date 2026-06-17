@@ -3648,25 +3648,9 @@ a:hover {
 
 /* ───────────────────────────── Donations (Pix) ───────────────────────────── */
 .donate-wrap {
-  position: relative;
-  /* Break out of the centered .app container so the banner + rays fill the whole
-     screen width (overflow-x: clip on the root absorbs the scrollbar). */
-  width: 100vw;
-  margin-inline: calc(50% - 50vw);
-  isolation: isolate;
-  min-height: calc(100dvh - 70px);
-  padding: 44px 16px 64px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.donate-content {
-  position: relative;
-  z-index: 1;
-  width: 100%;
   max-width: 560px;
   margin: 0 auto;
+  padding: 24px 0 60px;
 }
 .donate-title {
   font-size: 26px;
@@ -3677,33 +3661,6 @@ a:hover {
   color: var(--muted);
   margin: 0 0 20px;
   line-height: 1.5;
-}
-
-/* WebGL "side rays" backdrop (reactbits SideRays) | fills the full-width stage. */
-.side-rays {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-.side-rays canvas {
-  display: block;
-}
-
-/* Banner as the full ambient background | blurred, darkened, warm rose vignette
-   so the whole donation screen feels like it sits inside the artwork. */
-.donate-head {
-  text-align: center;
-  margin-bottom: 22px;
-}
-/* Cozy frosted cards floating over the banner. */
-.donate-wrap .settings-card {
-  background: rgba(22, 18, 24, 0.6);
-  backdrop-filter: blur(16px) saturate(1.2);
-  -webkit-backdrop-filter: blur(16px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 18px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
 .donate-presets {
   display: grid;

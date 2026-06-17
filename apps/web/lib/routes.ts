@@ -32,7 +32,7 @@ export const routes = {
   newsletter: "/newsletter",
   authAnilist: "/auth/anilist",
   authAnilistDone: "/auth/anilist/done",
-  donate: "/doar",
+  donate: "/donate",
   affiliate: "/affiliate",
   pixels: "/pixels",
   studio: "/studio",
