@@ -115,7 +115,7 @@ export function SettingsView() {
         <h2>Perfil</h2>
         <label className="auth-field">
           <span>Nome</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} />
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} />
         </label>
         <label className="auth-field">
           <span>@ (handle)</span>
@@ -123,11 +123,13 @@ export function SettingsView() {
             value={handle}
             onChange={(e) => setHandle(e.target.value)}
             placeholder="seu_nome"
+            maxLength={24}
           />
         </label>
         <label className="auth-field">
           <span>Bio</span>
           <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={300} />
+          <span className="field-counter">{bio.length}/300</span>
         </label>
         {err && <p className="auth-error">{err}</p>}
         {savedMsg && <p className="auth-notice">{savedMsg}</p>}

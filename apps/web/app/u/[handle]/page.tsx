@@ -66,9 +66,9 @@ export default async function ProfilePage({ params }: { params: Params }) {
                 ))}
               </div>
             )}
-            {user.bio && <p className="profile-bio">{user.bio}</p>}
           </div>
         </div>
+        {user.bio && <p className="profile-bio">{user.bio}</p>}
       </header>
 
       {isOwn && (
