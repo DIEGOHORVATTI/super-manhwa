@@ -70,15 +70,14 @@ export function DonateView() {
 
   return (
     <div className="donate-wrap">
+      <div className="donate-bg" style={{ backgroundImage: "url(/banner_1500x500.jpeg)" }} />
       <SideRays />
-      <header className="donate-hero">
-        <div className="donate-hero-bg" style={{ backgroundImage: "url(/banner_1500x500.jpeg)" }} />
-        <div className="donate-hero-inner">
-          <h1 className="donate-title">Apoie a Super Manhwa</h1>
-          <p className="donate-sub">
-            Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Obrigado! 💜
-          </p>
-        </div>
+      <header className="donate-head">
+        <h1 className="donate-title">Apoie a Super Manhwa</h1>
+        <p className="donate-sub">
+          Sua doação via Pix ajuda a manter os servidores e o catálogo no ar. Cada real conta —
+          obrigado por fazer parte. 💜
+        </p>
       </header>
 
       {stage === "form" && (
