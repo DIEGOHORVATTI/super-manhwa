@@ -2,6 +2,7 @@ import type { MangaSort, MangaStatus } from "@packages/contracts";
 import { NextResponse } from "next/server";
 
 import { api } from "@/lib/orpc.server";
+import { translateSummaries } from "@/lib/translate";
 
 /**
  * Paginated listing endpoint for the client-side infinite scroll. Mirrors the
@@ -21,7 +22,10 @@ export async function GET(req: Request) {
   try {
     if (feed === "latest") {
       const r = await api.manga.latest({ lang: "pt-br", page });
-      return NextResponse.json({ list: r.list, hasNextPage: r.hasNextPage });
+      return NextResponse.json({
+        list: await translateSummaries(r.list),
+        hasNextPage: r.hasNextPage,
+      });
     }
 
     const q = (sp.get("q") ?? "").trim();
@@ -37,7 +41,10 @@ export async function GET(req: Request) {
       q.length >= 2
         ? await api.manga.search({ lang: "pt-br", q, genre, status, page })
         : await api.manga.popular({ lang: "pt-br", genre, status, sort, page });
-    return NextResponse.json({ list: r.list, hasNextPage: r.hasNextPage });
+    return NextResponse.json({
+      list: await translateSummaries(r.list),
+      hasNextPage: r.hasNextPage,
+    });
   } catch {
     return NextResponse.json({ list: [], hasNextPage: false });
   }

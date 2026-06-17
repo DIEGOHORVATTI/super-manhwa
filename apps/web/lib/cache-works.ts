@@ -1,8 +1,10 @@
 import "server-only";
-import { eq } from "drizzle-orm";
+import type { Chapter } from "@packages/contracts";
+import { desc, eq } from "drizzle-orm";
 
-import { isAbsolute, isStale } from "@/lib/cache-policy";
+import { workCacheUpToDate } from "@/lib/cache-policy";
 import { dbEnabled, getDb, schema } from "@/lib/db";
+import { env } from "@/lib/env";
 import { publicUrlFor, putObject, r2Enabled } from "@/lib/r2";
 
 /**
@@ -15,49 +17,73 @@ import { publicUrlFor, putObject, r2Enabled } from "@/lib/r2";
  * circuits the work so we don't re-hit R2 on every visit.
  */
 type Core = { title?: string | null; imageUrl?: string | null } & Record<string, unknown>;
+type CacheOpts = { bannerUrl?: string | null; descriptionPt?: string | null };
 
-export async function cacheWorkOnRead(catalogId: string, core: Core): Promise<void> {
+/**
+ * Mirror one cover/banner image to R2 (best-effort). Accepts an absolute upstream
+ * URL (connector covers, AniList banners) OR our own signed proxy path
+ * (`/api/img/<token>?k=` | AniList covers), which is fetched through our origin so
+ * the backend resolves + signs it. Returns the R2 key or null.
+ * ponytail: a proxy-path mirror does a self-origin round trip; runs in `after()`
+ * so it never delays the page. Upgrade path: decode the token to the raw upstream
+ * URL backend-side if the self-call ever becomes a bottleneck.
+ */
+async function mirror(catalogId: string, kind: string, url: unknown): Promise<string | null> {
+  if (!r2Enabled || typeof url !== "string" || !url) return null;
+  const fetchUrl = /^https?:\/\//i.test(url)
+    ? url
+    : url.startsWith("/api/img/") && env.SITE_URL
+      ? `${env.SITE_URL}${url}`
+      : null;
+  if (!fetchUrl) return null;
+  try {
+    const res = await fetch(fetchUrl);
+    if (!res.ok) return null;
+    const bytes = new Uint8Array(await res.arrayBuffer());
+    const type = res.headers.get("content-type") ?? "image/jpeg";
+    const ext = (type.split("/")[1] ?? "jpg").replace("jpeg", "jpg");
+    return await putObject(`cache/works/${catalogId}/${kind}.${ext}`, bytes, type);
+  } catch {
+    return null; // image mirror is best-effort
+  }
+}
+
+export async function cacheWorkOnRead(
+  catalogId: string,
+  core: Core,
+  opts: CacheOpts = {},
+): Promise<void> {
   if (!dbEnabled) return;
   try {
     const db = getDb();
     const { cachedWorks } = schema;
     const [existing] = await db
-      .select({ coverR2Key: cachedWorks.coverR2Key, refreshedAt: cachedWorks.refreshedAt })
+      .select({
+        coverR2Key: cachedWorks.coverR2Key,
+        bannerR2Key: cachedWorks.bannerR2Key,
+        refreshedAt: cachedWorks.refreshedAt,
+      })
       .from(cachedWorks)
       .where(eq(cachedWorks.catalogId, catalogId))
       .limit(1);
 
-    const fresh = existing && !isStale(existing.refreshedAt);
-    if (fresh && existing.coverR2Key) return; // nothing to do
+    // Fresh row with both images already mirrored (or no banner to mirror) → nothing to do.
+    if (workCacheUpToDate(existing, opts.bannerUrl)) return;
 
-    // Mirror the cover to R2 once (only for absolute upstream URLs | proxy paths
-    // need signing we don't replay here).
-    let coverR2Key = existing?.coverR2Key ?? null;
-    if (!coverR2Key && r2Enabled && isAbsolute(core.imageUrl)) {
-      try {
-        const res = await fetch(core.imageUrl);
-        if (res.ok) {
-          const bytes = new Uint8Array(await res.arrayBuffer());
-          const ext = (res.headers.get("content-type")?.split("/")[1] ?? "jpg").replace(
-            "jpeg",
-            "jpg",
-          );
-          coverR2Key = await putObject(
-            `cache/works/${catalogId}/cover.${ext}`,
-            bytes,
-            res.headers.get("content-type") ?? "image/jpeg",
-          );
-        }
-      } catch {
-        /* cover mirror is best-effort */
-      }
-    }
+    // Mirror cover + banner to R2 once each (only absolute upstream URLs | proxy
+    // paths need signing we don't replay here).
+    const coverR2Key = existing?.coverR2Key ?? (await mirror(catalogId, "cover", core.imageUrl));
+    const bannerR2Key =
+      existing?.bannerR2Key ?? (await mirror(catalogId, "banner", opts.bannerUrl));
 
     const values = {
       catalogId,
       title: core.title ?? "",
-      payloadJson: JSON.stringify(core),
+      // descriptionPt persists the translated synopsis so a downed translate proxy
+      // (or source) still serves pt-br from cache.
+      payloadJson: JSON.stringify({ ...core, descriptionPt: opts.descriptionPt ?? null }),
       coverR2Key,
+      bannerR2Key,
       refreshedAt: new Date(),
     };
     await db
@@ -99,13 +125,19 @@ export async function cacheChaptersOnRead(
 }
 
 /**
- * Read-side fallback: when the live connector/AniList call fails, serve the last
- * cached metadata so a downed source doesn't blank the page. Returns null if
- * nothing is cached.
+ * Catalog-first read: serve a work's last cached metadata straight from our DB
+ * (title, core payload incl. translated synopsis, R2 cover/banner). The detail
+ * page renders from this when fresh (instant, no backend hit) and falls back to
+ * it when the live source is down. `refreshedAt` lets the caller decide freshness.
+ * Returns null if nothing is cached.
  */
-export async function getCachedWork(
-  catalogId: string,
-): Promise<{ title: string; core: Core; coverUrl: string | null } | null> {
+export async function getCachedWork(catalogId: string): Promise<{
+  title: string;
+  core: Core;
+  coverUrl: string | null;
+  bannerUrl: string | null;
+  refreshedAt: Date;
+} | null> {
   if (!dbEnabled) return null;
   try {
     const db = getDb();
@@ -120,6 +152,35 @@ export async function getCachedWork(
       title: row.title,
       core: JSON.parse(row.payloadJson) as Core,
       coverUrl: row.coverR2Key ? publicUrlFor(row.coverR2Key) : null,
+      bannerUrl: row.bannerR2Key ? publicUrlFor(row.bannerR2Key) : null,
+      refreshedAt: row.refreshedAt,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Catalog-first read for chapters: the merged list we last persisted for a work,
+ * newest-cached first. Lets the detail page paint chapters instantly without the
+ * cross-source fan-out. Returns null if nothing is cached.
+ */
+export async function getCachedChapters(
+  catalogId: string,
+): Promise<{ chapters: Chapter[]; refreshedAt: Date } | null> {
+  if (!dbEnabled) return null;
+  try {
+    const db = getDb();
+    const { cachedChapters } = schema;
+    const rows = await db
+      .select()
+      .from(cachedChapters)
+      .where(eq(cachedChapters.catalogId, catalogId))
+      .orderBy(desc(cachedChapters.refreshedAt));
+    if (rows.length === 0) return null;
+    return {
+      chapters: rows.map((r) => JSON.parse(r.payloadJson) as Chapter),
+      refreshedAt: rows[0].refreshedAt,
     };
   } catch {
     return null;

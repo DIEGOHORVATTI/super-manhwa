@@ -13,3 +13,19 @@ export function isAbsolute(url: string | null | undefined): url is string {
 export function isStale(refreshedAt: Date | string | number, now: number = Date.now()): boolean {
   return now - new Date(refreshedAt).getTime() >= FRESH_MS;
 }
+
+/**
+ * A cached work needs no re-write when it's still fresh AND its cover is mirrored
+ * AND its banner is mirrored (or there's no absolute banner URL to mirror). Lets
+ * cache-on-read short-circuit without re-hitting R2/Postgres on repeat visits.
+ */
+export function workCacheUpToDate(
+  existing:
+    | { coverR2Key: string | null; bannerR2Key: string | null; refreshedAt: Date | string | number }
+    | undefined,
+  bannerUrl: string | null | undefined,
+  now: number = Date.now(),
+): boolean {
+  if (!existing || isStale(existing.refreshedAt, now)) return false;
+  return Boolean(existing.coverR2Key) && (Boolean(existing.bannerR2Key) || !isAbsolute(bannerUrl));
+}

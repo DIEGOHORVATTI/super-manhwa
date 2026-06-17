@@ -1,3 +1,4 @@
+import type { MangaSummary } from "@packages/contracts";
 import { unstable_cache } from "next/cache";
 
 // Free Google-translate proxy: POST { text, from, to } → a JSON string ("olá…").
@@ -43,4 +44,20 @@ export async function translatePt(text?: string | null): Promise<string> {
   } catch {
     return src;
   }
+}
+
+/**
+ * Translate the hover-teaser `description` of a listing in place. Each text is
+ * cached 30d (see translatePt) so a warm cache makes this free; only the grid
+ * shows descriptions on hover, so rows (PosterRow) skip this.
+ * ponytail: N parallel calls on a cold cache. Upgrade path if it ever drags the
+ * first render: persist the translated description in `cachedWorks` and read it
+ * back here instead of hitting the proxy.
+ */
+export async function translateSummaries(list: readonly MangaSummary[]): Promise<MangaSummary[]> {
+  return Promise.all(
+    list.map(async (m) =>
+      m.description ? { ...m, description: await translatePt(m.description) } : m,
+    ),
+  );
 }

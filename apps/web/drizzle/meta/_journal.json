@@ -50,6 +50,13 @@
       "when": 1781616507522,
       "tag": "0006_dapper_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781648887203,
+      "tag": "0007_military_jack_flag",
+      "breakpoints": true
     }
   ]
 }

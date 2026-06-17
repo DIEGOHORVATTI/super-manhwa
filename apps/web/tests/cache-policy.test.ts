@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 
-import { FRESH_MS, isAbsolute, isStale } from "../lib/cache-policy";
+import { FRESH_MS, isAbsolute, isStale, workCacheUpToDate } from "../lib/cache-policy";
 
 describe("isAbsolute", () => {
   it("accepts http and https URLs", () => {
@@ -30,5 +30,41 @@ describe("isStale", () => {
   it("accepts Date and ISO inputs", () => {
     expect(isStale(new Date(now - FRESH_MS - 1), now)).toBe(true);
     expect(isStale(new Date(now).toISOString(), now)).toBe(false);
+  });
+});
+
+describe("workCacheUpToDate", () => {
+  const now = 1_000_000_000_000;
+  const fresh = now - 1000;
+  const stale = now - FRESH_MS;
+  const banner = "https://cdn/banner.jpg";
+
+  it("is false when nothing is cached", () => {
+    expect(workCacheUpToDate(undefined, banner, now)).toBe(false);
+  });
+  it("is false when the row is stale (forces daily refresh)", () => {
+    expect(
+      workCacheUpToDate({ coverR2Key: "c", bannerR2Key: "b", refreshedAt: stale }, banner, now),
+    ).toBe(false);
+  });
+  it("is false when fresh but the cover isn't mirrored yet", () => {
+    expect(
+      workCacheUpToDate({ coverR2Key: null, bannerR2Key: "b", refreshedAt: fresh }, banner, now),
+    ).toBe(false);
+  });
+  it("is false when fresh, cover done, but an absolute banner is still unmirrored", () => {
+    expect(
+      workCacheUpToDate({ coverR2Key: "c", bannerR2Key: null, refreshedAt: fresh }, banner, now),
+    ).toBe(false);
+  });
+  it("is true when fresh + both mirrored", () => {
+    expect(
+      workCacheUpToDate({ coverR2Key: "c", bannerR2Key: "b", refreshedAt: fresh }, banner, now),
+    ).toBe(true);
+  });
+  it("is true when fresh + cover done and there's no banner to mirror", () => {
+    expect(
+      workCacheUpToDate({ coverR2Key: "c", bannerR2Key: null, refreshedAt: fresh }, null, now),
+    ).toBe(true);
   });
 });

@@ -3,6 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { MangaConnector, RawDetail, RawListPage } from "@packages/extension";
 import type { Cache } from "@/core/domain/cache";
 import type { IdStore } from "@/core/domain/id-store";
+import type { CatalogSource } from "@/modules/catalog/domain/catalog-source";
 import { makeListLatest } from "@/modules/catalog/application/list-latest";
 import type { ConnectorRegistry } from "@/modules/catalog/infrastructure/connector-registry";
 
@@ -11,6 +12,17 @@ const idStore: IdStore = {
   decode: () => null,
 };
 const cache: Cache = { remember: (_k, _ttl, fn) => fn(), set: () => {}, get: () => undefined };
+
+/** Fake AniList catalog: only the given titles match (→ their numeric id). */
+const catalogOf = (matches: Record<string, string> = {}): CatalogSource => ({
+  search: async (q) => {
+    const id = matches[q.toLowerCase()];
+    return { items: id ? [{ id, title: q }] : [], hasNextPage: false };
+  },
+  list: async () => ({ items: [], hasNextPage: false }),
+  byId: async () => null,
+  genres: async () => [],
+});
 
 const conn = (id: string, lang: string, latest?: () => Promise<RawListPage>): MangaConnector => ({
   id,
@@ -42,11 +54,18 @@ describe("makeListLatest", () => {
     const en = conn("b-en", "en", async () => page("Bleach", "One Piece"));
     const noLatest = conn("c-en", "en"); // no getLatestUpdates → filtered out
 
-    const res = await makeListLatest(registryOf([en, ptbr, noLatest]), idStore, cache)({ page: 1 });
+    const catalog = catalogOf({ naruto: "30002", bleach: "30003" }); // one piece unmatched
+    const res = await makeListLatest(
+      registryOf([en, ptbr, noLatest]),
+      catalog,
+      idStore,
+      cache,
+    )({ page: 1 });
 
     expect(res.list.map((m) => m.name)).toEqual(["Naruto", "Bleach", "One Piece"]);
-    expect(res.list[0].lang).toBe("pt-br"); // Naruto came from the pt-br source
-    expect(res.list[0].id).toBe("a-ptbr::/m/Naruto"); // opaque id from idStore
+    expect(res.list[0].lang).toBe("pt-br"); // connector language flag is preserved
+    expect(res.list[0].id).toBe("30002"); // matched → canonical AniList id
+    expect(res.list[2].id).toBe("b-en::/m/One Piece"); // unmatched → opaque connector id
   });
 
   it("tolerates a throwing connector (skips its batch)", async () => {
@@ -54,12 +73,22 @@ describe("makeListLatest", () => {
     const boom = conn("boom", "pt-br", async () => {
       throw new Error("down");
     });
-    const res = await makeListLatest(registryOf([ok, boom]), idStore, cache)({ page: 1 });
+    const res = await makeListLatest(
+      registryOf([ok, boom]),
+      catalogOf(),
+      idStore,
+      cache,
+    )({ page: 1 });
     expect(res.list.map((m) => m.name)).toEqual(["A", "B"]);
   });
 
   it("returns empty when no connector supports latest", async () => {
-    const res = await makeListLatest(registryOf([conn("x", "en")]), idStore, cache)({ page: 1 });
+    const res = await makeListLatest(
+      registryOf([conn("x", "en")]),
+      catalogOf(),
+      idStore,
+      cache,
+    )({ page: 1 });
     expect(res.list).toEqual([]);
     expect(res.hasNextPage).toBe(false);
   });

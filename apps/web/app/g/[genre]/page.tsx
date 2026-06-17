@@ -4,6 +4,7 @@ import { Icon } from "@/components/Icon";
 import { InfiniteList } from "@/components/InfiniteList";
 import { api } from "@/lib/orpc.server";
 import { routes } from "@/lib/routes";
+import { translateSummaries } from "@/lib/translate";
 
 type P = Promise<{ genre: string }>;
 type SP = Promise<{ page?: string }>;
@@ -47,7 +48,7 @@ export default async function GenrePage({ params, searchParams }: { params: P; s
       <p className="muted">{page > 1 ? `página ${page}` : `${result.list.length} obras`}</p>
       {error && <p className="notice">{error}</p>}
       <InfiniteList
-        initial={result.list}
+        initial={await translateSummaries(result.list)}
         initialPage={page}
         hasNextPage={result.hasNextPage}
         params={{ feed: "browse", genre }}

@@ -1,4 +1,5 @@
 import type { IdStore } from "@/core/domain/id-store";
+import { logger } from "@/shared/logger";
 import type { ConnectorRegistry } from "@/modules/catalog/infrastructure/connector-registry";
 
 import type { ImageFetcher } from "../domain/image-fetcher";
@@ -33,7 +34,16 @@ export const makeProxyImage =
       url: ref.url,
       referer: connector ? `${connector.baseUrl}/` : undefined,
     });
-    if (!res.ok) return res; // upstream error | don't cache
+    if (!res.ok) {
+      // Surface which source is failing to serve images (e.g. a connector that
+      // started blocking hotlinks) | this is the one place the source is known.
+      logger.warn("image upstream failed", {
+        source: ref.source,
+        status: res.status,
+        url: ref.url,
+      });
+      return res; // upstream error | don't cache
+    }
 
     const contentType = res.headers.get("content-type") ?? "image/jpeg";
     const body = await res.arrayBuffer();

@@ -340,8 +340,9 @@ export const chapterReviews = pgTable("chapter_reviews", {
 export const cachedWorks = pgTable("cached_works", {
   catalogId: text("catalog_id").primaryKey(),
   title: text("title").notNull(),
-  payloadJson: text("payload_json").notNull(), // serialized core + meta
+  payloadJson: text("payload_json").notNull(), // serialized core + descriptionPt
   coverR2Key: text("cover_r2_key"),
+  bannerR2Key: text("banner_r2_key"),
   refreshedAt: timestamp("refreshed_at").notNull().defaultNow(),
 });
 

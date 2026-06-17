@@ -4,6 +4,23 @@ import type { ImageFetcher } from "../domain/image-fetcher";
 
 const DEFAULT_UA =
   "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Mobile Safari/537.36";
+// MangaDex's uploads CDN replies 400 to any browser ("Mozilla…") User-Agent but
+// serves fine for a plain app UA. Most other CDNs want the browser UA, so pick per host.
+const PLAIN_UA = "SuperManhwa/1.0 (+https://supermanhwa.com)";
+
+/**
+ * The right User-Agent for a host. Browser UA by default (most hotlink CDNs
+ * expect it); a plain app UA for MangaDex, which 400s on browser UAs.
+ * ponytail: host allowlist | the image proxy now logs failing sources, so if
+ * another CDN turns out this picky, add it here or move to a per-connector header.
+ */
+const uaFor = (url: string): string => {
+  try {
+    return new URL(url).hostname.endsWith("mangadex.org") ? PLAIN_UA : DEFAULT_UA;
+  } catch {
+    return DEFAULT_UA;
+  }
+};
 
 /**
  * Streams image bytes from the upstream CDN with the headers most hotlinking
@@ -17,7 +34,7 @@ export const makeHttpImageFetcher = (): ImageFetcher => ({
     const result = await httpFetchRaw(url, {
       headers: {
         Referer: referer ?? "",
-        "User-Agent": DEFAULT_UA,
+        "User-Agent": uaFor(url),
       },
     });
     if (result.error) {
