@@ -10,6 +10,7 @@ import { Cover } from "@/components/Cover";
 import { Icon } from "@/components/Icon";
 import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
+import { routes } from "@/lib/routes";
 
 type Chapter = { id: string; name: string; lang?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
@@ -36,19 +37,21 @@ const RELATION_LABELS: Record<string, string> = {
   OTHER: "Relacionado",
 };
 
-function RelatedWorks({ relations }: { relations: MangaRelation[] }) {
+type EnrichedRelation = MangaRelation & { id?: string; imageUrl?: string };
+
+function RelatedWorks({ relations }: { relations: EnrichedRelation[] }) {
   if (relations.length === 0) return null;
   return (
     <section className="related-works">
       <h2 className="section">Obras relacionadas</h2>
       <div className="poster-grid">
         {relations.map((r, i) => {
-          const href = `/?q=${encodeURIComponent(r.title)}`;
+          const href = r.id ? routes.manga(r.id, r.title) : `/?q=${encodeURIComponent(r.title)}`;
           const label = RELATION_LABELS[r.relation] ?? r.relation;
           return (
             <div key={`${r.relation}-${i}`} className="poster">
               <div className="poster-cover">
-                <Cover src={undefined} alt={r.title} sizes="160px" />
+                <Cover src={r.imageUrl} alt={r.title} sizes="160px" />
                 <span className="relation-badge">{label}</span>
                 <Link className="poster-hit" href={href} aria-label={r.title} tabIndex={-1} />
               </div>
@@ -90,7 +93,7 @@ export function DetailView({
   charactersPromise: Promise<MangaCharacter[]>;
   about: ReactNode;
   comments?: ReactNode;
-  relations?: MangaRelation[];
+  relations?: EnrichedRelation[];
 }) {
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",

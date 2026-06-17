@@ -78,8 +78,16 @@ export default async function ProfilePage({ params }: { params: Params }) {
             {badges.length > 0 && (
               <div className="profile-badges">
                 {badges.map((b) => (
-                  <span key={b.key} className={`badge badge-${b.tone}`} title={b.description}>
+                  <span
+                    key={b.key}
+                    className={`badge badge-${b.tone}${b.description ? " has-tip" : ""}`}
+                  >
                     {b.label}
+                    {b.description && (
+                      <span className="badge-tip" role="tooltip">
+                        {b.description}
+                      </span>
+                    )}
                   </span>
                 ))}
               </div>

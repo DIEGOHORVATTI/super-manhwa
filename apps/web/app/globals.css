@@ -4643,6 +4643,51 @@ a:hover {
   vertical-align: middle;
   line-height: 1.5;
 }
+/* Styled tooltip (replaces the native title) explaining how a badge was earned. */
+.has-tip {
+  position: relative;
+}
+.badge-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  z-index: 30;
+  width: max-content;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: var(--surface-2, #1c2027);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: normal;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px);
+  pointer-events: none;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+.badge-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--surface-2, #1c2027);
+}
+.has-tip:hover .badge-tip,
+.has-tip:focus-visible .badge-tip {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 .badge-admin {
   background: rgba(239, 68, 68, 0.18);
   color: #f87171;

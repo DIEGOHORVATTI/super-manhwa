@@ -199,6 +199,20 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     await cacheChaptersOnRead(id, resolved.chapters);
   });
 
+  // Enrich AniList relations with id + cover by searching each title in parallel.
+  // Best-effort: a failed/empty search falls back to the bare relation (title-only).
+  const enrichedRelations = await Promise.all(
+    meta.relations.map(async (r) => {
+      try {
+        const { list } = await api.manga.search({ q: r.title });
+        const match = list[0];
+        return match ? { ...r, id: match.id, imageUrl: match.imageUrl } : r;
+      } catch {
+        return r;
+      }
+    }),
+  );
+
   // Every name the work is known by (official variants + machine pt-BR title).
   // Rendered as real on-page text and fed to JSON-LD, so the obra is found
   // whether searched by its English, native, or Portuguese name.
@@ -329,7 +343,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         charactersPromise={charactersPromise}
         about={aboutTab}
         comments={<Comments targetType="work" targetId={id} />}
-        relations={meta.relations}
+        relations={enrichedRelations}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={
