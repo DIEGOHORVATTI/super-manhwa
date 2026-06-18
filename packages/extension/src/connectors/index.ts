@@ -2,7 +2,6 @@
 // out of the popular pool so the home feed stays clean, but fully functional as
 // detail/fallback targets by opaque id (Comick → 365 ch, Mangafire → 201 ch).
 import type { MangaConnector } from "../types";
-import { asurascans } from "./asurascans";
 import { comickPtBr } from "./comick";
 import { mangadex } from "./mangadex";
 import { mangafirePtBr } from "./mangafire";
@@ -33,7 +32,6 @@ export const CONNECTORS: readonly MangaConnector[] = [
   weebcentral,
   mangaworld,
   manhwaz,
-  asurascans,
   // Native pt-br connectors scraped from the two Manga Livre sites
   // (mangalivre.to = Madara, mangalivre.blog = custom theme). No Cloudflare.
   mangaLivreTo,
