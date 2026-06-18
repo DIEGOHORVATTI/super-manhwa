@@ -94,8 +94,18 @@ export function ReaderSettings() {
       }
       raf = requestAnimationFrame(tick);
     };
+    // Tap the page to pause (a click fires on tap, not on a scroll-drag). Ignore
+    // taps on the reader controls so toggling/seeking doesn't instantly pause.
+    const onClick = (e: MouseEvent) => {
+      if ((e.target as Element)?.closest?.(".reader-nav, .reader-settings")) return;
+      setAutoScroll(false);
+    };
+    document.addEventListener("click", onClick);
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("click", onClick);
+    };
   }, [autoScroll, prefs.scrollSpeed]);
 
   useEffect(() => {
