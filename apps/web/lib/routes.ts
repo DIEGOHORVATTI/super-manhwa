@@ -67,7 +67,8 @@ export const routes = {
   studioWork: (id: string | number) => `/studio/${id}`,
   studioPreview: (workId: string | number, chapterId: string | number) =>
     `/studio/${workId}/preview/${chapterId}`,
-  read: (id: string | number, q?: { m?: string; mn?: string; n?: string }) => `/read/${id}${qs(q)}`,
+  read: (id: string | number, q?: { m?: string; mn?: string; n?: string; f?: string }) =>
+    `/read/${id}${qs(q)}`,
 
   // ── Native API endpoints (the ones still hit as strings) ──
   api: {

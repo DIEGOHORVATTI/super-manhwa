@@ -1,14 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { after } from "next/server";
 import { Comments } from "@/components/Comments";
 import { Icon } from "@/components/Icon";
+import { NovelReader } from "@/components/NovelReader";
 import { ReaderSettings } from "@/components/ReaderSettings";
 import { ReaderChapterEnd } from "@/components/ReaderChapterEnd";
 import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
+import { cacheNovelChapterOnRead, getCachedNovelChapter } from "@/lib/cache-works";
 import { signPagePath } from "@/lib/image-sign";
 import { api } from "@/lib/orpc.server";
 import { routes } from "@/lib/routes";
+import { sanitizeProse } from "@/lib/sanitize-prose";
 import { getSessionId } from "@/lib/session";
 
 // Not force-dynamic: reading the session cookie already opts this route into
@@ -16,7 +20,7 @@ import { getSessionId } from "@/lib/session";
 // the page-list fetch underneath still benefits from the Data Cache.
 
 type P = Promise<{ id: string }>;
-type SP = Promise<{ n?: string; m?: string; mn?: string }>;
+type SP = Promise<{ n?: string; m?: string; mn?: string; f?: string }>;
 
 export async function generateMetadata({ searchParams }: { searchParams: SP }): Promise<Metadata> {
   const { n, mn } = await searchParams;
@@ -25,27 +29,46 @@ export async function generateMetadata({ searchParams }: { searchParams: SP }): 
 }
 
 export default async function ReadPage({ params, searchParams }: { params: P; searchParams: SP }) {
-  const [{ id }, { n, m, mn }] = await Promise.all([params, searchParams]);
+  const [{ id }, { n, m, mn, f }] = await Promise.all([params, searchParams]);
+  const isNovel = f === "novel";
 
-  // Pages always; manga chapters + cover only if we know the manga (m=…) | they
-  // power the reader nav (prev/next + chapter combobox) and the continue-reading
-  // history entry. All fired in parallel.
-  const [pagesRes, chaptersRes, coreRes] = await Promise.allSettled([
-    api.manga.pages({ id }),
+  // Body (pages OR novel prose) + manga chapters + cover. Chapters/cover only if
+  // we know the work (m=…) | they power the reader nav and continue-reading entry.
+  const [bodyRes, chaptersRes, coreRes] = await Promise.allSettled([
+    isNovel ? api.manga.chapterContent({ id }) : api.manga.pages({ id }),
     m ? api.manga.chapters({ id: m, name: mn }) : Promise.resolve(null),
     m ? api.manga.core({ id: m, name: mn }) : Promise.resolve(null),
   ]);
 
-  if (pagesRes.status === "rejected") {
-    const err =
-      pagesRes.reason instanceof Error ? pagesRes.reason.message : String(pagesRes.reason);
+  if (bodyRes.status === "rejected") {
+    const err = bodyRes.reason instanceof Error ? bodyRes.reason.message : String(bodyRes.reason);
     return <p className="notice">{err}</p>;
   }
+
+  // Novel: serve our persisted copy or sanitize + persist the source prose on read.
+  let novel: { html: string; title?: string } | null = null;
+  if (isNovel) {
+    const cachedNovel = await getCachedNovelChapter(id);
+    if (cachedNovel) {
+      novel = { html: cachedNovel.html, title: cachedNovel.title ?? undefined };
+    } else {
+      const raw = bodyRes.value as Awaited<ReturnType<typeof api.manga.chapterContent>>;
+      const clean = sanitizeProse(raw.html);
+      novel = { html: clean, title: raw.title };
+      // Persist on demand (best-effort, after the response streams).
+      after(() => cacheNovelChapterOnRead(id, clean, { workId: m, title: raw.title }));
+    }
+  }
+
   // Bind each page image to this visitor's session so a copied URL can't be
   // opened in another browser / incognito (see lib/image-sign).
   const sid = await getSessionId();
   const nowS = Math.floor(Date.now() / 1000);
-  const pages = pagesRes.value.pages.map((p) => signPagePath(p, sid, nowS));
+  const pages = isNovel
+    ? []
+    : (bodyRes.value as Awaited<ReturnType<typeof api.manga.pages>>).pages.map((p) =>
+        signPagePath(p, sid, nowS),
+      );
   const chapters =
     chaptersRes.status === "fulfilled" && chaptersRes.value ? chaptersRes.value.chapters : [];
 
@@ -73,22 +96,34 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
           <div className="reader-nav-spacer" />
           <span className="reader-count">
             {n ? `${n} · ` : ""}
-            {pages.length} págs
+            {isNovel ? "Novel" : `${pages.length} págs`}
           </span>
         </div>
       )}
 
-      <ReaderPages
-        pages={pages}
-        mangaId={m}
-        mangaName={mn}
-        chapterId={id}
-        chapterName={n}
-        chapterNo={chapterNo}
-        cover={cover}
-      />
+      {isNovel && novel ? (
+        <NovelReader
+          html={novel.html}
+          mangaId={m}
+          mangaName={mn}
+          chapterId={id}
+          chapterName={n}
+          chapterNo={chapterNo}
+          cover={cover}
+        />
+      ) : (
+        <ReaderPages
+          pages={pages}
+          mangaId={m}
+          mangaName={mn}
+          chapterId={id}
+          chapterName={n}
+          chapterNo={chapterNo}
+          cover={cover}
+        />
+      )}
 
-      {pages.length === 0 && <p className="muted">Nenhuma página retornada.</p>}
+      {!isNovel && pages.length === 0 && <p className="muted">Nenhuma página retornada.</p>}
 
       {hasContext && (
         <ReaderChapterEnd chapters={chapters} currentId={id} mangaId={m} mangaName={mn} />

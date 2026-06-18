@@ -8,6 +8,7 @@ import { ChapterStats } from "@/components/ChapterStats";
 import { Comments } from "@/components/Comments";
 import { DetailCover } from "@/components/DetailCover";
 import { DetailView } from "@/components/DetailView";
+import { FormatSwitcher } from "@/components/FormatSwitcher";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
@@ -207,19 +208,18 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     await cacheChaptersOnRead(id, resolved.chapters);
   });
 
-  // Enrich AniList relations with id + cover by searching each title. Capped and
-  // time-boxed: a work with many relations (e.g. One Piece has 20+) would
-  // otherwise block the whole hero on this await | a slow/rate-limited search
-  // could stall the cover for seconds. Beyond the cap, relations stay title-only.
-  const RELATION_CAP = 12;
-  const enrichedRelations = await Promise.all(
-    meta.relations.map(async (r, i) => {
-      if (i >= RELATION_CAP) return r;
+  // Enrich AniList relations with the first search result's id + cover, so each
+  // relation links to the work (with its cover) instead of a bare search. NOT
+  // awaited | passed as a promise and streamed behind a Suspense in DetailView,
+  // so the hero never waits on these N searches (One Piece has 20+). Each search
+  // is time-boxed; a relation with no match stays a search link (tagged later).
+  const relationsPromise = Promise.all(
+    meta.relations.map(async (r) => {
       try {
         const { list } = await Promise.race([
           api.manga.search({ q: r.title }),
           new Promise<{ list: never[] }>((resolve) =>
-            setTimeout(() => resolve({ list: [] }), 4000),
+            setTimeout(() => resolve({ list: [] }), 5000),
           ),
         ]);
         const match = list[0];
@@ -352,6 +352,11 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         // Trusted, server-built JSON-LD (no user input).
         dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
       />
+      {/* Format switcher (Mangá ↔ Novel) | streamed, self-hides when the work
+          has a single format, so plain manga pages are untouched. */}
+      <Suspense fallback={null}>
+        <FormatSwitcher id={id} name={title} current={core.format} />
+      </Suspense>
       <DetailView
         title={title}
         mangaId={id}
@@ -360,7 +365,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         charactersPromise={charactersPromise}
         about={aboutTab}
         comments={<Comments targetType="work" targetId={id} />}
-        relations={enrichedRelations}
+        relationsPromise={relationsPromise}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={core.imageUrl ? <DetailCover key="cover" src={core.imageUrl} alt={title} /> : null}

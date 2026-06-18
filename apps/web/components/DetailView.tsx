@@ -2,7 +2,7 @@
 import type { MangaCharacter, MangaRelation } from "@packages/contracts";
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, Suspense, useEffect, useState } from "react";
+import { type ReactNode, Suspense, use, useEffect, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
 import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
@@ -39,20 +39,28 @@ const RELATION_LABELS: Record<string, string> = {
 
 type EnrichedRelation = MangaRelation & { id?: string; imageUrl?: string };
 
-function RelatedWorks({ relations }: { relations: EnrichedRelation[] }) {
+function RelatedWorks({ promise }: { promise: Promise<EnrichedRelation[]> }) {
+  const relations = use(promise);
   if (relations.length === 0) return null;
   return (
     <section className="related-works">
       <h2 className="section">Obras relacionadas</h2>
       <div className="poster-grid">
         {relations.map((r, i) => {
-          const href = r.id ? routes.manga(r.id, r.title) : `/?q=${encodeURIComponent(r.title)}`;
-          const label = RELATION_LABELS[r.relation] ?? r.relation;
+          // Matched → link straight to the work (with its cover). No match → fall
+          // back to a search, tagged "Pesquisa" so it's clear it's not the work.
+          const isSearch = !r.id;
+          const href = isSearch
+            ? `/?q=${encodeURIComponent(r.title)}`
+            : routes.manga(r.id!, r.title);
+          const label = isSearch ? "Pesquisa" : (RELATION_LABELS[r.relation] ?? r.relation);
           return (
             <div key={`${r.relation}-${i}`} className="poster">
               <div className="poster-cover">
                 <Cover src={r.imageUrl} alt={r.title} sizes="160px" />
-                <span className="relation-badge">{label}</span>
+                <span className={`relation-badge${isSearch ? " relation-badge-search" : ""}`}>
+                  {label}
+                </span>
                 <Link className="poster-hit" href={href} aria-label={r.title} tabIndex={-1} />
               </div>
               <Link className="poster-name" href={href}>
@@ -79,7 +87,7 @@ export function DetailView({
   charactersPromise,
   about,
   comments,
-  relations,
+  relationsPromise,
 }: {
   backdrop?: string;
   cover: ReactNode;
@@ -93,7 +101,7 @@ export function DetailView({
   charactersPromise: Promise<MangaCharacter[]>;
   about: ReactNode;
   comments?: ReactNode;
-  relations?: EnrichedRelation[];
+  relationsPromise?: Promise<EnrichedRelation[]>;
 }) {
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",
@@ -242,7 +250,11 @@ export function DetailView({
         <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
       )}
 
-      {relations && relations.length > 0 && <RelatedWorks relations={relations} />}
+      {relationsPromise && (
+        <Suspense fallback={null}>
+          <RelatedWorks promise={relationsPromise} />
+        </Suspense>
+      )}
     </>
   );
 }

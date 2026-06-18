@@ -125,6 +125,57 @@ export async function cacheChaptersOnRead(
 }
 
 /**
+ * Read a novel chapter's prose from our DB (the on-demand persisted copy).
+ * Returns null when not yet cached | the caller then fetches from the source.
+ */
+export async function getCachedNovelChapter(
+  chapterId: string,
+): Promise<{ html: string; title: string | null } | null> {
+  if (!dbEnabled) return null;
+  try {
+    const db = getDb();
+    const { cachedNovelChapters } = schema;
+    const [row] = await db
+      .select()
+      .from(cachedNovelChapters)
+      .where(eq(cachedNovelChapters.chapterId, chapterId))
+      .limit(1);
+    return row ? { html: row.contentHtml, title: row.title } : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Persist a novel chapter's prose on first read (idempotent per chapterId).
+ * `html` MUST already be sanitized by the caller | we never store raw source markup.
+ */
+export async function cacheNovelChapterOnRead(
+  chapterId: string,
+  html: string,
+  opts: { workId?: string | null; title?: string | null } = {},
+): Promise<void> {
+  if (!dbEnabled || !html) return;
+  try {
+    const db = getDb();
+    const { cachedNovelChapters } = schema;
+    const values = {
+      chapterId,
+      workId: opts.workId ?? null,
+      title: opts.title ?? null,
+      contentHtml: html,
+      refreshedAt: new Date(),
+    };
+    await db
+      .insert(cachedNovelChapters)
+      .values(values)
+      .onConflictDoUpdate({ target: cachedNovelChapters.chapterId, set: values });
+  } catch {
+    /* best-effort | never block the reader */
+  }
+}
+
+/**
  * Catalog-first read: serve a work's last cached metadata straight from our DB
  * (title, core payload incl. translated synopsis, R2 cover/banner). The detail
  * page renders from this when fresh (instant, no backend hit) and falls back to

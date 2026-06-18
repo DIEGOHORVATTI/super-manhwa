@@ -2658,6 +2658,11 @@ html[data-reader] .footer {
   z-index: 1;
   pointer-events: none;
 }
+/* No catalog match | the poster links to a search instead of the work. */
+.relation-badge-search {
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.18);
+}
 
 /* Footer */
 .footer {
@@ -5349,4 +5354,54 @@ html[data-reader] .footer {
   height: 80px;
   object-fit: contain;
   margin: 4px 0;
+}
+
+/* ── Format switcher (Mangá ↔ Novel) on the obra page ── */
+.format-switcher {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.format-pill {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
+}
+.format-pill:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.format-pill.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ── Novel (text) reader ── */
+.novel-reader {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 24px 16px 96px;
+}
+.novel-prose {
+  font-size: 1.12rem;
+  line-height: 1.8;
+  color: var(--text);
+}
+.novel-prose p {
+  margin: 0 0 1.2em;
+}
+.novel-prose h1,
+.novel-prose h2,
+.novel-prose h3 {
+  margin: 1.6em 0 0.6em;
 }
