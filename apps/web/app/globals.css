@@ -305,6 +305,10 @@ a:hover {
   .brand-name {
     display: none;
   }
+  /* The footer wordmark stays | only the header brand collapses to the logo. */
+  .footer-brand .brand-name-lg {
+    display: inline;
+  }
 }
 
 /* ── Mobile bottom navigation ────────────────────────────────────────────── */
