@@ -43,10 +43,31 @@ const imgSrc = (img: Selection): string | undefined =>
     undefined
   )?.trim();
 
+// direct: these sites answer a plain browser fetch and are NOT behind Cloudflare;
+// routing them through FlareSolverr only fails ("Unable to connect" from the solver).
 const fetchHtml = async (url: string): Promise<string> => {
-  const res = await flareFetch(url, { headers: { "User-Agent": UA } });
+  const res = await flareFetch(url, { direct: true, headers: { "User-Agent": UA } });
   if (res.status >= 400) throw new Error(`mangalivre ${res.status} ${url}`);
   return res.body;
+};
+
+// The /manga/?m_orderby= archive is now JS-rendered (empty server HTML), so the
+// homepage is the only server-rendered source of popular/latest cards.
+// ponytail: page 1 only | the home shows one screenful, good enough for browse+probe.
+const parseHomeList = (html: string, selector: string): RawListPage => {
+  const $ = cheerio.load(html);
+  const list: NonNullable<RawListPage["list"]> = [];
+  const seen = new Set<string>();
+  $(selector).each((_, el) => {
+    const a = $(el).find('a[href*="/manga/"]').first();
+    const link = a.attr("href")?.trim() ?? "";
+    const img = $(el).find("img").first();
+    const name = (a.attr("title") || img.attr("alt") || a.text()).trim();
+    if (!name || !link || seen.has(link)) return;
+    seen.add(link);
+    list.push({ name, link, imageUrl: imgSrc(img) });
+  });
+  return { list, hasNextPage: false };
 };
 
 /* ------------------------------------------------------------------ */
@@ -71,13 +92,14 @@ const parseMadaraList = (html: string): RawListPage => {
 
 const madaraConnector = (meta: ConnectorMeta): MangaConnector => {
   const base = meta.baseUrl.replace(/\/$/, "");
-  const list = async (orderby: "views" | "latest", page: number): Promise<RawListPage> =>
-    parseMadaraList(await fetchHtml(`${base}/manga/page/${page}/?m_orderby=${orderby}`));
+  const empty: RawListPage = { list: [], hasNextPage: false };
+  const home = async (selector: string, page: number): Promise<RawListPage> =>
+    page > 1 ? empty : parseHomeList(await fetchHtml(`${base}/`), selector);
 
   return {
     ...meta,
-    getPopular: (page) => list("views", page),
-    getLatestUpdates: (page) => list("latest", page),
+    getPopular: (page) => home(".popular-item-wrap", page),
+    getLatestUpdates: (page) => home(".manga-item", page),
 
     async search(query, page): Promise<RawListPage> {
       const sp = new URLSearchParams({ s: query.trim(), post_type: "wp-manga" });
