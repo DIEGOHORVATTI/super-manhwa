@@ -840,8 +840,9 @@ a:hover {
   opacity: 0;
   pointer-events: none;
 }
-/* In the reader, the global footer is clutter | hide it. */
-html[data-reader] .footer {
+/* In the reader, the global footer + mobile bottom nav are clutter | hide them. */
+html[data-reader] .footer,
+html[data-reader] .bottom-nav {
   display: none;
 }
 /* Compact bar on phones | one tight row, drop the series-name text. */
