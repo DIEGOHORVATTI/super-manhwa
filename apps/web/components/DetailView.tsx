@@ -12,6 +12,27 @@ import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
 import { routes } from "@/lib/routes";
 
+const FORMAT_LABEL: Record<string, string> = {
+  manga: "Mangá",
+  manhwa: "Manhwa",
+  manhua: "Manhua",
+  novel: "Novel",
+};
+
+type FormatTwin = { id: string; format: string; title: string; imageUrl?: string };
+
+/** "Ler como Novel/Mangá" | links to the work's other-format edition (own page). */
+function FormatLinkButton({ promise }: { promise: Promise<FormatTwin | null> }) {
+  const twin = use(promise);
+  if (!twin) return null;
+  return (
+    <Link className="format-switch-btn" href={routes.manga(twin.id, twin.title)}>
+      <Icon name="book-open" size={15} />
+      Ler como {FORMAT_LABEL[twin.format] ?? twin.format}
+    </Link>
+  );
+}
+
 type Chapter = { id: string; name: string; lang?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
 
@@ -26,6 +47,8 @@ type ChaptersResult = { chapters: Chapter[]; lang: string };
  * immediately while the cross-source chapter fan-out resolves behind a skeleton.
  */
 const RELATION_LABELS: Record<string, string> = {
+  NOVEL: "Novel",
+  MANGA: "Mangá",
   SEQUEL: "Sequência",
   PREQUEL: "Prelúdio",
   SIDE_STORY: "História paralela",
@@ -88,6 +111,7 @@ export function DetailView({
   about,
   comments,
   relationsPromise,
+  formatLinkPromise,
 }: {
   backdrop?: string;
   cover: ReactNode;
@@ -102,6 +126,8 @@ export function DetailView({
   about: ReactNode;
   comments?: ReactNode;
   relationsPromise?: Promise<EnrichedRelation[]>;
+  /** The other-format edition (Mangá ↔ Novel) | "Ler como …" button above chapters. */
+  formatLinkPromise?: Promise<FormatTwin | null>;
 }) {
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",
@@ -158,6 +184,11 @@ export function DetailView({
             <h1 className="detail-title">{title}</h1>
             {meta}
             {genres}
+            {formatLinkPromise && (
+              <Suspense fallback={null}>
+                <FormatLinkButton promise={formatLinkPromise} />
+              </Suspense>
+            )}
             {descPreview && (
               <p className="detail-desc-preview">
                 {descPreview}{" "}

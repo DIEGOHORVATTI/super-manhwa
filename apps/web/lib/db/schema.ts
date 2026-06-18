@@ -530,6 +530,50 @@ export const readingEvents = pgTable(
   (t) => [uniqueIndex("reading_event_uniq").on(t.userId, t.chapterId)],
 );
 
+/* ───────────────────────── User library (server-backed) ─────────────────────────
+ * The signed-in mirror of the client localStorage library: favorites + the
+ * "continue reading" progress, so a user's shelf follows them across devices.
+ * Anonymous users keep using localStorage only; on login the client syncs both
+ * ways (see lib/library-db.ts).
+ */
+
+/** A work the user starred. `name`/`imageUrl` snapshot so the shelf renders
+ *  without a per-work catalog round-trip. */
+export const userFavorites = pgTable(
+  "user_favorites",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    workId: text("work_id").notNull(), // opaque catalog/manga id
+    name: text("name").notNull(),
+    imageUrl: text("image_url"),
+    addedAt: timestamp("added_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_favorite_uniq").on(t.userId, t.workId)],
+);
+
+/** Last chapter the user opened per work | the "continue reading" rail. One row
+ *  per (user, work); upserted on every chapter open. */
+export const userProgress = pgTable(
+  "user_progress",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    workId: text("work_id").notNull(),
+    name: text("name").notNull(),
+    imageUrl: text("image_url"),
+    chapterId: text("chapter_id").notNull(),
+    chapterName: text("chapter_name"),
+    chapterNo: integer("chapter_no"),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_progress_uniq").on(t.userId, t.workId)],
+);
+
 /* ───────────────────────────── Affiliates (recurring 20%) ─────────────────────────────
  * A user becomes an affiliate (unique code/link). First-touch attribution writes a
  * `referrals` row at signup; each authorized monthly subscription of a referred user

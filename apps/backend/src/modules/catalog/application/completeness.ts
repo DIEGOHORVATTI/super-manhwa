@@ -104,7 +104,6 @@ export const COMPLETENESS_PRIORITY = [
   "manhwaz",
   "webtoons",
   "mangaworld",
-  "asurascans",
 ];
 
 export const priorityOf = (id: string): number => {

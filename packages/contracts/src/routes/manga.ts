@@ -3,9 +3,11 @@ import { z } from "zod";
 
 import { langFilterSchema, paginationSchema } from "../schemas/base";
 import {
+  chapterContentResultSchema,
   chaptersResultSchema,
   charactersResultSchema,
   coreResultSchema,
+  formatsResultSchema,
   genresResultSchema,
   langsResultSchema,
   mangaListSchema,
@@ -87,6 +89,24 @@ export const manga = oc.prefix("/manga").router({
     .route({ method: "GET", path: "/pages", summary: "Chapter page images (by opaque id)" })
     .input(z.object({ id: z.string() }))
     .output(pagesResultSchema),
+
+  chapterContent: prefix
+    .route({
+      method: "GET",
+      path: "/chapter-content",
+      summary: "Novel chapter prose (by opaque id) | text sources only",
+    })
+    .input(z.object({ id: z.string() }))
+    .output(chapterContentResultSchema),
+
+  formats: prefix
+    .route({
+      method: "GET",
+      path: "/formats",
+      summary: "Formats a work is available in (manga ↔ novel), with the id to open each",
+    })
+    .input(z.object({ id: z.string(), name: z.string().optional() }))
+    .output(formatsResultSchema),
 
   langs: prefix
     .route({ method: "GET", path: "/langs", summary: "Languages available across integrations" })

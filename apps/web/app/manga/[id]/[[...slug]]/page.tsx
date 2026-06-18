@@ -8,7 +8,6 @@ import { ChapterStats } from "@/components/ChapterStats";
 import { Comments } from "@/components/Comments";
 import { DetailCover } from "@/components/DetailCover";
 import { DetailView } from "@/components/DetailView";
-import { FormatSwitcher } from "@/components/FormatSwitcher";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Icon } from "@/components/Icon";
 import { MarkdownDescription } from "@/components/MarkdownDescription";
@@ -230,6 +229,48 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     }),
   );
 
+  // The other-format edition of this work (Mangá ↔ Novel), if any. Resolved as a
+  // separate work (its own page): powers the "Ler como …" button above the
+  // chapters AND a card in "Relacionados" below them. Streamed | never awaited on
+  // the hero path. Its cover/title come from our catalog (api.manga.core).
+  const formatTwinPromise = (async (): Promise<{
+    id: string;
+    format: string;
+    title: string;
+    imageUrl?: string;
+  } | null> => {
+    try {
+      const { formats } = await api.manga.formats({ id, name: title });
+      const twin = formats.find((f) => f.id !== id);
+      if (!twin) return null;
+      const twinCore = await api.manga.core({ id: twin.id, name: title }).catch(() => null);
+      return {
+        id: twin.id,
+        format: twin.format,
+        title: twinCore?.core.title ?? title,
+        imageUrl: twinCore?.core.imageUrl,
+      };
+    } catch {
+      return null;
+    }
+  })();
+
+  // Merge the format twin into the related-works grid (labeled Novel/Mangá).
+  const relationsWithTwinPromise = Promise.all([relationsPromise, formatTwinPromise]).then(
+    ([rels, twin]) =>
+      twin
+        ? [
+            {
+              relation: twin.format === "novel" ? "NOVEL" : "MANGA",
+              title: twin.title,
+              id: twin.id,
+              imageUrl: twin.imageUrl,
+            },
+            ...rels,
+          ]
+        : rels,
+  );
+
   // Every name the work is known by (official variants + machine pt-BR title).
   // Rendered as real on-page text and fed to JSON-LD, so the obra is found
   // whether searched by its English, native, or Portuguese name.
@@ -352,11 +393,6 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         // Trusted, server-built JSON-LD (no user input).
         dangerouslySetInnerHTML={{ __html: JSON.stringify([jsonLd, breadcrumbLd]) }}
       />
-      {/* Format switcher (Mangá ↔ Novel) | streamed, self-hides when the work
-          has a single format, so plain manga pages are untouched. */}
-      <Suspense fallback={null}>
-        <FormatSwitcher id={id} name={title} current={core.format} />
-      </Suspense>
       <DetailView
         title={title}
         mangaId={id}
@@ -364,8 +400,10 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         chaptersPromise={chaptersPromise}
         charactersPromise={charactersPromise}
         about={aboutTab}
+        // "Ler como Novel/Mangá" button above the chapters → the twin's own page.
+        formatLinkPromise={formatTwinPromise}
         comments={<Comments targetType="work" targetId={id} />}
-        relationsPromise={relationsPromise}
+        relationsPromise={relationsWithTwinPromise}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={core.imageUrl ? <DetailCover key="cover" src={core.imageUrl} alt={title} /> : null}

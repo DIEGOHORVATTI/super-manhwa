@@ -1,4 +1,4 @@
-import type { MangaStatus } from "@packages/contracts";
+import type { MangaStatus, WorkFormat } from "@packages/contracts";
 
 /**
  * Domain entities. There is no persistence layer for manga | these are
@@ -20,6 +20,10 @@ export type MangaSummary = {
   chapters?: number;
   /** Short plain-text teaser for listing hover (AniList-backed listings). */
   description?: string;
+  /** Editorial format of this entry (`novel` ⇒ text); absent ⇒ image/manga. */
+  format?: WorkFormat;
+  /** Formats this work is available in, when search collapsed editions into one row. */
+  formats?: WorkFormat[];
 };
 
 export type Chapter = {
@@ -32,6 +36,8 @@ export type Chapter = {
   lang?: string;
   /** Reading source (connector id) this chapter came from. */
   source?: string;
+  /** Editorial format | `novel` chapters carry text, read via getChapterContent. */
+  format?: WorkFormat;
 };
 
 export type MangaDetail = {

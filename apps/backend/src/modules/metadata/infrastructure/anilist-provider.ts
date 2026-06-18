@@ -4,9 +4,7 @@ import type { MangaMeta, MetadataProvider } from "../domain/manga-meta";
 
 const ENDPOINT = "https://graphql.anilist.co";
 
-const QUERY = `query ($s: String) {
-  Media(search: $s, type: MANGA, sort: POPULARITY_DESC) {
-    averageScore
+const META_FIELDS = `averageScore
     bannerImage
     description(asHtml: false)
     tags { name rank }
@@ -25,7 +23,14 @@ const QUERY = `query ($s: String) {
     }
     relations {
       edges { relationType node { type title { english romaji } } }
-    }
+    }`;
+
+/** `typed` pins `type: MANGA`; the untyped variant is the fallback for works
+ *  AniList only carries as an anime (e.g. "The Beginning After the End"), so
+ *  characters/relations still resolve instead of coming back empty. */
+const metaQuery = (typed: boolean) => `query ($s: String) {
+  Media(search: $s${typed ? ", type: MANGA" : ""}, sort: POPULARITY_DESC) {
+    ${META_FIELDS}
   }
 }`;
 
@@ -83,13 +88,17 @@ interface AniListResponse {
  */
 export const makeAniListProvider = (): MetadataProvider => ({
   async byTitle(title) {
-    const result = await httpFetch<AniListResponse>(ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({ query: QUERY, variables: { s: title } }),
-    });
-    if (result.error) return null;
-    const m = result.value.data?.Media;
+    const fetchMeta = async (typed: boolean) => {
+      const result = await httpFetch<AniListResponse>(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ query: metaQuery(typed), variables: { s: title } }),
+      });
+      return result.error ? null : (result.value.data?.Media ?? null);
+    };
+    // Prefer the manga entry; fall back to any media (anime) when AniList has no
+    // manga/novel for this title, so characters/relations aren't empty.
+    const m = (await fetchMeta(true)) ?? (await fetchMeta(false));
     if (!m) return null;
 
     const meta: MangaMeta = {
@@ -113,10 +122,10 @@ export const makeAniListProvider = (): MetadataProvider => ({
           age: e.node?.age ?? undefined,
           favourites: e.node?.favourites ?? undefined,
         })),
+      // Any related media with a title | MANGA-only filtering dropped every
+      // relation for anime-fallback works, leaving the section empty.
       relations: (m.relations?.edges ?? [])
-        .filter(
-          (e) => e.node?.type === "MANGA" && (e.node?.title?.english || e.node?.title?.romaji),
-        )
+        .filter((e) => e.node?.title?.english || e.node?.title?.romaji)
         .map((e) => ({
           relation: e.relationType ?? "RELATED",
           title: (e.node!.title!.english ?? e.node!.title!.romaji)!,

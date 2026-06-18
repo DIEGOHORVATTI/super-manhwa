@@ -1,6 +1,8 @@
 "use client";
 import { Icon } from "@/components/Icon";
 import { toggleFavourite, useAniList } from "@/lib/anilist";
+import { useSession } from "@/lib/auth/client";
+import { dbFavorite } from "@/lib/library-db";
 import { toggleFavorite, useIsFavorite } from "@/lib/library";
 
 /**
@@ -22,6 +24,7 @@ export function FavoriteButton({
 }) {
   const fav = useIsFavorite(id);
   const { isLoggedIn } = useAniList();
+  const { data: session } = useSession();
 
   const onToggle = (e: React.MouseEvent) => {
     // On listing cards the button sits over a poster <Link>; don't navigate.
@@ -30,8 +33,10 @@ export function FavoriteButton({
       e.stopPropagation();
     }
     toggleFavorite({ id, name, imageUrl });
-    // Best-effort mirror to AniList when connected (the local store is the source
-    // of truth for the UI; a failure here never blocks the toggle).
+    // Mirror to our DB when signed in (cross-device library) | `!fav` is the new
+    // state after the toggle. Best-effort; localStorage stays the UI source.
+    if (session?.user) dbFavorite({ workId: id, name, imageUrl }, !fav);
+    // Best-effort mirror to AniList when connected.
     if (isLoggedIn) toggleFavourite(id).catch(() => {});
   };
 

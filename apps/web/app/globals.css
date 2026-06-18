@@ -5356,52 +5356,86 @@ html[data-reader] .footer {
   margin: 4px 0;
 }
 
-/* ── Format switcher (Mangá ↔ Novel) on the obra page ── */
-.format-switcher {
-  display: flex;
-  gap: 8px;
-  margin: 12px 0 4px;
+/* ── Connector novel (text) reader ──
+ * Distinct class from the language-learning `.novel-reader` above. Honors the
+ * same ReaderSettings vars as the manga reader: --reader-bg (Fundo + Intensidade),
+ * --reader-fc (Cor do texto), --reader-fs (Tamanho do texto). */
+.reader-novel {
+  background: var(--reader-bg);
+  border-radius: var(--radius);
+  padding: 32px 0;
 }
-.format-pill {
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 13px;
+.reader-novel-prose {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 20px 64px;
+  font-size: var(--reader-fs, 18px);
+  line-height: 1.85;
+  color: var(--reader-fc);
+}
+.reader-novel-prose p {
+  margin: 0 0 1.2em;
+}
+.reader-novel-prose h1,
+.reader-novel-prose h2,
+.reader-novel-prose h3 {
+  margin: 1.6em 0 0.6em;
+}
+
+/* search row: format badge ("Mangá · Novel") when editions are grouped */
+.combobox-formats {
+  font-size: 11px;
   font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── Format tabs (Mangá ↔ Novel) above the chapter grid ── */
+.format-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.format-tab {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
   text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
   transition:
-    background 0.15s,
     color 0.15s,
     border-color 0.15s;
 }
-.format-pill:hover {
+.format-tab:hover {
   color: var(--text);
-  border-color: var(--accent);
 }
-.format-pill.is-active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+.format-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 
-/* ── Novel (text) reader ── */
-.novel-reader {
-  max-width: 46rem;
-  margin: 0 auto;
-  padding: 24px 16px 96px;
+/* "Ler como Novel/Mangá" button above the chapter list */
+.format-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 2px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
 }
-.novel-prose {
-  font-size: 1.12rem;
-  line-height: 1.8;
-  color: var(--text);
-}
-.novel-prose p {
-  margin: 0 0 1.2em;
-}
-.novel-prose h1,
-.novel-prose h2,
-.novel-prose h3 {
-  margin: 1.6em 0 0.6em;
+.format-switch-btn:hover {
+  background: var(--accent);
+  color: #fff;
 }

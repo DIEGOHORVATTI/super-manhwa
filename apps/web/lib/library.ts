@@ -125,6 +125,17 @@ export function addFavorite(entry: Omit<LibEntry, "addedAt">): void {
   writeRaw(K.favorites, [{ ...entry, addedAt: Date.now() }, ...list]);
 }
 
+/** Union server favorites into the local store (login sync, newest-first). */
+export function mergeFavorites(entries: LibEntry[]): void {
+  if (entries.length === 0) return;
+  const byId = new Map(readRaw<LibEntry[]>(K.favorites, []).map((f) => [f.id, f]));
+  for (const e of entries) if (!byId.has(e.id)) byId.set(e.id, e);
+  writeRaw(
+    K.favorites,
+    [...byId.values()].sort((a, b) => b.addedAt - a.addedAt),
+  );
+}
+
 /* ------------------------------- continue reading ------------------------- */
 
 export function useHistory(): ProgressEntry[] {
@@ -143,6 +154,20 @@ export function removeProgress(id: string): void {
   writeRaw(
     K.history,
     readRaw<ProgressEntry[]>(K.history, []).filter((e) => e.id !== id),
+  );
+}
+
+/** Union server history into the local store (login sync); newest wins per work. */
+export function mergeHistory(entries: ProgressEntry[]): void {
+  if (entries.length === 0) return;
+  const byId = new Map(readRaw<ProgressEntry[]>(K.history, []).map((e) => [e.id, e]));
+  for (const e of entries) {
+    const cur = byId.get(e.id);
+    if (!cur || e.updatedAt > cur.updatedAt) byId.set(e.id, e);
+  }
+  writeRaw(
+    K.history,
+    [...byId.values()].sort((a, b) => b.updatedAt - a.updatedAt).slice(0, HISTORY_CAP),
   );
 }
 

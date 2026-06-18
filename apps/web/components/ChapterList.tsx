@@ -3,6 +3,7 @@ import Link from "next/link";
 import { use, useMemo, useState } from "react";
 import { Flag } from "@/components/Flag";
 import { Icon } from "@/components/Icon";
+import { dedupeChapters } from "@/lib/dedupe-chapters";
 import { fmtChapterDate, isRecent, parseChapterNumber } from "@/lib/format";
 import { useReadChapters } from "@/lib/library";
 import { routes } from "@/lib/routes";
@@ -41,9 +42,16 @@ export function ChapterList({
   lang: string;
   sortAsc: boolean;
 }) {
-  const { chapters } = use(promise);
+  const { chapters: rawChapters } = use(promise);
   const read = useReadChapters(mangaId);
   const [expanded, setExpanded] = useState(false);
+
+  // De-dup by chapter number, keeping the first (newest / has-date wins). Guards
+  // against a stale cached list that still carries the old duplicated novel
+  // chapters (each chapter had a reader + a dateless `/pdf/` row, same number).
+  // Manga is already merged by number upstream, so this is a no-op there. Chapters
+  // with no parseable number (oneshots/specials) fall back to their id, never collapsing.
+  const chapters = useMemo(() => dedupeChapters(rawChapters), [rawChapters]);
 
   // Show each chapter's real number (parsed from its name); fall back to its
   // position only when the name carries no number, so high/gapped numbering

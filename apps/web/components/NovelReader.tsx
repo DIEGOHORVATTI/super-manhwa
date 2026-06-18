@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { dbRecordProgress } from "@/lib/library-db";
 import { markChapterRead, recordProgress } from "@/lib/library";
 import { rpc } from "@/lib/rpc/client";
 
@@ -47,6 +48,14 @@ export function NovelReader({
       chapterName,
       chapterNo,
     });
+    dbRecordProgress({
+      workId: mangaId,
+      name: mangaName,
+      imageUrl: cover,
+      chapterId,
+      chapterName,
+      chapterNo,
+    });
     void rpc.reading.track({ workId: mangaId, chapterId }).catch(() => {});
   }, [mangaId, mangaName, cover, chapterId, chapterName, chapterNo]);
 
@@ -67,10 +76,10 @@ export function NovelReader({
   }, [mangaId, chapterId]);
 
   return (
-    <article className="novel-reader">
+    <article className="reader-novel">
       {/* Sanitized server-side to a prose whitelist (lib/sanitize-prose). */}
       {/* biome-ignore lint/security/noDangerouslySetInnerHtml: prose is sanitized upstream */}
-      <div className="novel-prose" dangerouslySetInnerHTML={{ __html: html }} />
+      <div className="reader-novel-prose" dangerouslySetInnerHTML={{ __html: html }} />
       <div ref={endRef} aria-hidden="true" />
     </article>
   );

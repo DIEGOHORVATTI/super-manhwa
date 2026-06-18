@@ -69,6 +69,7 @@ export const MangaMapper = {
       // connector's first supported language when the caller doesn't pin one.
       lang: lang ?? meta.langs[0],
       langs: meta.langs,
+      format: meta.format,
     };
   },
 
@@ -80,6 +81,7 @@ export const MangaMapper = {
       dateUpload: raw.dateUpload,
       lang: lang ?? meta.langs[0],
       source: meta.id,
+      format: meta.format,
     };
   },
 

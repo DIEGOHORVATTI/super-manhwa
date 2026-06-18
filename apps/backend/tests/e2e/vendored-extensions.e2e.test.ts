@@ -15,7 +15,6 @@ const VENDORED_PATHS = [
   "all/mangafire.js",
   "en/weebcentral.js",
   "en/manhwaz.js",
-  "en/asurascans.js",
   "it/mangaworld.js",
 ] as const;
 
@@ -52,7 +51,6 @@ describe("vendored extensions / package files", () => {
       "weebcentral",
       "mangaworld",
       "manhwaz",
-      "asurascans",
       "mangadex-ptbr",
     ];
     const ids = new Set(CONNECTORS.map((c) => c.id));

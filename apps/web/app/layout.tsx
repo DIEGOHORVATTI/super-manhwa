@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { AffiliateAttributor } from "@/components/AffiliateAttributor";
+import { LibrarySync } from "@/components/LibrarySync";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -89,6 +90,7 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
         <SpeedInsights />
         <ServiceWorkerRegister />
         <AffiliateAttributor />
+        <LibrarySync />
       </body>
     </html>
   );

@@ -16,6 +16,8 @@ export const router = {
     core: mangaRoutes.getMangaCoreRoute,
     chapters: mangaRoutes.getMangaChaptersRoute,
     pages: mangaRoutes.getChapterPagesRoute,
+    chapterContent: mangaRoutes.getChapterContentRoute,
+    formats: mangaRoutes.listFormatsRoute,
     langs: mangaRoutes.listLangsRoute,
     genres: mangaRoutes.listGenresRoute,
     meta: mangaRoutes.getMangaMetaRoute,
