@@ -10,7 +10,7 @@ import { routes } from "@/lib/routes";
 
 /**
  * Header account control. Anonymous → "Entrar" link. Signed-in → avatar button
- * that opens a dropdown (perfil, biblioteca, studio, admin if role, sair).
+ * that opens a dropdown (perfil, biblioteca, studio, sair).
  * Reuses the existing button/card visual language; `role` comes from the
  * session's additional fields.
  */
@@ -51,7 +51,6 @@ export function UserMenu() {
     );
   }
 
-  const isAdmin = user.role === "admin" || user.role === "staff";
   const initial = (user.name || user.email || "?").charAt(0).toUpperCase();
 
   return (
@@ -98,11 +97,6 @@ export function UserMenu() {
           >
             <Icon name="settings" size={15} /> Configurações
           </button>
-          {isAdmin && (
-            <Link href={routes.admin.root} role="menuitem" onClick={() => setOpen(false)}>
-              <Icon name="shield" size={15} /> Admin
-            </Link>
-          )}
           <button
             type="button"
             role="menuitem"
