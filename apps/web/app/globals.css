@@ -834,6 +834,38 @@ a:hover {
   backdrop-filter: blur(12px) saturate(1.4);
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  transition:
+    transform 0.25s ease,
+    opacity 0.25s ease;
+}
+/* Auto-hide the work bar while reading down (revealed on scroll-up). */
+.reader-nav.is-hidden {
+  transform: translateY(calc(-100% - var(--header-h) - 20px));
+  opacity: 0;
+  pointer-events: none;
+}
+/* In the reader, the global footer is clutter | hide it. */
+html[data-reader] .footer {
+  display: none;
+}
+/* Compact bar on phones | one tight row, drop the series-name text. */
+@media (max-width: 620px) {
+  .reader-nav {
+    top: calc(var(--header-h) + 6px);
+    gap: 6px;
+    padding: 6px 10px;
+    margin-bottom: 10px;
+    flex-wrap: nowrap;
+  }
+  .reader-btn-series .reader-series-name {
+    display: none;
+  }
+  .reader-count {
+    font-size: 11px;
+  }
+  .reader-chap-picker {
+    min-width: 0;
+  }
 }
 /* Thin reading-progress bar pinned to the bottom edge of the toolbar. */
 .reader-progress {
