@@ -36,7 +36,6 @@ export function ReaderNav({
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [progress, setProgress] = useState(0);
-  const [showTop, setShowTop] = useState(false);
   const [hidden, setHidden] = useState(false);
   const lastY = useRef(0);
   const boxRef = useRef<HTMLDivElement>(null);
@@ -61,7 +60,6 @@ export function ReaderNav({
       const y = h.scrollTop;
       const max = h.scrollHeight - h.clientHeight;
       setProgress(max > 0 ? Math.min(1, y / max) : 0);
-      setShowTop(y > 800);
       // Hide on scroll-down (past a small threshold), reveal on scroll-up.
       if (y > lastY.current && y > 120) setHidden(true);
       else if (y < lastY.current) setHidden(false);
@@ -210,16 +208,6 @@ export function ReaderNav({
           </span>
         )}
       </div>
-
-      <button
-        type="button"
-        className={`reader-top${showTop ? " is-visible" : ""}`}
-        onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-        aria-label="Voltar ao topo"
-        title="Voltar ao topo"
-      >
-        <Icon name="chevron-up" size={20} />
-      </button>
     </>
   );
 }
