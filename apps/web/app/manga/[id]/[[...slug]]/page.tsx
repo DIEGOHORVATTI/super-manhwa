@@ -109,7 +109,12 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
       lang: "pt-br",
     }) as typeof coreData;
 
-  if (cached && !isStale(cached.refreshedAt)) {
+  // A cached row with NO cover (cover mirror failed / cached before the cover
+  // resolved) must NOT be served | it would render a cover-less hero AND the
+  // after() refresh would re-persist its own gap forever. Treat it as a miss and
+  // go live so the cover renders now and the cache heals below.
+  const cachedHasCover = Boolean(cached && (cached.coverUrl || cached.core.imageUrl));
+  if (cached && !isStale(cached.refreshedAt) && cachedHasCover) {
     coreData = fromCache(cached);
   } else {
     try {
@@ -202,18 +207,68 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     await cacheChaptersOnRead(id, resolved.chapters);
   });
 
-  // Enrich AniList relations with id + cover by searching each title in parallel.
-  // Best-effort: a failed/empty search falls back to the bare relation (title-only).
-  const enrichedRelations = await Promise.all(
+  // Enrich AniList relations with the first search result's id + cover, so each
+  // relation links to the work (with its cover) instead of a bare search. NOT
+  // awaited | passed as a promise and streamed behind a Suspense in DetailView,
+  // so the hero never waits on these N searches (One Piece has 20+). Each search
+  // is time-boxed; a relation with no match stays a search link (tagged later).
+  const relationsPromise = Promise.all(
     meta.relations.map(async (r) => {
       try {
-        const { list } = await api.manga.search({ q: r.title });
+        const { list } = await Promise.race([
+          api.manga.search({ q: r.title }),
+          new Promise<{ list: never[] }>((resolve) =>
+            setTimeout(() => resolve({ list: [] }), 5000),
+          ),
+        ]);
         const match = list[0];
         return match ? { ...r, id: match.id, imageUrl: match.imageUrl } : r;
       } catch {
         return r;
       }
     }),
+  );
+
+  // The other-format edition of this work (Mangá ↔ Novel), if any. Resolved as a
+  // separate work (its own page): powers the "Ler como …" button above the
+  // chapters AND a card in "Relacionados" below them. Streamed | never awaited on
+  // the hero path. Its cover/title come from our catalog (api.manga.core).
+  const formatTwinPromise = (async (): Promise<{
+    id: string;
+    format: string;
+    title: string;
+    imageUrl?: string;
+  } | null> => {
+    try {
+      const { formats } = await api.manga.formats({ id, name: title });
+      const twin = formats.find((f) => f.id !== id);
+      if (!twin) return null;
+      const twinCore = await api.manga.core({ id: twin.id, name: title }).catch(() => null);
+      return {
+        id: twin.id,
+        format: twin.format,
+        title: twinCore?.core.title ?? title,
+        imageUrl: twinCore?.core.imageUrl,
+      };
+    } catch {
+      return null;
+    }
+  })();
+
+  // Merge the format twin into the related-works grid (labeled Novel/Mangá).
+  const relationsWithTwinPromise = Promise.all([relationsPromise, formatTwinPromise]).then(
+    ([rels, twin]) =>
+      twin
+        ? [
+            {
+              relation: twin.format === "novel" ? "NOVEL" : "MANGA",
+              title: twin.title,
+              id: twin.id,
+              imageUrl: twin.imageUrl,
+            },
+            ...rels,
+          ]
+        : rels,
   );
 
   // Every name the work is known by (official variants + machine pt-BR title).
@@ -345,8 +400,10 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         chaptersPromise={chaptersPromise}
         charactersPromise={charactersPromise}
         about={aboutTab}
+        // "Ler como Novel/Mangá" button above the chapters → the twin's own page.
+        formatLinkPromise={formatTwinPromise}
         comments={<Comments targetType="work" targetId={id} />}
-        relations={enrichedRelations}
+        relationsPromise={relationsWithTwinPromise}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
         cover={core.imageUrl ? <DetailCover key="cover" src={core.imageUrl} alt={title} /> : null}

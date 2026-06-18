@@ -23,6 +23,7 @@ export function DetailCover({ src, alt }: { src: string; alt: string }) {
       height={240}
       sizes="160px"
       priority
+      unoptimized
       onError={() => {
         if (attempt < MAX_RETRIES) setTimeout(() => setAttempt((a) => a + 1), 500 * (attempt + 1));
         else setDead(true);

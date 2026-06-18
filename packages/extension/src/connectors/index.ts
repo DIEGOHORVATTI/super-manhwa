@@ -2,6 +2,7 @@
 // out of the popular pool so the home feed stays clean, but fully functional as
 // detail/fallback targets by opaque id (Comick → 365 ch, Mangafire → 201 ch).
 import type { MangaConnector } from "../types";
+import { centralnovel } from "./centralnovel";
 import { comickPtBr } from "./comick";
 import { mangadex } from "./mangadex";
 import { mangafirePtBr } from "./mangafire";
@@ -41,6 +42,10 @@ export const CONNECTORS: readonly MangaConnector[] = [
   // under QuickJS. See each connector module for the per-source blocker.
   comickPtBr,
   mangafirePtBr,
+  // Native pt-br NOVEL source (Themesia theme). Out of the popular/merge pools
+  // by format: novels resolve directly by opaque id, never merged into the
+  // image-chapter fan-out (see get-manga-chapters' novel branch).
+  centralnovel,
 ] as const;
 
 /** Build-time map for O(1) lookup by id. */

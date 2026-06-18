@@ -42,6 +42,10 @@ export function Cover({
       priority={priority}
       className={className}
       style={{ objectFit: "cover" }}
+      // Covers are already served (sized + cached) by our /api/img proxy | skip
+      // Next's optimizer, which adds no value here and chokes in dev under a
+      // page full of covers (poster + 20+ relations), leaving them blank.
+      unoptimized
       onError={() => {
         if (attempt < MAX_RETRIES) setTimeout(() => setAttempt((a) => a + 1), 500 * (attempt + 1));
         else setFailed(true);

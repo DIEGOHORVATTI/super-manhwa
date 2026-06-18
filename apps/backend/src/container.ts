@@ -7,10 +7,13 @@ import { env } from "@/config/env";
 import { makeAesIdStore } from "@/core/infra/aes-id-store";
 import { makeMemoryCache } from "@/core/infra/memory-cache";
 import {
+  makeConnectorSearch,
+  makeGetChapterContent,
   makeGetChapterPages,
   makeGetMangaChapters,
   makeGetMangaCore,
   makeListConnectorsHealth,
+  makeListFormats,
   makeListGenres,
   makeListLangs,
   makeListPopular,
@@ -43,12 +46,17 @@ const metadataProvider = makeAniListProvider();
 const catalog = makeAniListCatalog();
 
 // Catalog application
+// Reading-source search | makes works findable even when AniList indexes them
+// poorly (shared by suggest + search so both surface connector-only works).
+const connectorSearch = makeConnectorSearch(connectorRegistry, idStore, cache);
 export const listPopular = makeListPopular(catalog, idStore, cache);
-export const searchManga = makeSearchManga(catalog, idStore, cache);
-export const suggestManga = makeSuggestManga(catalog, idStore, cache);
+export const searchManga = makeSearchManga(catalog, idStore, cache, connectorSearch);
+export const suggestManga = makeSuggestManga(catalog, idStore, cache, connectorSearch);
 export const getMangaCore = makeGetMangaCore(catalog, connectorRegistry, idStore, cache);
 export const getMangaChapters = makeGetMangaChapters(catalog, connectorRegistry, idStore, cache);
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
+export const getChapterContent = makeGetChapterContent(connectorRegistry, idStore, cache);
+export const listFormats = makeListFormats(catalog, connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(catalog, cache);
 export const listConnectorsHealth = makeListConnectorsHealth(connectorRegistry);

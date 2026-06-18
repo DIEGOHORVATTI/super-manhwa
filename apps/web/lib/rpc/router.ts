@@ -5,6 +5,7 @@ import { commentsRouter } from "./routers/comments";
 import { donationsRouter } from "./routers/donations";
 import { learnRouter } from "./routers/learn";
 import { legalRouter } from "./routers/legal";
+import { libraryRouter } from "./routers/library";
 import { newsletterRouter } from "./routers/newsletter";
 import { pixelsRouter } from "./routers/pixels";
 import { profileRouter } from "./routers/profile";
@@ -23,6 +24,7 @@ export const appRouter = {
   comments: commentsRouter,
   profile: profileRouter,
   reading: readingRouter,
+  library: libraryRouter,
   newsletter: newsletterRouter,
   legal: legalRouter,
   anilist: anilistRouter,

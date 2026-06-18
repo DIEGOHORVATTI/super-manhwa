@@ -100,6 +100,29 @@ export const makeGetMangaChapters =
     };
 
     return cache.remember(`chapters:${id}`, MERGED_TTL, async () => {
+      // Connector-direct path: a work opened by its own opaque id whose source is
+      // a NOVEL serves its chapters straight from that one connector | the
+      // cross-source merge-by-number below is image-manga logic and would be
+      // wrong for prose. Best-effort: any failure falls through to the fan-out.
+      const ref = idStore.decode(id);
+      if (ref) {
+        const direct = await registry.resolve(ref.source);
+        if (direct?.format === "novel") {
+          try {
+            const lang = direct.langs.includes(PREFERRED_LANG) ? PREFERRED_LANG : direct.langs[0];
+            const raw = await cache.remember(
+              `detail:${direct.id}:${lang}:${ref.url}`,
+              DETAIL_TTL,
+              () => direct.getDetail(ref.url, lang),
+            );
+            const shaped = MangaMapper.toDetail(idStore, direct, raw ?? {}, lang);
+            return { chapters: shaped.chapters ?? [], lang };
+          } catch {
+            /* novel source down → fall through (likely returns empty) */
+          }
+        }
+      }
+
       const work = await loadWork(cache, catalog, id);
 
       // Title variants to find the same work across reading sources.
@@ -114,10 +137,9 @@ export const makeGetMangaChapters =
         const deadline = new Promise<null>((resolve) => {
           timer = setTimeout(() => resolve(null), FANOUT_DEADLINE_MS);
         });
-        const pool = orderCompletenessPool(registry.listCurated(), PREFERRED_LANG, "").slice(
-          0,
-          MAX_POOL,
-        );
+        // Image sources only | novels never merge into the page-chapter pool.
+        const imagePool = registry.listCurated().filter((c) => c.format !== "novel");
+        const pool = orderCompletenessPool(imagePool, PREFERRED_LANG, "").slice(0, MAX_POOL);
         const settled = await Promise.all(
           pool.map((c) => Promise.race([resolveAlt(c, queries, targets), deadline])),
         );

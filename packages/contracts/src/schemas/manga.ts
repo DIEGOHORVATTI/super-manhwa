@@ -15,6 +15,14 @@ export const mangaStatusSchema = z.enum([
 export type MangaStatus = z.infer<typeof mangaStatusSchema>;
 
 /**
+ * Editorial format a work is read as. manga/manhwa/manhua are paginated images
+ * (page reader); `novel` is text (text reader). Mirrors `WorkFormat` in
+ * `@packages/extension`. Absent on a chapter/core ⇒ treat as `manga`.
+ */
+export const workFormatSchema = z.enum(["manga", "manhwa", "manhua", "novel"]);
+export type WorkFormat = z.infer<typeof workFormatSchema>;
+
+/**
  * Listing item | what shows up on the home grid, search, and autocomplete.
  * Source-agnostic by design: only `id` (opaque) + display fields.
  *
@@ -38,6 +46,11 @@ export const mangaSummarySchema = z.object({
   /** Short plain-text teaser shown on listing hover. Present on AniList-backed
    *  listings (popular/search/trending/newest); undefined for connector lists. */
   description: z.string().optional(),
+  /** Editorial format of this entry (`novel` ⇒ text). Absent ⇒ image/manga. */
+  format: workFormatSchema.optional(),
+  /** When search collapsed several format-editions of one work into this row,
+   *  the formats it's available in (e.g. `["manga","novel"]`) | drives the badge. */
+  formats: z.array(workFormatSchema).optional(),
 });
 export type MangaSummary = z.infer<typeof mangaSummarySchema>;
 
@@ -58,6 +71,9 @@ export const chapterSchema = z.object({
   /** Reading source this chapter came from (connector id, e.g. `mangafire-ptbr`),
    *  so a merged list shows which site each row was pulled from. */
   source: z.string().optional(),
+  /** Editorial format | `novel` rows route to the text reader, everything else
+   *  (or absent) to the page reader. */
+  format: workFormatSchema.optional(),
 });
 export type Chapter = z.infer<typeof chapterSchema>;
 
@@ -75,6 +91,9 @@ export const mangaCoreSchema = z.object({
   genre: z.array(z.string()).optional(),
   status: mangaStatusSchema.optional(),
   imageUrl: z.string().optional(),
+  /** Editorial format of the work | drives the reader the detail page links to.
+   *  Only set for connector-resolved works (AniList works stay manga/undefined). */
+  format: workFormatSchema.optional(),
   /**
    * Official title variants (english/romaji/native/synonyms, incl. localized
    * names like the pt-BR title). Surfaced on the detail page so the work is found
@@ -90,6 +109,22 @@ export const chaptersResultSchema = z.object({
   lang: z.string(),
 });
 export const pagesResultSchema = z.object({ pages: z.array(z.string()) });
+
+/** Novel chapter prose (by opaque chapter id). `html` is source markup | the web
+ *  sanitizes it to a prose whitelist before render. */
+export const chapterContentResultSchema = z.object({
+  html: z.string(),
+  title: z.string().optional(),
+});
+
+/** One readable format of a work + the opaque id to open it. */
+export const workFormatLinkSchema = z.object({
+  format: workFormatSchema,
+  id: z.string(),
+});
+export const formatsResultSchema = z.object({
+  formats: z.array(workFormatLinkSchema),
+});
 export const suggestResultSchema = z.object({ list: z.array(mangaSummarySchema) });
 export const langsResultSchema = z.object({ langs: z.array(z.string()) });
 export const genresResultSchema = z.object({ genres: z.array(z.string()) });

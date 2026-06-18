@@ -8,6 +8,14 @@ import { routes } from "@/lib/routes";
 /** Frontend is pt-br locked, so suggest always filters to pt-br titles. */
 const LANG = "pt-br";
 
+const FORMAT_LABEL: Record<string, string> = {
+  manga: "Mangá",
+  manhwa: "Manhwa",
+  manhua: "Manhua",
+  novel: "Novel",
+};
+const fmtLabel = (f: string) => FORMAT_LABEL[f] ?? f;
+
 /**
  * Search combobox. Debounced fetch → spinner inline while loading → dropdown of
  * matches with cover thumb + lang badge. Click or Enter on a row navigates to
@@ -155,6 +163,9 @@ export function Autocomplete() {
               )}
               <span className="combobox-name">{m.name}</span>
               <span className="combobox-tags">
+                {m.formats && m.formats.length > 1 && (
+                  <span className="combobox-formats">{m.formats.map(fmtLabel).join(" · ")}</span>
+                )}
                 {m.chapters !== undefined && (
                   <span className="combobox-chapters">{m.chapters} caps</span>
                 )}

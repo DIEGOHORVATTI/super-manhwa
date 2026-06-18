@@ -8,6 +8,7 @@ import { signCoverPath } from "@/shared/image-sign";
 import type { CatalogSource } from "../domain/catalog-source";
 import type { ConnectorRegistry } from "../infrastructure/connector-registry";
 import { MangaMapper } from "../infrastructure/manga-mapper";
+import { titleMatches } from "./completeness";
 import { loadWork } from "./work-cache";
 
 /** Reading language the page presents chapters in | kept aligned with the
@@ -15,6 +16,7 @@ import { loadWork } from "./work-cache";
 const PREFERRED_LANG = "pt-br";
 /** Connector detail cache window | shares the key used by the chapters route. */
 const DETAIL_TTL = 10 * 60 * 1000;
+const ENRICH_TTL = 10 * 60 * 1000;
 
 /**
  * Fast half of the obra page: a work's non-chapter metadata (title, cover,
@@ -23,6 +25,13 @@ const DETAIL_TTL = 10 * 60 * 1000;
  * the page can paint its hero immediately while the cross-source chapter fan-out
  * ({@link makeGetMangaChapters}) streams in separately.
  */
+/** Find this work in the AniList catalog by title (cached, confident match only). */
+const findCatalogMatch = async (cache: Cache, catalog: CatalogSource, title: string) =>
+  cache.remember(`core-enrich:${title.toLowerCase()}`, ENRICH_TTL, async () => {
+    const { items } = await catalog.search(title, 1);
+    return items.find((it) => titleMatches(it.title, [title])) ?? null;
+  });
+
 export const makeGetMangaCore =
   (catalog: CatalogSource, registry: ConnectorRegistry, idStore: IdStore, cache: Cache) =>
   async ({
@@ -51,15 +60,32 @@ export const makeGetMangaCore =
             () => connector.getDetail(ref.url, lang),
           );
           const d = MangaMapper.toDetail(idStore, connector, raw ?? {}, lang);
+
+          // Enrich with our AniList catalog when a confident title match exists,
+          // so connector works (e.g. novels) carry the catalog's richer metadata
+          // (cover/synopsis/genres/status) instead of the source's sparser data.
+          // Best-effort + cached | no match (e.g. a novel AniList lacks) keeps the
+          // connector's own metadata.
+          const title = d.title ?? name;
+          let ani: Awaited<ReturnType<typeof findCatalogMatch>> = null;
+          if (title) {
+            ani = await findCatalogMatch(cache, catalog, title).catch(() => null);
+          }
+          const aniCover = ani?.imageUrl
+            ? signCoverPath(`/api/img/${idStore.encode({ source: "anilist", url: ani.imageUrl })}`)
+            : undefined;
+
           return {
             core: {
               title: d.title ?? name,
-              description: d.description,
+              description: ani?.description ?? d.description,
               author: d.author,
               artist: d.artist,
-              genre: d.genre,
-              status: d.status,
-              imageUrl: d.imageUrl,
+              genre: ani?.genres ?? d.genre,
+              status: ani?.status ?? d.status,
+              imageUrl: aniCover ?? d.imageUrl,
+              // So the detail page knows which reader to link (novel ⇒ text).
+              format: connector.format,
               aliases: [],
             },
             lang: d.lang,

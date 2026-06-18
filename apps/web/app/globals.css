@@ -2658,6 +2658,11 @@ html[data-reader] .footer {
   z-index: 1;
   pointer-events: none;
 }
+/* No catalog match | the poster links to a search instead of the work. */
+.relation-badge-search {
+  color: var(--muted);
+  border-color: rgba(255, 255, 255, 0.18);
+}
 
 /* Footer */
 .footer {
@@ -5349,4 +5354,88 @@ html[data-reader] .footer {
   height: 80px;
   object-fit: contain;
   margin: 4px 0;
+}
+
+/* ── Connector novel (text) reader ──
+ * Distinct class from the language-learning `.novel-reader` above. Honors the
+ * same ReaderSettings vars as the manga reader: --reader-bg (Fundo + Intensidade),
+ * --reader-fc (Cor do texto), --reader-fs (Tamanho do texto). */
+.reader-novel {
+  background: var(--reader-bg);
+  border-radius: var(--radius);
+  padding: 32px 0;
+}
+.reader-novel-prose {
+  max-width: 46rem;
+  margin: 0 auto;
+  padding: 0 20px 64px;
+  font-size: var(--reader-fs, 18px);
+  line-height: 1.85;
+  color: var(--reader-fc);
+}
+.reader-novel-prose p {
+  margin: 0 0 1.2em;
+}
+.reader-novel-prose h1,
+.reader-novel-prose h2,
+.reader-novel-prose h3 {
+  margin: 1.6em 0 0.6em;
+}
+
+/* search row: format badge ("Mangá · Novel") when editions are grouped */
+.combobox-formats {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+/* ── Format tabs (Mangá ↔ Novel) above the chapter grid ── */
+.format-tabs {
+  display: flex;
+  gap: 4px;
+  margin: 0 0 14px;
+  border-bottom: 1px solid var(--border);
+}
+.format-tab {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+.format-tab:hover {
+  color: var(--text);
+}
+.format-tab.is-active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* "Ler como Novel/Mangá" button above the chapter list */
+.format-switch-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 12px 0 2px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.format-switch-btn:hover {
+  background: var(--accent);
+  color: #fff;
 }

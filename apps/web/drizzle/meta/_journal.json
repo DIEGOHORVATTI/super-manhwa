@@ -64,6 +64,20 @@
       "when": 1781698982491,
       "tag": "0008_wild_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1781791027182,
+      "tag": "0009_shiny_sheva_callister",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1781809182544,
+      "tag": "0010_simple_siren",
+      "breakpoints": true
     }
   ]
 }

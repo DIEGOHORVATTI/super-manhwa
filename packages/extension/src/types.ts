@@ -6,10 +6,19 @@
  * adapts the QuickJS runner to the same interface.
  */
 
+/**
+ * Editorial format of a source's works. manga/manhwa/manhua are all paginated
+ * images and share the page reader; `novel` is text and routes to the text
+ * reader (`getChapterContent`). Absent = `manga` (the historical default).
+ */
+export type WorkFormat = "manga" | "manhwa" | "manhua" | "novel";
+
 /** Static metadata describing how a connector identifies and behaves. */
 export interface ConnectorMeta {
   id: string;
   name: string;
+  /** Editorial format this source serves. Defaults to `manga` when omitted. */
+  format?: WorkFormat;
   /** ISO-639 language codes the source can serve (e.g. `["en", "pt-br"]`).
    *  The first entry is the default when a request doesn't pin a language. */
   langs: string[];
@@ -63,6 +72,13 @@ export interface RawDetail {
 /** Mangayomi extensions return either a string URL or `{url}` per page. */
 export type RawPage = string | { url: string };
 
+/** A novel chapter's prose. `html` is the raw source markup | the backend
+ *  passes it through and the web sanitizes it to a prose whitelist before render. */
+export interface RawChapterContent {
+  html: string;
+  title?: string;
+}
+
 /** The full connector contract | what the backend consumes. */
 export interface MangaConnector extends ConnectorMeta {
   // `lang` (optional, last arg) picks which of the connector's `langs` to serve;
@@ -71,6 +87,12 @@ export interface MangaConnector extends ConnectorMeta {
   search(query: string, page: number, lang?: string): Promise<RawListPage>;
   getDetail(link: string, lang?: string): Promise<RawDetail>;
   getPageList(chapterUrl: string): Promise<RawPage[]>;
+  /**
+   * Novel sources serve text, not page images. When present, the reader fetches
+   * a chapter's prose through this instead of `getPageList`. Image sources omit
+   * it | callers feature-detect (and `getPageList` returns `[]` for novels).
+   */
+  getChapterContent?(chapterUrl: string): Promise<RawChapterContent>;
   /**
    * Optional fast chapter-count probe for annotating listings without a full
    * `getDetail` (e.g. MangaDex `/aggregate`). Sources that can't answer cheaply

@@ -2,7 +2,7 @@
 import type { MangaCharacter, MangaRelation } from "@packages/contracts";
 import Image from "next/image";
 import Link from "next/link";
-import { type ReactNode, Suspense, useEffect, useState } from "react";
+import { type ReactNode, Suspense, use, useEffect, useState } from "react";
 import { ChapterList } from "@/components/ChapterList";
 import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
@@ -11,6 +11,27 @@ import { Icon } from "@/components/Icon";
 import { ChaptersGridSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
 import { routes } from "@/lib/routes";
+
+const FORMAT_LABEL: Record<string, string> = {
+  manga: "Mangá",
+  manhwa: "Manhwa",
+  manhua: "Manhua",
+  novel: "Novel",
+};
+
+type FormatTwin = { id: string; format: string; title: string; imageUrl?: string };
+
+/** "Ler como Novel/Mangá" | links to the work's other-format edition (own page). */
+function FormatLinkButton({ promise }: { promise: Promise<FormatTwin | null> }) {
+  const twin = use(promise);
+  if (!twin) return null;
+  return (
+    <Link className="format-switch-btn" href={routes.manga(twin.id, twin.title)}>
+      <Icon name="book-open" size={15} />
+      Ler como {FORMAT_LABEL[twin.format] ?? twin.format}
+    </Link>
+  );
+}
 
 type Chapter = { id: string; name: string; lang?: string };
 type ChaptersResult = { chapters: Chapter[]; lang: string };
@@ -26,6 +47,8 @@ type ChaptersResult = { chapters: Chapter[]; lang: string };
  * immediately while the cross-source chapter fan-out resolves behind a skeleton.
  */
 const RELATION_LABELS: Record<string, string> = {
+  NOVEL: "Novel",
+  MANGA: "Mangá",
   SEQUEL: "Sequência",
   PREQUEL: "Prelúdio",
   SIDE_STORY: "História paralela",
@@ -39,20 +62,28 @@ const RELATION_LABELS: Record<string, string> = {
 
 type EnrichedRelation = MangaRelation & { id?: string; imageUrl?: string };
 
-function RelatedWorks({ relations }: { relations: EnrichedRelation[] }) {
+function RelatedWorks({ promise }: { promise: Promise<EnrichedRelation[]> }) {
+  const relations = use(promise);
   if (relations.length === 0) return null;
   return (
     <section className="related-works">
       <h2 className="section">Obras relacionadas</h2>
       <div className="poster-grid">
         {relations.map((r, i) => {
-          const href = r.id ? routes.manga(r.id, r.title) : `/?q=${encodeURIComponent(r.title)}`;
-          const label = RELATION_LABELS[r.relation] ?? r.relation;
+          // Matched → link straight to the work (with its cover). No match → fall
+          // back to a search, tagged "Pesquisa" so it's clear it's not the work.
+          const isSearch = !r.id;
+          const href = isSearch
+            ? `/?q=${encodeURIComponent(r.title)}`
+            : routes.manga(r.id!, r.title);
+          const label = isSearch ? "Pesquisa" : (RELATION_LABELS[r.relation] ?? r.relation);
           return (
             <div key={`${r.relation}-${i}`} className="poster">
               <div className="poster-cover">
                 <Cover src={r.imageUrl} alt={r.title} sizes="160px" />
-                <span className="relation-badge">{label}</span>
+                <span className={`relation-badge${isSearch ? " relation-badge-search" : ""}`}>
+                  {label}
+                </span>
                 <Link className="poster-hit" href={href} aria-label={r.title} tabIndex={-1} />
               </div>
               <Link className="poster-name" href={href}>
@@ -79,7 +110,8 @@ export function DetailView({
   charactersPromise,
   about,
   comments,
-  relations,
+  relationsPromise,
+  formatLinkPromise,
 }: {
   backdrop?: string;
   cover: ReactNode;
@@ -93,7 +125,9 @@ export function DetailView({
   charactersPromise: Promise<MangaCharacter[]>;
   about: ReactNode;
   comments?: ReactNode;
-  relations?: EnrichedRelation[];
+  relationsPromise?: Promise<EnrichedRelation[]>;
+  /** The other-format edition (Mangá ↔ Novel) | "Ler como …" button above chapters. */
+  formatLinkPromise?: Promise<FormatTwin | null>;
 }) {
   const [active, setActive] = useState<"chapters" | "characters" | "about" | "comments">(
     "chapters",
@@ -150,6 +184,11 @@ export function DetailView({
             <h1 className="detail-title">{title}</h1>
             {meta}
             {genres}
+            {formatLinkPromise && (
+              <Suspense fallback={null}>
+                <FormatLinkButton promise={formatLinkPromise} />
+              </Suspense>
+            )}
             {descPreview && (
               <p className="detail-desc-preview">
                 {descPreview}{" "}
@@ -242,7 +281,11 @@ export function DetailView({
         <div hidden={active !== "comments"}>{active === "comments" ? comments : null}</div>
       )}
 
-      {relations && relations.length > 0 && <RelatedWorks relations={relations} />}
+      {relationsPromise && (
+        <Suspense fallback={null}>
+          <RelatedWorks promise={relationsPromise} />
+        </Suspense>
+      )}
     </>
   );
 }

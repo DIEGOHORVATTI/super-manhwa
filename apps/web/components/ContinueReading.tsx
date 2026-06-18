@@ -51,6 +51,7 @@ function ContinueCover({ entry }: { entry: ProgressEntry }) {
       fill
       sizes="120px"
       style={{ objectFit: "cover" }}
+      unoptimized
       onError={onError}
     />
   );

@@ -24,7 +24,6 @@ const BLOCKED_HOSTS = [
   "manhwaz.com",
   "mangaworld.cx",
   "mangaworld.ac",
-  "asuracomic.net",
   "tsuki-mangas.com",
   "mangalivre.net",
   "mangayabu.top",

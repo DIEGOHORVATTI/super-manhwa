@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { dbRecordProgress } from "@/lib/library-db";
 import { markChapterRead, recordProgress } from "@/lib/library";
 import { rpc } from "@/lib/rpc/client";
 
@@ -97,6 +98,15 @@ export function ReaderPages({
     if (!mangaId || !mangaName) return;
     recordProgress({
       id: mangaId,
+      name: mangaName,
+      imageUrl: cover,
+      chapterId,
+      chapterName,
+      chapterNo,
+    });
+    // Continue-reading mirror to our DB (cross-device shelf). Best-effort.
+    dbRecordProgress({
+      workId: mangaId,
       name: mangaName,
       imageUrl: cover,
       chapterId,
