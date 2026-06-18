@@ -20,10 +20,6 @@ export default function AdminOverview() {
           <strong>Doações</strong>
           <span className="muted">Histórico e totais</span>
         </Link>
-        <Link href={routes.admin.emojis} className="studio-work-card">
-          <strong>Figurinhas</strong>
-          <span className="muted">Upload e importação em massa</span>
-        </Link>
       </div>
     </>
   );

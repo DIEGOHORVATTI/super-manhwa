@@ -699,6 +699,33 @@ a:hover {
   border-radius: var(--radius);
   overflow: hidden;
 }
+.page-img-fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  aspect-ratio: 2 / 3;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  padding: 20px;
+}
+.page-img-fallback button {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+}
+.page-img-fallback button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 .page-img {
   display: block;
   width: 100%;
@@ -4138,37 +4165,6 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
-.emoji-admin-form {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.emoji-admin-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: 10px;
-  margin-top: 8px;
-}
-.emoji-admin-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  padding: 8px 4px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  font-size: 11px;
-  color: var(--muted);
-  text-align: center;
-  word-break: break-all;
-}
-.emoji-admin-item img {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-}
 .admin-table {
   display: flex;
   flex-direction: column;
@@ -5207,15 +5203,15 @@ a:hover {
   outline: none;
   border-color: var(--accent);
 }
-/* Sticker panel — replaces the old emoji picker popover */
+/* Sticker panel */
 .sticker-wrap {
   position: absolute;
-  bottom: 8px;
+  bottom: 7px;
   right: 10px;
 }
 .sticker-trigger {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border: none;
   background: none;
   cursor: pointer;
@@ -5232,32 +5228,32 @@ a:hover {
 .sticker-trigger:hover,
 .sticker-trigger.is-active {
   color: var(--accent);
-  background: var(--surface-2);
+  background: rgba(255, 255, 255, 0.06);
 }
 .sticker-panel {
   position: absolute;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 8px);
   right: 0;
   z-index: 300;
-  padding: 10px;
+  padding: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  width: 320px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
+  width: 340px;
 }
 .sticker-empty {
   font-size: 13px;
   color: var(--muted);
   text-align: center;
-  padding: 16px 0;
+  padding: 20px 0;
   margin: 0;
 }
 .sticker-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  max-height: 260px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 2px;
+  max-height: 300px;
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
@@ -5267,21 +5263,57 @@ a:hover {
   border: none;
   background: none;
   cursor: pointer;
-  border-radius: 8px;
-  padding: 4px;
+  padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.08s;
-}
-.sticker-btn:hover {
-  background: var(--surface-2);
 }
 .sticker-btn img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  border-radius: 4px;
+  display: block;
+}
+/* Autocomplete dropdown ao digitar ":" */
+.sticker-autocomplete {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 300;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.sticker-ac-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  color: var(--text);
+  transition: background 0.08s;
+}
+.sticker-ac-item:hover,
+.sticker-ac-item.is-active {
+  background: rgba(255, 255, 255, 0.08);
+}
+.sticker-ac-item img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.sticker-ac-item span {
+  color: var(--muted);
 }
 /* Custom image emojis rendered inside comment bodies */
 .comment-emoji {

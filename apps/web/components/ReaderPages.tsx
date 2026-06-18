@@ -1,9 +1,59 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { markChapterRead, recordProgress } from "@/lib/library";
 import { rpc } from "@/lib/rpc/client";
 
 const PRELOAD_AHEAD = 4;
+const MAX_RETRIES = 3;
+
+/**
+ * A single page image that recovers from a flaky CDN: on error it reloads the
+ * signed URL (cache-busted) with backoff up to MAX_RETRIES, then shows a
+ * tap-to-reload fallback. Keeps `data-idx` so the preload/mark-read observer
+ * still tracks it even when it fails.
+ */
+function ReaderPage({ src, idx }: { src: string; idx: number }) {
+  const [attempt, setAttempt] = useState(0);
+  const [failed, setFailed] = useState(false);
+
+  const onError = () => {
+    if (attempt < MAX_RETRIES) {
+      const delay = attempt === 0 ? 600 : 1500;
+      setTimeout(() => setAttempt((a) => a + 1), delay);
+    } else {
+      setFailed(true);
+    }
+  };
+
+  if (failed) {
+    return (
+      <div className="page-img page-img-fallback" data-idx={idx}>
+        <span>Não foi possível carregar a página {idx + 1}.</span>
+        <button
+          type="button"
+          onClick={() => {
+            setFailed(false);
+            setAttempt((a) => a + 1);
+          }}
+        >
+          Recarregar
+        </button>
+      </div>
+    );
+  }
+
+  const url = attempt === 0 ? src : `${src}${src.includes("?") ? "&" : "?"}r=${attempt}`;
+  return (
+    <img
+      data-idx={idx}
+      className="page-img"
+      loading={idx < 2 ? "eager" : "lazy"}
+      src={url}
+      alt={`página ${idx + 1}`}
+      onError={onError}
+    />
+  );
+}
 
 /**
  * Webtoon page strip with eager preloading. Images render lazily, but as each
@@ -52,7 +102,7 @@ export function ReaderPages({
   useEffect(() => {
     const root = containerRef.current;
     if (!root) return;
-    const imgs = Array.from(root.querySelectorAll<HTMLImageElement>("img[data-idx]"));
+    const imgs = Array.from(root.querySelectorAll<HTMLElement>("[data-idx]"));
     if (imgs.length === 0) return;
 
     const warm = (idx: number) => {
@@ -82,14 +132,7 @@ export function ReaderPages({
   return (
     <div className="pages" ref={containerRef}>
       {pages.map((p, i) => (
-        <img
-          key={i}
-          data-idx={i}
-          className="page-img"
-          loading={i < 2 ? "eager" : "lazy"}
-          src={p}
-          alt={`página ${i + 1}`}
-        />
+        <ReaderPage key={i} src={p} idx={i} />
       ))}
     </div>
   );

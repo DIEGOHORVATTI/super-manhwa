@@ -54,7 +54,6 @@ export const routes = {
     donations: "/admin/donations",
     pixels: "/admin/pixels",
     affiliates: "/admin/affiliates",
-    emojis: "/admin/emojis",
   },
 
   // ── Dynamic pages ──
