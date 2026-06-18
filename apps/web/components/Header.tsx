@@ -140,7 +140,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   useEffect(() => {
-    if (isReader) return;
+    // Runs on the reader too | the top header stays static (guarded by `!isReader`
+    // below), but the bottom tab bar must still hide on scroll-down / show on up.
     let lastY = window.scrollY;
     const onScroll = () => {
       const y = window.scrollY;
@@ -153,7 +154,7 @@ export function Header() {
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, [isReader]);
+  }, []);
 
   return (
     <>
