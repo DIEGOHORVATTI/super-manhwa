@@ -1,32 +1,68 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+
 import { Icon } from "@/components/Icon";
 import { fetchEmojis } from "@/lib/emoji-client";
+import { parseBody } from "@/lib/emojis";
 
 type Sticker = { name: string; url: string };
 
-/** Extrai a query de autocomplete após o último ":" não fechado antes do cursor. */
-function getColonQuery(value: string, cursor: number): string | null {
-  const before = value.slice(0, cursor);
-  const match = before.match(/:([a-z0-9_-]*)$/i);
-  return match ? match[1] : null;
+function escHtml(s: string) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function StickerPanel({ onPick }: { onPick: (text: string) => void }) {
+/** Convert raw value (with :name: tokens) to HTML for contenteditable. */
+function valueToHtml(text: string, map: Record<string, string>): string {
+  if (!text) return "";
+  return parseBody(text, map)
+    .map((seg) =>
+      typeof seg === "string"
+        ? escHtml(seg).replace(/\n/g, "<br>")
+        : `<img class="composer-emoji" data-emoji="${seg.name}" src="${escHtml(seg.url)}" alt=":${seg.name}:" />`,
+    )
+    .join("");
+}
+
+/** Extract raw value (:name: tokens) from contenteditable DOM. */
+function getRawValue(root: Node): string {
+  let s = "";
+  root.childNodes.forEach((node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      s += node.textContent ?? "";
+    } else {
+      const el = node as HTMLElement;
+      if (el.tagName === "IMG") {
+        s += `:${el.dataset.emoji ?? ""}:`;
+      } else if (el.tagName === "BR") {
+        s += "\n";
+      } else {
+        // Chrome/Firefox wrap new paragraphs in <div> in contenteditable
+        if (el.tagName === "DIV" && s.length > 0) s += "\n";
+        s += getRawValue(el);
+      }
+    }
+  });
+  return s;
+}
+
+/** Get raw text before the cursor (for autocomplete). */
+function textBeforeCursor(root: HTMLElement): string {
+  const sel = window.getSelection();
+  if (!sel || sel.rangeCount === 0 || !sel.focusNode) return "";
+  const range = sel.getRangeAt(0).cloneRange();
+  range.selectNodeContents(root);
+  range.setEnd(sel.focusNode, sel.focusOffset);
+  const temp = document.createElement("div");
+  temp.appendChild(range.cloneContents());
+  return getRawValue(temp);
+}
+
+function StickerPanel({ onPick }: { onPick: (s: Sticker) => void }) {
   const [open, setOpen] = useState(false);
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (!open || loaded) return;
-    fetchEmojis().then((list) => {
-      setStickers(list);
-      setLoaded(true);
-    });
-  }, [open, loaded]);
-
-  // pré-carrega assim que o composer montar (evita delay ao primeiro clique)
   useEffect(() => {
     fetchEmojis().then((list) => {
       setStickers(list);
@@ -71,7 +107,7 @@ function StickerPanel({ onPick }: { onPick: (text: string) => void }) {
                   title={`:${s.name}:`}
                   onMouseDown={(ev) => {
                     ev.preventDefault();
-                    onPick(`:${s.name}:`);
+                    onPick(s);
                     setOpen(false);
                   }}
                 >
@@ -140,92 +176,182 @@ export function ComposerArea({
   placeholder?: string;
   maxLength?: number;
 }) {
-  const ref = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const stickersRef = useRef<Sticker[]>([]);
   const [stickers, setStickers] = useState<Sticker[]>([]);
   const [acQuery, setAcQuery] = useState<string | null>(null);
   const [acIdx, setAcIdx] = useState(0);
+  // Track the last value WE produced so we can skip syncing our own changes back
+  const internalValueRef = useRef(value);
 
   useEffect(() => {
-    fetchEmojis().then(setStickers);
+    fetchEmojis().then((list) => {
+      stickersRef.current = list;
+      setStickers(list);
+    });
   }, []);
+
+  // Sync external value changes → contenteditable (e.g., clear after submit, pre-fill for edit)
+  useEffect(() => {
+    const el = editorRef.current;
+    if (!el || value === internalValueRef.current) return;
+    internalValueRef.current = value;
+    const map = Object.fromEntries(stickersRef.current.map((s) => [s.name, s.url]));
+    el.innerHTML = valueToHtml(value, map);
+  }, [value]);
+
+  /** Insert emoji img at cursor position (from sticker panel). */
+  function insertEmojiAt(s: Sticker) {
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+
+    const img = document.createElement("img");
+    img.className = "composer-emoji";
+    img.dataset.emoji = s.name;
+    img.src = s.url;
+    img.alt = `:${s.name}:`;
+    const space = document.createTextNode(" ");
+
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0) {
+      const range = sel.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(space);
+      range.insertNode(img);
+      range.setStartAfter(space);
+      range.collapse(true);
+      sel.removeAllRanges();
+      sel.addRange(range);
+    } else {
+      el.appendChild(img);
+      el.appendChild(space);
+    }
+
+    emit(el);
+  }
+
+  /** Replace ":query" before cursor with emoji img (from autocomplete). */
+  function pickFromAutocomplete(s: Sticker) {
+    const el = editorRef.current;
+    if (!el) return;
+    el.focus();
+
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+
+    if (node.nodeType === Node.TEXT_NODE) {
+      const textNode = node as Text;
+      const beforeCursor = textNode.textContent!.slice(0, range.startOffset);
+      const colonIdx = beforeCursor.lastIndexOf(":");
+      if (colonIdx >= 0) {
+        const before = textNode.textContent!.slice(0, colonIdx);
+        const after = textNode.textContent!.slice(range.startOffset);
+
+        const img = document.createElement("img");
+        img.className = "composer-emoji";
+        img.dataset.emoji = s.name;
+        img.src = s.url;
+        img.alt = `:${s.name}:`;
+        const space = document.createTextNode(" ");
+        const beforeNode = document.createTextNode(before);
+        const afterNode = after ? document.createTextNode(after) : null;
+
+        const parent = textNode.parentNode!;
+        if (afterNode) parent.insertBefore(afterNode, textNode.nextSibling);
+        parent.insertBefore(space, afterNode ?? textNode.nextSibling);
+        parent.insertBefore(img, space);
+        parent.insertBefore(beforeNode, img);
+        parent.removeChild(textNode);
+
+        // Place cursor after the non-breaking space
+        const newRange = document.createRange();
+        newRange.setStart(space, 1);
+        newRange.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+      }
+    }
+
+    emit(el);
+    setAcQuery(null);
+    setAcIdx(0);
+  }
+
+  function emit(el: HTMLElement) {
+    const raw = getRawValue(el);
+    internalValueRef.current = raw;
+    onChange(raw);
+  }
 
   const acMatches =
     acQuery !== null
       ? stickers.filter((s) => s.name.toLowerCase().startsWith(acQuery.toLowerCase())).slice(0, 8)
       : [];
 
-  const insertText = (text: string) => {
-    const el = ref.current;
-    if (!el) {
-      onChange(value + text);
-      return;
+  function handleInput(e: React.FormEvent<HTMLDivElement>) {
+    const el = e.currentTarget;
+    if (maxLength) {
+      const raw = getRawValue(el);
+      if (raw.length > maxLength) return; // ponytail: no hard truncate, just skip
     }
-    const start = el.selectionStart ?? value.length;
-    const end = el.selectionEnd ?? value.length;
-    const next = value.slice(0, start) + text + value.slice(end);
-    onChange(next);
-    requestAnimationFrame(() => {
-      el.selectionStart = el.selectionEnd = start + text.length;
-      el.focus();
-    });
-  };
+    emit(el);
 
-  const pickFromAutocomplete = (s: Sticker) => {
-    const el = ref.current;
-    if (!el) {
-      insertText(`:${s.name}:`);
-      setAcQuery(null);
-      return;
-    }
-    const cursor = el.selectionStart ?? value.length;
-    const before = value.slice(0, cursor);
-    // substituir ":query" pelo ":name: "
-    const replaced = before.replace(/:([a-z0-9_-]*)$/i, `:${s.name}: `);
-    const next = replaced + value.slice(cursor);
-    onChange(next);
-    const newCursor = replaced.length;
-    requestAnimationFrame(() => {
-      el.selectionStart = el.selectionEnd = newCursor;
-      el.focus();
-    });
-    setAcQuery(null);
+    const before = textBeforeCursor(el);
+    const m = before.match(/:([a-z0-9_-]*)$/i);
+    const q = m ? m[1] : null;
+    setAcQuery(q !== null && stickersRef.current.length > 0 ? q : null);
     setAcIdx(0);
-  };
+  }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (acMatches.length === 0) return;
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      setAcIdx((i) => Math.min(i + 1, acMatches.length - 1));
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      setAcIdx((i) => Math.max(i - 1, 0));
-    } else if (e.key === "Enter" || e.key === "Tab") {
-      e.preventDefault();
-      if (acMatches[acIdx]) pickFromAutocomplete(acMatches[acIdx]);
-    } else if (e.key === "Escape") {
-      setAcQuery(null);
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (acMatches.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setAcIdx((i) => Math.min(i + 1, acMatches.length - 1));
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setAcIdx((i) => Math.max(i - 1, 0));
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        if (acMatches[acIdx]) pickFromAutocomplete(acMatches[acIdx]);
+        return;
+      }
+      if (e.key === "Escape") {
+        setAcQuery(null);
+        return;
+      }
     }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    onChange(e.target.value);
-    const cursor = e.target.selectionStart ?? e.target.value.length;
-    const q = getColonQuery(e.target.value, cursor);
-    setAcQuery(q !== null && stickers.length > 0 ? q : null);
-    setAcIdx(0);
-  };
+  }
 
   return (
     <div className="composer-area">
-      <textarea
-        ref={ref}
-        value={value}
-        onChange={handleChange}
+      {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
+      <div
+        ref={editorRef}
+        className="composer-editor"
+        contentEditable
+        suppressContentEditableWarning
+        data-placeholder={placeholder}
+        style={{ minHeight: `${rows * 1.5}em` }}
+        onInput={handleInput}
         onKeyDown={handleKeyDown}
-        rows={rows}
-        placeholder={placeholder}
-        maxLength={maxLength}
+        onPaste={(e) => {
+          e.preventDefault();
+          const text = e.clipboardData.getData("text/plain");
+          // insertText is deprecated but universally supported and simplest for plain-text paste
+          document.execCommand("insertText", false, text);
+        }}
+        role="textbox"
+        aria-multiline="true"
+        aria-label={placeholder ?? "Texto"}
       />
       {acMatches.length > 0 && acQuery !== null && (
         <AutocompleteDropdown
@@ -235,7 +361,7 @@ export function ComposerArea({
           activeIdx={acIdx}
         />
       )}
-      <StickerPanel onPick={insertText} />
+      <StickerPanel onPick={insertEmojiAt} />
     </div>
   );
 }

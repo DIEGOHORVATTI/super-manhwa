@@ -3904,6 +3904,7 @@ a:hover {
   text-decoration: underline;
 }
 .donate-wall-msg {
+  display: block;
   margin: 4px 0 0;
   font-size: 14px;
   line-height: 1.45;
@@ -5188,7 +5189,7 @@ a:hover {
 .composer-area {
   position: relative;
 }
-.composer-area textarea {
+.composer-editor {
   width: 100%;
   padding: 11px 13px 36px;
   border: 1px solid var(--border);
@@ -5197,11 +5198,28 @@ a:hover {
   color: var(--text);
   font: inherit;
   font-size: 14px;
-  resize: vertical;
-}
-.composer-area textarea:focus {
   outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-y: auto;
+  cursor: text;
+  line-height: 1.5;
+}
+.composer-editor:focus {
   border-color: var(--accent);
+}
+.composer-editor:empty::before {
+  content: attr(data-placeholder);
+  color: var(--muted);
+  pointer-events: none;
+}
+/* Inline emoji image inside the composer */
+.composer-emoji {
+  display: inline-block;
+  width: 1.4em;
+  height: 1.4em;
+  vertical-align: -0.3em;
+  object-fit: contain;
 }
 /* Sticker panel */
 .sticker-wrap {

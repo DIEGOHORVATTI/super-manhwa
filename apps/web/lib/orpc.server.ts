@@ -33,3 +33,17 @@ const link = new OpenAPILink(contracts, {
 });
 
 export const api: JsonifiedClient<ContractRouterClient<typeof contracts>> = createORPCClient(link);
+
+/**
+ * Uncached twin of `api` for background catalog refreshes. The cached `api`
+ * would re-serve a 6h-stale response, so a chapter list captured while a pt-br
+ * connector was down could never heal | the refresh must hit the backend live.
+ */
+const freshLink = new OpenAPILink(contracts, {
+  url: `${BACKEND}/api`,
+  headers: () => ({ "X-API-KEY": API_KEY }),
+  fetch: (request, init) => globalThis.fetch(request, { ...init, cache: "no-store" }),
+});
+
+export const apiFresh: JsonifiedClient<ContractRouterClient<typeof contracts>> =
+  createORPCClient(freshLink);

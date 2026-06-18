@@ -20,7 +20,7 @@ import {
   getCachedChapters,
   getCachedWork,
 } from "@/lib/cache-works";
-import { api } from "@/lib/orpc.server";
+import { api, apiFresh } from "@/lib/orpc.server";
 import { routes } from "@/lib/routes";
 import { deslugify, slugify } from "@/lib/slug";
 import { translatePt } from "@/lib/translate";
@@ -155,9 +155,12 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
   // it suspends behind skeletons). A failure degrades to an empty list.
   const cachedCh = await getCachedChapters(id);
   const chaptersFresh = Boolean(cachedCh && !isStale(cachedCh.refreshedAt));
+  // Chapters are cached in our DB (catalog-first), so the backend fetch bypasses
+  // Next's Data Cache | a second 6h cache there only re-served stale lists and
+  // kept the DB copy from healing when a connector recovered.
   const chaptersPromise = cachedCh
     ? Promise.resolve({ chapters: cachedCh.chapters, lang })
-    : api.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
+    : apiFresh.manga.chapters({ id, name }).catch(() => ({ chapters: [], lang }));
 
   // Characters are the heavy half of the metadata and only feed the "Personagens"
   // tab | streamed, NOT awaited, so they never hold up the hero.
@@ -194,7 +197,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     // Stale cache or first view → fan out fresh in the background and persist so
     // the next visit is instant + up to date.
     const resolved = cachedCh
-      ? await api.manga.chapters({ id, name }).catch(() => ({ chapters: [] }))
+      ? await apiFresh.manga.chapters({ id, name }).catch(() => ({ chapters: [] }))
       : await chaptersPromise;
     await cacheChaptersOnRead(id, resolved.chapters);
   });
