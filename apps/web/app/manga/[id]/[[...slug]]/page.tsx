@@ -202,12 +202,21 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
     await cacheChaptersOnRead(id, resolved.chapters);
   });
 
-  // Enrich AniList relations with id + cover by searching each title in parallel.
-  // Best-effort: a failed/empty search falls back to the bare relation (title-only).
+  // Enrich AniList relations with id + cover by searching each title. Capped and
+  // time-boxed: a work with many relations (e.g. One Piece has 20+) would
+  // otherwise block the whole hero on this await | a slow/rate-limited search
+  // could stall the cover for seconds. Beyond the cap, relations stay title-only.
+  const RELATION_CAP = 12;
   const enrichedRelations = await Promise.all(
-    meta.relations.map(async (r) => {
+    meta.relations.map(async (r, i) => {
+      if (i >= RELATION_CAP) return r;
       try {
-        const { list } = await api.manga.search({ q: r.title });
+        const { list } = await Promise.race([
+          api.manga.search({ q: r.title }),
+          new Promise<{ list: never[] }>((resolve) =>
+            setTimeout(() => resolve({ list: [] }), 4000),
+          ),
+        ]);
         const match = list[0];
         return match ? { ...r, id: match.id, imageUrl: match.imageUrl } : r;
       } catch {
