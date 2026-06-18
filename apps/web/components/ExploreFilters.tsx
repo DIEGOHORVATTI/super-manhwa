@@ -7,7 +7,7 @@ import { routes } from "@/lib/routes";
 
 /** Status options that map to a real AniList filter (see backend ANILIST_STATUS). */
 const STATUS_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
-  { value: "", label: "Qualquer status" },
+  { value: "", label: "Status" },
   { value: "ongoing", label: "Em andamento" },
   { value: "completed", label: "Completo" },
   { value: "hiatus", label: "Hiato" },
@@ -106,7 +106,7 @@ export function ExploreFilters({
             className="explore-search-field"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Buscar por título…"
+            placeholder="Buscar"
             aria-label="Buscar por título"
             type="search"
           />
@@ -130,7 +130,7 @@ export function ExploreFilters({
           value={genre}
           onChange={(v) => go({ genre: v })}
           options={[
-            { value: "", label: "Todos os gêneros" },
+            { value: "", label: "Gêneros" },
             ...genres.map((g) => ({ value: g, label: g })),
           ]}
           className="explore-select"

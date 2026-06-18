@@ -8,6 +8,7 @@ import * as systemRoutes from "@/modules/system/presentation/routes/system-route
  */
 export const router = {
   health: systemRoutes.getHealthRoute,
+  connectors: systemRoutes.listConnectorsHealthRoute,
   manga: {
     popular: mangaRoutes.listPopularRoute,
     search: mangaRoutes.searchMangaRoute,

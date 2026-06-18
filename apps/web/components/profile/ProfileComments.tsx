@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { EmojiText } from "@/components/EmojiText";
 import { routes } from "@/lib/routes";
 
 type Comment = {
@@ -35,7 +36,7 @@ export function ProfileComments({ comments }: { comments: Comment[] }) {
                 ▲ {c.score} · {when(c.createdAt)}
               </span>
             </div>
-            <p className="profile-comment-body">{c.body}</p>
+            <EmojiText text={c.body} className="profile-comment-body" />
           </li>
         ))}
       </ul>

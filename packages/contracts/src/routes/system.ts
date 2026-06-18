@@ -1,6 +1,6 @@
 import { oc } from "@orpc/contract";
 
-import { healthSchema } from "../schemas/system";
+import { connectorsHealthSchema, healthSchema } from "../schemas/system";
 
 /**
  * Top-level health procedure. Lives outside any module namespace so the URL is
@@ -12,3 +12,11 @@ const prefix = oc.route({ tags: ["System"] });
 export const health = prefix
   .route({ method: "GET", path: "/health", summary: "Service health probe" })
   .output(healthSchema);
+
+/**
+ * Live health probe of every reading connector (X-API-KEY guarded). POST so the
+ * result is never parked in Next's Data Cache | every "re-test" re-probes.
+ */
+export const connectors = prefix
+  .route({ method: "POST", path: "/connectors/health", summary: "Reading connectors health" })
+  .output(connectorsHealthSchema);

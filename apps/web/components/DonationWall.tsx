@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { EmojiText } from "@/components/EmojiText";
 import type { WallDonation } from "@/lib/donations-wall";
 import { routes } from "@/lib/routes";
 
@@ -44,7 +45,7 @@ export function DonationWall({ donations }: { donations: WallDonation[] }) {
                   {nameNode} apoiou com <strong>{brl(d.amountCents)}</strong>
                   <span className="muted"> · {when(d.createdAt)}</span>
                 </p>
-                {d.message && <p className="donate-wall-msg">{d.message}</p>}
+                {d.message && <EmojiText text={d.message} className="donate-wall-msg" />}
               </div>
             </li>
           );

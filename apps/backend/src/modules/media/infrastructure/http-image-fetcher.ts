@@ -31,15 +31,17 @@ const uaFor = (url: string): string => {
  */
 export const makeHttpImageFetcher = (): ImageFetcher => ({
   async fetch({ url, referer }) {
-    const result = await httpFetchRaw(url, {
-      headers: {
-        Referer: referer ?? "",
-        "User-Agent": uaFor(url),
-      },
-    });
+    const init = { headers: { Referer: referer ?? "", "User-Agent": uaFor(url) } };
+    let result = await httpFetchRaw(url, init);
+    // Retry once on a transient upstream failure (5xx) | flaky CDNs (e.g. mangafire)
+    // often recover on a second hit a moment later.
+    if (result.error && result.error.status >= 500) {
+      await new Promise((r) => setTimeout(r, 400));
+      result = await httpFetchRaw(url, init);
+    }
     if (result.error) {
       return new Response(result.error.body || "upstream image error", {
-        status: result.error.status,
+        status: result.error.status || 502,
         headers: { "content-type": "text/plain", "access-control-allow-origin": "*" },
       });
     }

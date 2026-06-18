@@ -10,6 +10,7 @@ import {
   makeGetChapterPages,
   makeGetMangaChapters,
   makeGetMangaCore,
+  makeListConnectorsHealth,
   makeListGenres,
   makeListLangs,
   makeListPopular,
@@ -50,6 +51,7 @@ export const getMangaChapters = makeGetMangaChapters(catalog, connectorRegistry,
 export const getChapterPages = makeGetChapterPages(connectorRegistry, idStore, cache);
 export const listLangs = makeListLangs(connectorRegistry);
 export const listGenres = makeListGenres(catalog, cache);
+export const listConnectorsHealth = makeListConnectorsHealth(connectorRegistry);
 
 // Metadata application (AniList enrichment) | meta + characters share one
 // cached lookup so a work resolves with a single provider round-trip.
