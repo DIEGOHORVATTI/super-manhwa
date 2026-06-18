@@ -13,7 +13,10 @@ export const health = prefix
   .route({ method: "GET", path: "/health", summary: "Service health probe" })
   .output(healthSchema);
 
-/** Live health probe of every reading connector (X-API-KEY guarded). */
+/**
+ * Live health probe of every reading connector (X-API-KEY guarded). POST so the
+ * result is never parked in Next's Data Cache | every "re-test" re-probes.
+ */
 export const connectors = prefix
-  .route({ method: "GET", path: "/connectors/health", summary: "Reading connectors health" })
+  .route({ method: "POST", path: "/connectors/health", summary: "Reading connectors health" })
   .output(connectorsHealthSchema);
