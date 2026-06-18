@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/auth/session";
-import { addEmojiUrls } from "@/lib/emoji-manifest";
+import { addEmoji } from "@/lib/emoji-manifest";
 import { hasRole } from "@/lib/roles";
 
 /**
  * POST /api/admin/emojis/import
  * Body: { emojis: { name: string; url: string }[] }
- * Bulk-imports emojis by external URL without downloading — the URL is stored
- * directly in the manifest so the image is served from its origin (e.g. atsu.moe CDN).
+ * Downloads each image from the external URL and stores it in R2.
  */
 export async function POST(req: Request) {
   const session = await getServerSession();
@@ -29,6 +28,29 @@ export async function POST(req: Request) {
       typeof (e as { url?: unknown }).url === "string",
   );
 
-  const added = await addEmojiUrls(emojis);
-  return NextResponse.json({ added: added.length, emojis: added });
+  const results: { name: string; url: string }[] = [];
+  const errors: { name: string; error: string }[] = [];
+
+  await Promise.all(
+    emojis.map(async (e) => {
+      const key = e.name
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]/g, "");
+      if (!key) return;
+      try {
+        const res = await fetch(e.url);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const contentType = res.headers.get("content-type") ?? "image/png";
+        const ext = contentType.split("/")[1]?.replace("jpeg", "jpg") ?? "png";
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        const added = await addEmoji(key, bytes, contentType, ext);
+        results.push(added);
+      } catch (err) {
+        errors.push({ name: key, error: String(err) });
+      }
+    }),
+  );
+
+  return NextResponse.json({ added: results.length, emojis: results, errors });
 }

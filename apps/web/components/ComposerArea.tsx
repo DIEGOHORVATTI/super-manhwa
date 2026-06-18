@@ -1,20 +1,23 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { fetchEmojis } from "@/lib/emoji-client";
-import { UNICODE_EMOJIS } from "@/lib/emojis";
+import { Icon } from "@/components/Icon";
 
-type CustomEmoji = { name: string; url: string };
+type Sticker = { name: string; url: string };
 
-function EmojiPicker({ onPick }: { onPick: (text: string) => void }) {
+function StickerPanel({ onPick }: { onPick: (text: string) => void }) {
   const [open, setOpen] = useState(false);
-  const [custom, setCustom] = useState<CustomEmoji[]>([]);
-  const [tab, setTab] = useState<"unicode" | "custom">("unicode");
+  const [stickers, setStickers] = useState<Sticker[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return;
-    fetchEmojis().then(setCustom);
-  }, [open]);
+    if (!open || loaded) return;
+    fetchEmojis().then((list) => {
+      setStickers(list);
+      setLoaded(true);
+    });
+  }, [open, loaded]);
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -25,80 +28,49 @@ function EmojiPicker({ onPick }: { onPick: (text: string) => void }) {
   }, []);
 
   return (
-    <div className="emoji-picker-wrap" ref={ref}>
+    <div className="sticker-wrap" ref={ref}>
       <button
         type="button"
-        className="emoji-trigger"
+        className={`sticker-trigger${open ? " is-active" : ""}`}
         onClick={() => setOpen((o) => !o)}
-        title="Emojis"
-        aria-label="Abrir seletor de emojis"
+        title="Figurinhas"
+        aria-label="Abrir painel de figurinhas"
       >
-        😊
+        <Icon name="smile" size={16} />
       </button>
+
       {open && (
-        <div className="emoji-picker" aria-label="Emojis">
-          {custom.length > 0 && (
-            <div className="emoji-tabs">
-              <button
-                type="button"
-                className={`emoji-tab${tab === "unicode" ? " is-active" : ""}`}
-                onClick={() => setTab("unicode")}
-              >
-                😊
-              </button>
-              <button
-                type="button"
-                className={`emoji-tab${tab === "custom" ? " is-active" : ""}`}
-                onClick={() => setTab("custom")}
-              >
-                ✦
-              </button>
+        <div className="sticker-panel" aria-label="Figurinhas">
+          {!loaded ? (
+            <p className="sticker-empty">Carregando…</p>
+          ) : stickers.length === 0 ? (
+            <p className="sticker-empty">Nenhuma figurinha disponível.</p>
+          ) : (
+            <div className="sticker-grid">
+              {stickers.map((s) => (
+                <button
+                  key={s.name}
+                  type="button"
+                  className="sticker-btn"
+                  title={`:${s.name}:`}
+                  onMouseDown={(ev) => {
+                    ev.preventDefault();
+                    onPick(`:${s.name}:`);
+                    setOpen(false);
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={s.url} alt={s.name} />
+                </button>
+              ))}
             </div>
           )}
-
-          <div className="emoji-grid">
-            {tab === "unicode"
-              ? UNICODE_EMOJIS.map((e) => (
-                  <button
-                    key={e}
-                    type="button"
-                    className="emoji-btn"
-                    onMouseDown={(ev) => {
-                      ev.preventDefault();
-                      onPick(e);
-                      setOpen(false);
-                    }}
-                  >
-                    {e}
-                  </button>
-                ))
-              : custom.map((e) => (
-                  <button
-                    key={e.name}
-                    type="button"
-                    className="emoji-btn emoji-btn-img"
-                    title={`:${e.name}:`}
-                    onMouseDown={(ev) => {
-                      ev.preventDefault();
-                      onPick(`:${e.name}:`);
-                      setOpen(false);
-                    }}
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={e.url} alt={e.name} />
-                  </button>
-                ))}
-          </div>
         </div>
       )}
     </div>
   );
 }
 
-/**
- * Textarea with an emoji picker button. Shared between Comments and DonateView.
- * The emoji picker loads custom image emojis from /api/emojis lazily on first open.
- */
 export function ComposerArea({
   value,
   onChange,
@@ -140,7 +112,7 @@ export function ComposerArea({
         placeholder={placeholder}
         maxLength={maxLength}
       />
-      <EmojiPicker onPick={insertText} />
+      <StickerPanel onPick={insertText} />
     </div>
   );
 }

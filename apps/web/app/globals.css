@@ -4138,6 +4138,37 @@ a:hover {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 12px;
 }
+.emoji-admin-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.emoji-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.emoji-admin-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  word-break: break-all;
+}
+.emoji-admin-item img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
 .admin-table {
   display: flex;
   flex-direction: column;
@@ -5176,105 +5207,81 @@ a:hover {
   outline: none;
   border-color: var(--accent);
 }
-.emoji-picker-wrap {
+/* Sticker panel — replaces the old emoji picker popover */
+.sticker-wrap {
   position: absolute;
   bottom: 8px;
   right: 10px;
 }
-.emoji-trigger {
+.sticker-trigger {
   width: 28px;
   height: 28px;
   border: none;
   background: none;
-  font-size: 18px;
   cursor: pointer;
   border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.65;
+  color: var(--muted);
   transition:
-    opacity 0.12s,
+    color 0.12s,
     background 0.12s;
   padding: 0;
-  line-height: 1;
 }
-.emoji-trigger:hover {
-  opacity: 1;
+.sticker-trigger:hover,
+.sticker-trigger.is-active {
+  color: var(--accent);
   background: var(--surface-2);
 }
-.emoji-picker {
+.sticker-panel {
   position: absolute;
   bottom: calc(100% + 6px);
   right: 0;
   z-index: 300;
-  padding: 8px;
+  padding: 10px;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-  width: 270px;
+  width: 320px;
 }
-.emoji-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 6px;
-  border-bottom: 1px solid var(--border);
-  padding-bottom: 6px;
-}
-.emoji-tab {
-  flex: 1;
-  height: 28px;
-  border: none;
-  background: none;
-  border-radius: 6px;
-  font-size: 16px;
-  cursor: pointer;
+.sticker-empty {
+  font-size: 13px;
   color: var(--muted);
-  transition:
-    background 0.1s,
-    color 0.1s;
+  text-align: center;
+  padding: 16px 0;
+  margin: 0;
 }
-.emoji-tab.is-active {
-  background: var(--surface-2);
-  color: var(--accent);
-}
-.emoji-grid {
+.sticker-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 2px;
-  max-height: 200px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  max-height: 260px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
 }
-.emoji-grid::-webkit-scrollbar {
-  width: 4px;
-}
-.emoji-grid::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
-}
-.emoji-btn {
-  width: 30px;
-  height: 30px;
+.sticker-btn {
+  aspect-ratio: 1;
   border: none;
   background: none;
-  font-size: 18px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background 0.08s;
-  padding: 0;
-  line-height: 1;
 }
-.emoji-btn:hover {
+.sticker-btn:hover {
   background: var(--surface-2);
 }
-.emoji-btn-img img {
-  width: 22px;
-  height: 22px;
+.sticker-btn img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  border-radius: 4px;
 }
 /* Custom image emojis rendered inside comment bodies */
 .comment-emoji {

@@ -122,7 +122,7 @@ export function ReaderSettings() {
         aria-pressed={autoScroll}
         title={autoScroll ? "Pausar rolagem" : "Rolagem automática"}
       >
-        <Icon name={autoScroll ? "pause" : "play"} size={13} />
+        <Icon name="mouse" size={15} />
       </button>
       <input
         type="range"
