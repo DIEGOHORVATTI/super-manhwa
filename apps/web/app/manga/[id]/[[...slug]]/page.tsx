@@ -109,7 +109,12 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
       lang: "pt-br",
     }) as typeof coreData;
 
-  if (cached && !isStale(cached.refreshedAt)) {
+  // A cached row with NO cover (cover mirror failed / cached before the cover
+  // resolved) must NOT be served | it would render a cover-less hero AND the
+  // after() refresh would re-persist its own gap forever. Treat it as a miss and
+  // go live so the cover renders now and the cache heals below.
+  const cachedHasCover = Boolean(cached && (cached.coverUrl || cached.core.imageUrl));
+  if (cached && !isStale(cached.refreshedAt) && cachedHasCover) {
     coreData = fromCache(cached);
   } else {
     try {
