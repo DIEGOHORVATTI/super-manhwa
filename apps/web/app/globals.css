@@ -857,7 +857,7 @@ html[data-reader] .footer {
     display: none;
   }
   .reader-count {
-    font-size: 11px;
+    display: none;
   }
   .reader-chap-picker {
     min-width: 0;
