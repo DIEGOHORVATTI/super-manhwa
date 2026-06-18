@@ -146,6 +146,15 @@ export function removeProgress(id: string): void {
   );
 }
 
+/** Heal a stale stored cover with a freshly resolved one (catalog-first). */
+export function updateProgressCover(id: string, imageUrl: string): void {
+  const list = readRaw<ProgressEntry[]>(K.history, []);
+  writeRaw(
+    K.history,
+    list.map((e) => (e.id === id ? { ...e, imageUrl } : e)),
+  );
+}
+
 /* --------------------------------- read markers --------------------------- */
 
 export function useReadChapters(mangaId: string): Set<string> {

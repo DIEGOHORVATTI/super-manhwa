@@ -1,13 +1,60 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
-import { Cover } from "@/components/Cover";
+import { useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { ShelfScroller } from "@/components/ShelfScroller";
-import { type ProgressEntry, removeProgress, useHistory } from "@/lib/library";
+import { type ProgressEntry, removeProgress, updateProgressCover, useHistory } from "@/lib/library";
 import { routes } from "@/lib/routes";
 
 const readHref = (e: ProgressEntry) =>
   routes.read(e.chapterId, { m: e.id, mn: e.name, n: e.chapterName });
+
+/**
+ * Cover for a history entry. The stored URL can be stale (a connector cover that
+ * now blocks, an old signed path) | on error we re-resolve the *current* cover
+ * from our catalog by work id and heal the stored entry, so it loads next time
+ * without a round-trip. Falls back to "sem capa" only if the catalog has none.
+ */
+function ContinueCover({ entry }: { entry: ProgressEntry }) {
+  const [src, setSrc] = useState<string | undefined>(entry.imageUrl);
+  const [dead, setDead] = useState(false);
+  const triedCatalog = useRef(false);
+
+  const onError = async () => {
+    if (triedCatalog.current) {
+      setDead(true);
+      return;
+    }
+    triedCatalog.current = true;
+    try {
+      const res = await fetch(
+        `/api/manga/core?id=${encodeURIComponent(entry.id)}&name=${encodeURIComponent(entry.name)}`,
+      );
+      const fresh = (await res.json())?.core?.imageUrl as string | undefined;
+      if (fresh && fresh !== src) {
+        setSrc(fresh);
+        updateProgressCover(entry.id, fresh);
+      } else {
+        setDead(true);
+      }
+    } catch {
+      setDead(true);
+    }
+  };
+
+  if (!src || dead) return <div className="poster-noimg">sem capa</div>;
+  return (
+    <Image
+      src={src}
+      alt={entry.name}
+      fill
+      sizes="120px"
+      style={{ objectFit: "cover" }}
+      onError={onError}
+    />
+  );
+}
 
 /**
  * "Continuar lendo" rail on the home | a client island fed entirely by
@@ -28,7 +75,7 @@ export function ContinueReading() {
           <li key={e.id} className="continue-card">
             <Link className="continue-link" href={readHref(e)}>
               <span className="continue-cover">
-                <Cover src={e.imageUrl} alt={e.name} sizes="120px" />
+                <ContinueCover entry={e} />
               </span>
               <span className="continue-name">{e.name}</span>
               <span className="continue-chap">

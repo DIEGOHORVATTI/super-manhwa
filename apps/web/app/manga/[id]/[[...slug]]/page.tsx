@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { env } from "@/lib/env";
-import Image from "next/image";
 import Link from "next/link";
 import { permanentRedirect } from "next/navigation";
 import { after } from "next/server";
 import { Suspense } from "react";
 import { ChapterStats } from "@/components/ChapterStats";
 import { Comments } from "@/components/Comments";
+import { DetailCover } from "@/components/DetailCover";
 import { DetailView } from "@/components/DetailView";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { Icon } from "@/components/Icon";
@@ -349,20 +349,7 @@ export default async function MangaPage({ params, searchParams }: { params: P; s
         relations={enrichedRelations}
         descPreview={descPreview}
         backdrop={meta.bannerImage ?? core.imageUrl ?? undefined}
-        cover={
-          core.imageUrl ? (
-            <Image
-              key="cover"
-              className="detail-cover"
-              src={core.imageUrl}
-              alt={title}
-              width={160}
-              height={240}
-              sizes="160px"
-              priority
-            />
-          ) : null
-        }
+        cover={core.imageUrl ? <DetailCover key="cover" src={core.imageUrl} alt={title} /> : null}
         meta={
           <div key="meta" className="detail-meta">
             <StatusBadge status={core.status} size="md" />
