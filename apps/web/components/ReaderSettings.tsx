@@ -81,7 +81,9 @@ export function ReaderSettings() {
     let raf = 0;
     let last = performance.now();
     const tick = (now: number) => {
-      const dt = (now - last) / 1000;
+      // Clamp dt: a touch gesture (mobile) starves rAF, so a raw delta would jump
+      // far on resume | overshooting to the bottom and switching auto-scroll off.
+      const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       window.scrollBy(0, prefs.scrollSpeed * dt);
       const atBottom =
