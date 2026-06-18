@@ -25,7 +25,23 @@ function timeAgo(iso: string | Date): string {
 }
 
 function CommentBody({ text, emojiMap }: { text: string; emojiMap: Record<string, string> }) {
-  const segments = parseBody(text, emojiMap);
+  const segments = parseBody(text.trim(), emojiMap);
+  const solo = segments.length === 1 && typeof segments[0] !== "string" ? segments[0] : null;
+
+  if (solo) {
+    return (
+      <p className="comment-body">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={solo.url}
+          alt={`:${solo.name}:`}
+          title={`:${solo.name}:`}
+          className="comment-emoji-solo"
+        />
+      </p>
+    );
+  }
+
   return (
     <p className="comment-body">
       {segments.map((seg, i) =>

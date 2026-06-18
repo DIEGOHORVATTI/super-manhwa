@@ -14,3 +14,19 @@ export const healthSchema = z.object({
   timestamp: z.string(),
 });
 export type Health = z.infer<typeof healthSchema>;
+
+/** Live health snapshot for one reading connector (probed on demand). */
+export const connectorHealthSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  langs: z.array(z.string()),
+  hasCloudflare: z.boolean(),
+  isNsfw: z.boolean(),
+  status: z.enum(["up", "down"]),
+  /** Probe latency in ms. */
+  latencyMs: z.number(),
+  /** Items returned by the probe (getPopular page 1). */
+  sample: z.number(),
+});
+export const connectorsHealthSchema = z.array(connectorHealthSchema);
+export type ConnectorHealth = z.infer<typeof connectorHealthSchema>;

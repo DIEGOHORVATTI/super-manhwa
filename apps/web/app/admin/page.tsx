@@ -20,6 +20,10 @@ export default function AdminOverview() {
           <strong>Doações</strong>
           <span className="muted">Histórico e totais</span>
         </Link>
+        <Link href={routes.admin.connectors} className="studio-work-card">
+          <strong>Conectores</strong>
+          <span className="muted">Status e latência</span>
+        </Link>
       </div>
     </>
   );

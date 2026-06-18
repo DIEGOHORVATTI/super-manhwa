@@ -1495,7 +1495,7 @@ a:hover {
 .comment-editor .composer-area {
   margin-bottom: 0;
 }
-.comment-composer button,
+.comment-composer button:not(.sticker-trigger):not(.sticker-btn),
 .comment-editor-actions button {
   align-self: flex-end;
   padding: 9px 18px;
@@ -5323,4 +5323,11 @@ a:hover {
   vertical-align: middle;
   object-fit: contain;
   margin: 0 1px;
+}
+.comment-emoji-solo {
+  display: block;
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin: 4px 0;
 }

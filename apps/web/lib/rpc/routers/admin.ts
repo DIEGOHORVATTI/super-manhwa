@@ -3,6 +3,7 @@ import { desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
+import { api } from "@/lib/orpc.server";
 import { publicUrlFor } from "@/lib/r2";
 import { hasRole } from "@/lib/roles";
 import { staff } from "../base";
@@ -160,9 +161,15 @@ const pixelsRouter = {
     }),
 };
 
+/** Live connector health, proxied from the catalog backend (X-API-KEY server-side). */
+const connectorsRouter = {
+  list: staff.handler(async () => ({ connectors: await api.connectors() })),
+};
+
 export const adminRouter = {
   users: usersRouter,
   comments: commentsRouter,
   donations: donationsRouter,
   pixels: pixelsRouter,
+  connectors: connectorsRouter,
 };

@@ -1,6 +1,7 @@
 export * from "./get-chapter-pages";
 export * from "./get-manga-chapters";
 export * from "./get-manga-core";
+export * from "./list-connectors-health";
 export * from "./list-genres";
 export * from "./list-langs";
 export * from "./list-popular";
