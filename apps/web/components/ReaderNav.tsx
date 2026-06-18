@@ -70,14 +70,6 @@ export function ReaderNav({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Mark the document as "in reader" so global chrome (footer) can hide via CSS.
-  useEffect(() => {
-    document.documentElement.dataset.reader = "1";
-    return () => {
-      delete document.documentElement.dataset.reader;
-    };
-  }, []);
-
   // ←/→ flip chapters in reading direction, unless typing in the combobox.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {

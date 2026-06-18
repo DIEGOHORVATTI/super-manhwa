@@ -2323,7 +2323,8 @@ html[data-reader] .footer {
 /* Detail meta line + clickable genre tag */
 .detail-meta {
   display: flex;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 8px 10px;
   align-items: center;
   margin: 6px 0 10px;
 }

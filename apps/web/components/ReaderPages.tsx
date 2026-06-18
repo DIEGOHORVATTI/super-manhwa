@@ -83,6 +83,15 @@ export function ReaderPages({
   const containerRef = useRef<HTMLDivElement>(null);
   const preloaded = useRef(new Set<number>());
 
+  // Mark the document as "in reader" so global chrome (footer) hides via CSS.
+  // Lives here (always mounted) | the toolbar has a context-less fallback path.
+  useEffect(() => {
+    document.documentElement.dataset.reader = "1";
+    return () => {
+      delete document.documentElement.dataset.reader;
+    };
+  }, []);
+
   // Record "continue reading" as soon as the chapter opens (needs work context).
   useEffect(() => {
     if (!mangaId || !mangaName) return;
