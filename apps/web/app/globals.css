@@ -4616,6 +4616,27 @@ html[data-reader] .footer {
 .footer-donate:hover {
   background: rgba(255, 62, 110, 0.25);
 }
+.footer-discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  margin-right: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(88, 101, 242, 0.15);
+  border: 1px solid rgba(88, 101, 242, 0.45);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.footer-discord svg {
+  color: #818cf8;
+}
+.footer-discord:hover {
+  background: rgba(88, 101, 242, 0.25);
+}
 @media (max-width: 560px) {
   .learn-cta-go span,
   .learn-cta-text span {
@@ -5438,4 +5459,37 @@ html[data-reader] .footer {
 .format-switch-btn:hover {
   background: var(--accent);
   color: #fff;
+}
+
+/* ── Admin cache console ── */
+.cache-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.cache-search {
+  flex: 1;
+  min-width: 220px;
+}
+.cache-tabs {
+  display: flex;
+  gap: 4px;
+}
+.cache-row {
+  align-items: center;
+  gap: 12px;
+}
+.cache-thumb {
+  width: 40px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--surface-2);
+}
+.cache-thumb-empty {
+  display: inline-block;
+  border: 1px solid var(--border);
 }

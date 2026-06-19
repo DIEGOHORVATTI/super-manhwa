@@ -1,11 +1,13 @@
 import { ORPCError } from "@orpc/server";
-import { desc, eq } from "drizzle-orm";
+import { desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { cacheChaptersOnRead, cacheWorkOnRead } from "@/lib/cache-works";
 import * as schema from "@/lib/db/schema";
 import { api } from "@/lib/orpc.server";
 import { publicUrlFor } from "@/lib/r2";
 import { hasRole } from "@/lib/roles";
+import { translatePt } from "@/lib/translate";
 import { staff } from "../base";
 
 /**
@@ -166,10 +168,73 @@ const connectorsRouter = {
   list: staff.handler(async () => ({ connectors: await api.connectors() })),
 };
 
+/**
+ * Catalog cache warming | staff search/browse the catalog and pre-persist works
+ * (metadata + cover/banner to R2 + the merged chapter list) so the first public
+ * view is instant and survives the source going down. `list` shows what's already
+ * cached and when; `warm` does the same write the detail page does on first view.
+ */
+const cacheRouter = {
+  list: staff.handler(async ({ context }) => {
+    const { cachedWorks, cachedChapters } = schema;
+    const [works, counts] = await Promise.all([
+      context.db
+        .select({
+          catalogId: cachedWorks.catalogId,
+          title: cachedWorks.title,
+          coverR2Key: cachedWorks.coverR2Key,
+          refreshedAt: cachedWorks.refreshedAt,
+        })
+        .from(cachedWorks)
+        .orderBy(desc(cachedWorks.refreshedAt))
+        .limit(300),
+      context.db
+        .select({ catalogId: cachedChapters.catalogId, n: sql<number>`count(*)::int` })
+        .from(cachedChapters)
+        .groupBy(cachedChapters.catalogId),
+    ]);
+    const byId = new Map(counts.map((c) => [c.catalogId, Number(c.n)]));
+    return {
+      items: works.map((w) => ({
+        id: w.catalogId,
+        title: w.title,
+        coverUrl: w.coverR2Key ? publicUrlFor(w.coverR2Key) : null,
+        chapters: byId.get(w.catalogId) ?? 0,
+        refreshedAt: w.refreshedAt,
+      })),
+    };
+  }),
+
+  warm: staff
+    .input(z.object({ id: z.string().min(1).max(512), name: z.string().max(512).optional() }))
+    .handler(async ({ input }) => {
+      const { id, name } = input;
+      const [coreRes, chaptersRes, metaRes] = await Promise.allSettled([
+        api.manga.core({ id, name }),
+        api.manga.chapters({ id, name }),
+        name ? api.manga.meta({ name }) : Promise.resolve(null),
+      ]);
+      if (coreRes.status !== "fulfilled") {
+        throw new ORPCError("NOT_FOUND", { message: "Obra não encontrada na fonte." });
+      }
+      const core = coreRes.value.core;
+      const chapters = chaptersRes.status === "fulfilled" ? chaptersRes.value.chapters : [];
+      const meta = metaRes.status === "fulfilled" && metaRes.value ? metaRes.value.meta : null;
+      const desc = await translatePt(core.description ?? meta?.description ?? "").catch(() => "");
+      await cacheWorkOnRead(id, core, {
+        bannerUrl: meta?.bannerImage,
+        descriptionPt: desc || undefined,
+      });
+      await cacheChaptersOnRead(id, chapters);
+      return { ok: true, chapters: chapters.length };
+    }),
+};
+
 export const adminRouter = {
   users: usersRouter,
   comments: commentsRouter,
   donations: donationsRouter,
   pixels: pixelsRouter,
   connectors: connectorsRouter,
+  cache: cacheRouter,
 };
