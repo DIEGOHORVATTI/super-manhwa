@@ -47,13 +47,24 @@ const imgSrc = (img: Selection): string | undefined =>
     undefined
   )?.trim();
 
-// CentralNovel answers a plain browser fetch (no Cloudflare): `direct` skips the
-// FlareSolverr round-trip. A 429/5xx throws so the aggregator falls back.
-const fetchHtml = async (url: string): Promise<string> => {
-  const res = await flareFetch(url, { direct: true, headers: { "User-Agent": UA } });
+// From a residential IP CentralNovel answers a plain fetch, so we try `direct`
+// first (fast, no solver). But datacenter IPs (prod backend) get blocked /
+// CF-challenged | on any failure we retry through FlareSolverr, a real browser
+// that clears the challenge (when FLARESOLVERR_URL is set; in dev it just falls
+// back to a second plain fetch). Mirrors how Comick reaches its CF-gated host.
+const fetchVia = async (url: string, direct: boolean): Promise<string> => {
+  const res = await flareFetch(url, { direct, headers: { "User-Agent": UA } });
   if (res.status === 429) throw new Error(`centralnovel rate-limited ${url}`);
   if (res.status >= 400) throw new Error(`centralnovel ${res.status} ${url}`);
   return res.body;
+};
+
+const fetchHtml = async (url: string): Promise<string> => {
+  try {
+    return await fetchVia(url, true);
+  } catch {
+    return fetchVia(url, false); // retry through the solver (datacenter / CF)
+  }
 };
 
 /**
@@ -111,17 +122,22 @@ export const centralnovel: MangaConnector = {
       per_page: "12",
       _fields: "title,url,subtype",
     });
+    const restUrl = `${BASE}/wp-json/wp/v2/search?${sp}`;
+    const fetchRest = (direct: boolean) =>
+      flareFetchJson<Array<{ title?: string; url?: string; subtype?: string }>>(restUrl, {
+        direct,
+        headers: { "User-Agent": UA },
+      });
     try {
-      const data = await flareFetchJson<Array<{ title?: string; url?: string; subtype?: string }>>(
-        `${BASE}/wp-json/wp/v2/search?${sp}`,
-        { direct: true, headers: { "User-Agent": UA } },
-      );
+      // Direct first (fast); retry through the solver when a datacenter IP is blocked.
+      const data = await fetchRest(true).catch(() => fetchRest(false));
       const list = (Array.isArray(data) ? data : [])
         .filter((d) => d.subtype === "series" && d.title && d.url)
         .map((d) => ({ name: d.title as string, link: d.url as string }));
-      return { list, hasNextPage: false };
+      if (list.length > 0) return { list, hasNextPage: false };
+      throw new Error("empty");
     } catch {
-      // Fall back to scraping the HTML results page if the REST route is blocked.
+      // Last resort: scrape the HTML results page (fetchHtml also solver-retries).
       return parseCardList(await fetchHtml(`${BASE}/?s=${encodeURIComponent(query.trim())}`));
     }
   },
