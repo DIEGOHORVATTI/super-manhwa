@@ -10,6 +10,7 @@ import { z } from "zod";
 
 import * as schema from "@/lib/db/schema";
 import { hasRole } from "@/lib/roles";
+import { manualBadgesForUsers } from "@/lib/tags";
 import { authed, base } from "../base";
 
 const idInput = z.object({ id: z.number().int().positive() });
@@ -50,11 +51,20 @@ export const commentsRouter = {
         .limit(500);
 
       const meId = context.session?.user?.id ?? null;
+      // Manual (admin-granted) tags, shown next to the author alongside status badges.
+      const authorIds = [...new Set(rows.map((r) => r.userId).filter((id): id is string => !!id))];
+      const tagsByUser = await manualBadgesForUsers(authorIds);
       // Hide bodies of soft-deleted comments but keep them so replies don't orphan.
       const list = rows.map((r) => ({
         ...r,
         body: r.deletedAt ? null : r.body,
         mine: meId != null && r.userId === meId,
+        authorTags: (r.userId ? (tagsByUser.get(r.userId) ?? []) : []).map((b) => ({
+          key: b.key,
+          label: b.label,
+          emoji: b.emoji ?? null,
+          color: b.color ?? null,
+        })),
       }));
       return { comments: list, meId };
     }),

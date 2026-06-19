@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { cacheChaptersOnRead, cacheWorkOnRead } from "@/lib/cache-works";
@@ -7,8 +7,9 @@ import * as schema from "@/lib/db/schema";
 import { api } from "@/lib/orpc.server";
 import { publicUrlFor } from "@/lib/r2";
 import { hasRole } from "@/lib/roles";
+import { loadTagCatalog, manualBadgesForUsers } from "@/lib/tags";
 import { translatePt } from "@/lib/translate";
-import { staff } from "../base";
+import { admin, staff } from "../base";
 
 /**
  * Admin/moderation console surface | gated by `staff` (moderators), matching the
@@ -33,8 +34,52 @@ const usersRouter = {
       .from(user)
       .orderBy(desc(user.createdAt))
       .limit(200);
-    return { users };
+    // Manual (admin-granted) tags only | achievements aren't managed here.
+    const byUser = await manualBadgesForUsers(users.map((u) => u.id));
+    return {
+      users: users.map((u) => ({
+        ...u,
+        tags: (byUser.get(u.id) ?? []).map((b) => ({
+          key: b.key,
+          label: b.label,
+          emoji: b.emoji ?? null,
+          color: b.color ?? null,
+        })),
+      })),
+    };
   }),
+
+  /** Hand out a manual tag (assignable catalog entries only). */
+  assignTag: staff
+    .input(z.object({ userId: z.string(), tagKey: z.string() }))
+    .handler(async ({ input, context }) => {
+      const { tags, userTags } = schema;
+      const [tag] = await context.db
+        .select({ assignable: tags.assignable })
+        .from(tags)
+        .where(eq(tags.key, input.tagKey))
+        .limit(1);
+      if (!tag) throw new ORPCError("NOT_FOUND", { message: "Tag inexistente." });
+      if (!tag.assignable) {
+        throw new ORPCError("FORBIDDEN", { message: "Essa tag é conquistada, não atribuível." });
+      }
+      await context.db
+        .insert(userTags)
+        .values({ userId: input.userId, tagKey: input.tagKey })
+        .onConflictDoNothing();
+      return { ok: true };
+    }),
+
+  /** Remove a manual tag (never touches earned achievements). */
+  unassignTag: staff
+    .input(z.object({ userId: z.string(), tagKey: z.string() }))
+    .handler(async ({ input, context }) => {
+      const { userTags } = schema;
+      await context.db
+        .delete(userTags)
+        .where(and(eq(userTags.userId, input.userId), eq(userTags.tagKey, input.tagKey)));
+      return { ok: true };
+    }),
 
   update: staff
     .input(
@@ -230,8 +275,59 @@ const cacheRouter = {
     }),
 };
 
+/** Editable badge catalog | list is staff (used by the assign UI), writes are admin. */
+const tagSchema = z.object({
+  key: z
+    .string()
+    .min(1)
+    .max(40)
+    .regex(/^[a-z0-9-]+$/, "Use minúsculas, números e hífens."),
+  label: z.string().min(1).max(40),
+  emoji: z.string().max(8).nullish(),
+  color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Cor hex (#rrggbb).")
+    .nullish(),
+  description: z.string().max(160).nullish(),
+  assignable: z.boolean().optional(),
+  sortOrder: z.number().int().optional(),
+});
+
+const tagsRouter = {
+  list: staff.handler(async () => ({ tags: await loadTagCatalog() })),
+
+  create: admin.input(tagSchema).handler(async ({ input, context }) => {
+    await context.db.insert(schema.tags).values({
+      key: input.key,
+      label: input.label,
+      emoji: input.emoji ?? null,
+      color: input.color ?? null,
+      description: input.description ?? null,
+      assignable: input.assignable ?? true,
+      sortOrder: input.sortOrder ?? 0,
+    });
+    return { ok: true };
+  }),
+
+  update: admin
+    .input(tagSchema.partial().extend({ key: tagSchema.shape.key }))
+    .handler(async ({ input, context }) => {
+      const { key, ...rest } = input;
+      await context.db.update(schema.tags).set(rest).where(eq(schema.tags.key, key));
+      return { ok: true };
+    }),
+
+  remove: admin
+    .input(z.object({ key: tagSchema.shape.key }))
+    .handler(async ({ input, context }) => {
+      await context.db.delete(schema.tags).where(eq(schema.tags.key, input.key));
+      return { ok: true };
+    }),
+};
+
 export const adminRouter = {
   users: usersRouter,
+  tags: tagsRouter,
   comments: commentsRouter,
   donations: donationsRouter,
   pixels: pixelsRouter,

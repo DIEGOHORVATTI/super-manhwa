@@ -8,9 +8,10 @@ import { ProfileStats } from "@/components/profile/ProfileStats";
 import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
 import { EditProfileButton } from "@/components/EditProfileButton";
 import { EditableAvatar, EditableBanner } from "@/components/profile/EditableProfileImages";
+import { BadgeChip } from "@/components/Badge";
 import { getCurrentUser } from "@/lib/auth/session";
-import { badgesFor } from "@/lib/badges";
 import { loadProfileData } from "@/lib/profile-data";
+import { resolveProfileBadges } from "@/lib/tags";
 import { publicUrlFor, r2Enabled } from "@/lib/r2";
 import { routes } from "@/lib/routes";
 
@@ -49,14 +50,17 @@ export default async function ProfilePage({ params }: { params: Params }) {
   const me = await getCurrentUser();
   const isOwn = me?.id === user.id;
 
-  const badges = badgesFor({
-    role: user.role,
-    plan: user.plan,
-    achievements,
-    reputation,
-    commentsCount,
-    createdAt: user.createdAt,
-  });
+  const badges = await resolveProfileBadges(
+    {
+      role: user.role,
+      plan: user.plan,
+      achievements,
+      reputation,
+      commentsCount,
+      createdAt: user.createdAt,
+    },
+    user.id,
+  );
   const al = anilist.profile;
   const bannerUrl =
     user.bannerR2Key && r2Enabled ? publicUrlFor(user.bannerR2Key) : (al?.banner ?? null);
@@ -78,17 +82,7 @@ export default async function ProfilePage({ params }: { params: Params }) {
             {badges.length > 0 && (
               <div className="profile-badges">
                 {badges.map((b) => (
-                  <span
-                    key={b.key}
-                    className={`badge badge-${b.tone}${b.description ? " has-tip" : ""}`}
-                  >
-                    {b.label}
-                    {b.description && (
-                      <span className="badge-tip" role="tooltip">
-                        {b.description}
-                      </span>
-                    )}
-                  </span>
+                  <BadgeChip key={b.key} b={b} tip />
                 ))}
               </div>
             )}

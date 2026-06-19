@@ -17,11 +17,13 @@ export function InfiniteList({
   initialPage,
   hasNextPage,
   params,
+  banner,
 }: {
   initial: MangaSummary[];
   initialPage: number;
   hasNextPage: boolean;
   params: Record<string, string>; // feed/q/genre/status/sort (no page)
+  banner?: React.ReactNode; // optional grid-cell banner (e.g. Discord CTA on the landing)
 }) {
   const [items, setItems] = useState<MangaSummary[]>(initial);
   const [page, setPage] = useState(initialPage);
@@ -43,10 +45,8 @@ export function InfiniteList({
       });
       setPage(next);
       setMore(Boolean(res.hasNextPage));
-      // Keep the URL shareable without a navigation.
-      const url = new URL(window.location.href);
-      url.searchParams.set("page", String(next));
-      window.history.replaceState(null, "", url);
+      // ponytail: não escrevemos ?page= na URL — infinite scroll não precisa,
+      // e o param poluía o link compartilhado. A 1ª página vem do SSR.
     } finally {
       setLoading(false);
     }
@@ -67,7 +67,7 @@ export function InfiniteList({
 
   return (
     <>
-      <PosterGrid items={items} />
+      <PosterGrid items={items} banner={banner} />
       {more && (
         <div className="infinite-foot">
           <div ref={sentinel} aria-hidden="true" />

@@ -27,6 +27,7 @@ export default async function AdminLayout({ children }: React.PropsWithChildren)
       <nav className="admin-nav">
         <Link href={routes.admin.root}>Visão geral</Link>
         <Link href={routes.admin.users}>Usuários</Link>
+        <Link href={routes.admin.tags}>Tags</Link>
         <Link href={routes.admin.comments}>Comentários</Link>
         <Link href={routes.admin.donations}>Doações</Link>
         <Link href={routes.admin.affiliates}>Afiliados</Link>

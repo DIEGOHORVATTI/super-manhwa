@@ -501,6 +501,38 @@ export const userAchievements = pgTable(
   (t) => [uniqueIndex("user_achievement_uniq").on(t.userId, t.achievementKey)],
 );
 
+/**
+ * Editable badge catalog. The display (label/emoji/color/description) of every
+ * badge lives here so admins manage it instead of it being hardcoded in the
+ * frontend. Auto badges (role, plan, achievements) overlay their display by key;
+ * rows with `assignable` are the manual tags admins hand out via `user_tags`.
+ */
+export const tags = pgTable("tags", {
+  key: text("key").primaryKey(), // slug, e.g. "vip" or "admin"
+  label: text("label").notNull(),
+  emoji: text("emoji"),
+  color: text("color"), // hex; null falls back to the tone CSS class
+  description: text("description"),
+  assignable: boolean("assignable").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+/** Manual (admin-granted) tag assignments | achievements stay in user_achievements. */
+export const userTags = pgTable(
+  "user_tags",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    tagKey: text("tag_key")
+      .notNull()
+      .references(() => tags.key, { onDelete: "cascade" }),
+    grantedAt: timestamp("granted_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_tag_uniq").on(t.userId, t.tagKey)],
+);
+
 /** Recurring premium subscription (Mercado Pago preapproval). */
 export const subscriptions = pgTable("subscriptions", {
   id: serial("id").primaryKey(),

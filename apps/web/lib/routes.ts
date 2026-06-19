@@ -50,6 +50,7 @@ export const routes = {
   admin: {
     root: "/admin",
     users: "/admin/users",
+    tags: "/admin/tags",
     comments: "/admin/comments",
     donations: "/admin/donations",
     pixels: "/admin/pixels",
