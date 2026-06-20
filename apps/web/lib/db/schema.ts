@@ -200,12 +200,23 @@ export const donations = pgTable("donations", {
  * Teams grant collaborators scoped roles; chapters move through a draft → review
  * → scheduled → published lifecycle with pages stored in R2.
  */
+/**
+ * A team backs every work for collaboration. When it also carries a `slug` it is
+ * a public-facing **Organização** (a scanlation group / studio) that aggregates
+ * many works and a roster of members — the auto-created per-work teams keep a
+ * null slug and stay private. `isPublic` gates the directory + public page.
+ */
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   ownerId: text("owner_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  slug: text("slug").unique(), // set ⇒ this team is an Organização (public identity)
+  bio: text("bio"),
+  avatarR2Key: text("avatar_r2_key"),
+  bannerR2Key: text("banner_r2_key"),
+  isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -499,6 +510,40 @@ export const userAchievements = pgTable(
     unlockedAt: timestamp("unlocked_at").notNull().defaultNow(),
   },
   (t) => [uniqueIndex("user_achievement_uniq").on(t.userId, t.achievementKey)],
+);
+
+/**
+ * Editable badge catalog. The display (label/emoji/color/description) of every
+ * badge lives here so admins manage it instead of it being hardcoded in the
+ * frontend. Auto badges (role, plan, achievements) overlay their display by key;
+ * rows with `assignable` are the manual tags admins hand out via `user_tags`.
+ */
+export const tags = pgTable("tags", {
+  key: text("key").primaryKey(), // slug, e.g. "vip" or "admin"
+  label: text("label").notNull(),
+  // Holds a custom emote name (:name:), resolved to an image URL on read. The
+  // physical column stays "emoji" (pre-existing) to avoid a shared-DB migration.
+  emote: text("emoji"),
+  color: text("color"), // hex; null falls back to the tone CSS class
+  description: text("description"),
+  assignable: boolean("assignable").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+});
+
+/** Manual (admin-granted) tag assignments | achievements stay in user_achievements. */
+export const userTags = pgTable(
+  "user_tags",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    tagKey: text("tag_key")
+      .notNull()
+      .references(() => tags.key, { onDelete: "cascade" }),
+    grantedAt: timestamp("granted_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_tag_uniq").on(t.userId, t.tagKey)],
 );
 
 /** Recurring premium subscription (Mercado Pago preapproval). */

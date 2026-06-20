@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { Icon } from "@/components/Icon";
-import { SettingsModal } from "@/components/SettingsModal";
+import { SettingsView } from "@/components/SettingsView";
+import { Modal } from "@/components/ui/Modal";
 import { authClient, useSession } from "@/lib/auth/client";
 import { routes } from "@/lib/routes";
 
@@ -86,6 +87,9 @@ export function UserMenu() {
           <Link href={routes.library} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="heart" size={15} /> Biblioteca
           </Link>
+          <Link href={routes.orgs} role="menuitem" onClick={() => setOpen(false)}>
+            <Icon name="layout-dashboard" size={15} /> Organizações
+          </Link>
           <button
             type="button"
             role="menuitem"
@@ -112,7 +116,14 @@ export function UserMenu() {
         </div>
       )}
 
-      <SettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <Modal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        title="Configurações"
+        size="md"
+      >
+        <SettingsView />
+      </Modal>
     </div>
   );
 }

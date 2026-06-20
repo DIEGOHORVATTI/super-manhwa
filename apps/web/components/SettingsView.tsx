@@ -128,7 +128,7 @@ export function SettingsView() {
         </label>
         <label className="auth-field">
           <span>Bio</span>
-          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} maxLength={300} />
+          <textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={8} maxLength={300} />
           <span className="field-counter">{bio.length}/300</span>
         </label>
         {err && <p className="auth-error">{err}</p>}

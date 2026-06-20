@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { BadgeChip } from "@/components/Badge";
 import { ComposerArea } from "@/components/ComposerArea";
 import { Icon } from "@/components/Icon";
 import { useSession } from "@/lib/auth/client";
@@ -138,9 +139,19 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
             <div className="comment-head">
               <span className="comment-author">{c.authorName ?? "Usuário"}</span>
               {chatBadges({ role: c.authorRole, plan: c.authorPlan }).map((b) => (
-                <span key={b.key} className={`badge badge-${b.tone}`}>
-                  {b.label}
-                </span>
+                <BadgeChip key={b.key} b={b} />
+              ))}
+              {(c.authorTags ?? []).map((t) => (
+                <BadgeChip
+                  key={t.key}
+                  b={{
+                    key: t.key,
+                    label: t.label,
+                    tone: "special",
+                    emoteUrl: t.emoteUrl ?? undefined,
+                    color: t.color ?? undefined,
+                  }}
+                />
               ))}
               <span className="comment-time">{timeAgo(c.createdAt)}</span>
               {c.editedAt && <span className="comment-time">(editado)</span>}

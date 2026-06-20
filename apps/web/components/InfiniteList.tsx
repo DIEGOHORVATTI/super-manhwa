@@ -43,10 +43,8 @@ export function InfiniteList({
       });
       setPage(next);
       setMore(Boolean(res.hasNextPage));
-      // Keep the URL shareable without a navigation.
-      const url = new URL(window.location.href);
-      url.searchParams.set("page", String(next));
-      window.history.replaceState(null, "", url);
+      // ponytail: não escrevemos ?page= na URL — infinite scroll não precisa,
+      // e o param poluía o link compartilhado. A 1ª página vem do SSR.
     } finally {
       setLoading(false);
     }

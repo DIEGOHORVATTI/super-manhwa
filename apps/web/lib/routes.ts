@@ -35,6 +35,7 @@ export const routes = {
   affiliate: "/affiliate",
   pixels: "/pixels",
   studio: "/studio",
+  orgs: "/orgs",
   settings: "/settings",
   // auth
   login: "/login",
@@ -50,15 +51,20 @@ export const routes = {
   admin: {
     root: "/admin",
     users: "/admin/users",
+    tags: "/admin/tags",
     comments: "/admin/comments",
     donations: "/admin/donations",
     pixels: "/admin/pixels",
     affiliates: "/admin/affiliates",
     connectors: "/admin/connectors",
+    cache: "/admin/cache",
+    legal: "/admin/legal",
   },
 
   // ── Dynamic pages ──
   manga: (id: string, name: string) => mangaHref(id, name),
+  org: (slug: string) => `/org/${slug}`,
+  orgManage: (id: string | number) => `/orgs/${id}`,
   obra: (slug: string) => `/obra/${slug}`,
   obraChapter: (slug: string, chapterId: string | number) => `/obra/${slug}/${chapterId}`,
   user: (handle: string) => `/u/${handle}`,

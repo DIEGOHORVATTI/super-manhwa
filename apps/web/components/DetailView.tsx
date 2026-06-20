@@ -8,7 +8,7 @@ import { ChapterLoadingNote } from "@/components/ChapterLoadingNote";
 import { CharactersTab } from "@/components/CharactersTab";
 import { Cover } from "@/components/Cover";
 import { Icon } from "@/components/Icon";
-import { ChaptersGridSkeleton } from "@/components/Skeleton";
+import { ChaptersGridSkeleton, RelatedWorksSkeleton } from "@/components/Skeleton";
 import { useReadChapters } from "@/lib/library";
 import { routes } from "@/lib/routes";
 
@@ -282,7 +282,7 @@ export function DetailView({
       )}
 
       {relationsPromise && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<RelatedWorksSkeleton />}>
           <RelatedWorks promise={relationsPromise} />
         </Suspense>
       )}

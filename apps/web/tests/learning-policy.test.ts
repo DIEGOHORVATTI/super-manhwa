@@ -1,33 +1,20 @@
 import { describe, expect, it } from "bun:test";
 
-import {
-  canLearnNewWord,
-  effectivePlan,
-  entitlementsFor,
-  FREE_LIMITS,
-} from "../lib/learning/entitlements";
+import { canLearnNewWord, effectivePlan, entitlementsFor } from "../lib/learning/entitlements";
 import { applyStudyDay, dayDiff, newlyUnlocked, xpFor } from "../lib/learning/gamification";
 import { makeCloze } from "../lib/learning/cloze";
 
 describe("entitlements", () => {
-  it("premium is unlimited and unlocks everything", () => {
-    const e = entitlementsFor("premium", { newWords: 999, reviews: 999 });
-    expect(e.newWordsRemaining).toBe(Number.POSITIVE_INFINITY);
-    expect(e.canExportAnki).toBe(true);
-    expect(e.canMineSentences).toBe(true);
-  });
-
-  it("free caps new words per day and locks premium features", () => {
-    const e = entitlementsFor("free", { newWords: 5, reviews: 0 });
-    expect(e.newWordsRemaining).toBe(FREE_LIMITS.newWordsPerDay - 5);
-    expect(e.canExportAnki).toBe(false);
-    expect(canLearnNewWord(e)).toBe(true);
-  });
-
-  it("free blocks once the daily cap is hit", () => {
-    const e = entitlementsFor("free", { newWords: FREE_LIMITS.newWordsPerDay, reviews: 0 });
-    expect(e.newWordsRemaining).toBe(0);
-    expect(canLearnNewWord(e)).toBe(false);
+  it("learning is free and unlimited for everyone (no plan gate)", () => {
+    for (const plan of ["free", "premium"] as const) {
+      const e = entitlementsFor(plan, { newWords: 9999, reviews: 9999 });
+      expect(e.newWordsRemaining).toBe(Number.POSITIVE_INFINITY);
+      expect(e.reviewsRemaining).toBe(Number.POSITIVE_INFINITY);
+      expect(e.canExportAnki).toBe(true);
+      expect(e.canMineSentences).toBe(true);
+      expect(e.canUseAdvancedStats).toBe(true);
+      expect(canLearnNewWord(e)).toBe(true);
+    }
   });
 
   it("effectivePlan downgrades expired premium", () => {

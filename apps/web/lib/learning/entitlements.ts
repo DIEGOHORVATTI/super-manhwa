@@ -32,24 +32,17 @@ export function effectivePlan(plan: Plan, premiumUntil: Date | null | undefined,
   return "premium";
 }
 
-export function entitlementsFor(plan: Plan, usage: DailyUsage): Entitlements {
-  if (plan === "premium") {
-    return {
-      premium: true,
-      newWordsRemaining: Number.POSITIVE_INFINITY,
-      reviewsRemaining: Number.POSITIVE_INFINITY,
-      canMineSentences: true,
-      canExportAnki: true,
-      canUseAdvancedStats: true,
-    };
-  }
+export function entitlementsFor(_plan: Plan, _usage: DailyUsage): Entitlements {
+  // Translation / language-learning is free for everyone now (was premium-gated).
+  // The signature is kept so the usage plumbing and call sites stay intact, and a
+  // paid tier can be reinstated later by branching on `_plan` again.
   return {
-    premium: false,
-    newWordsRemaining: Math.max(0, FREE_LIMITS.newWordsPerDay - usage.newWords),
-    reviewsRemaining: Math.max(0, FREE_LIMITS.reviewCardsPerDay - usage.reviews),
-    canMineSentences: false,
-    canExportAnki: false,
-    canUseAdvancedStats: false,
+    premium: true,
+    newWordsRemaining: Number.POSITIVE_INFINITY,
+    reviewsRemaining: Number.POSITIVE_INFINITY,
+    canMineSentences: true,
+    canExportAnki: true,
+    canUseAdvancedStats: true,
   };
 }
 

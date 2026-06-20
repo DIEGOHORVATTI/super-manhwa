@@ -7,6 +7,7 @@ import { learnRouter } from "./routers/learn";
 import { legalRouter } from "./routers/legal";
 import { libraryRouter } from "./routers/library";
 import { newsletterRouter } from "./routers/newsletter";
+import { orgRouter } from "./routers/org";
 import { pixelsRouter } from "./routers/pixels";
 import { profileRouter } from "./routers/profile";
 import { readingRouter } from "./routers/reading";
@@ -31,6 +32,7 @@ export const appRouter = {
   donations: donationsRouter,
   affiliate: affiliateRouter,
   studio: studioRouter,
+  org: orgRouter,
   learn: learnRouter,
   pixels: pixelsRouter,
   admin: adminRouter,

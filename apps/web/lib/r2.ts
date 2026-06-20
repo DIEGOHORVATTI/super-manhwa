@@ -50,6 +50,14 @@ export function publicUrlFor(key: string): string {
   return joinPublicUrl(publicUrl!, key);
 }
 
+/** Inverse of `publicUrlFor`: the object key for one of our public URLs, else
+ *  null (e.g. an external avatar). Lets callers clean up a replaced object. */
+export function keyFromPublicUrl(url: string): string | null {
+  if (!publicUrl) return null;
+  const base = publicUrl.replace(/\/$/, "");
+  return url.startsWith(base) ? url.slice(base.length).replace(/^\//, "") : null;
+}
+
 /** Upload bytes. Returns the object key (caller persists it alongside the row). */
 export async function putObject(
   key: string,

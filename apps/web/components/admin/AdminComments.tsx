@@ -1,6 +1,8 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
+import { EmojiText } from "@/components/EmojiText";
+import { Button } from "@/components/ui/Button";
 import { rpc } from "@/lib/rpc/client";
 
 interface Row {
@@ -11,23 +13,29 @@ interface Row {
   deletedAt: string | Date | null;
   authorName: string | null;
   authorHandle: string | null;
+  workTitle: string | null;
 }
 
-/** Comment moderation: review recent comments and soft-delete offenders. */
+const PAGE = 50;
+
+/** Comment moderation: review comments (with emotes + work) and soft-delete. */
 export function AdminComments() {
   const [rows, setRows] = useState<Row[] | null>(null);
+  const [total, setTotal] = useState(0);
+  const [offset, setOffset] = useState(0);
 
-  async function load() {
+  const load = useCallback(async () => {
     try {
-      const { comments } = await rpc.admin.comments.list();
+      const { comments, total } = await rpc.admin.comments.list({ limit: PAGE, offset });
       setRows(comments ?? []);
+      setTotal(total ?? 0);
     } catch {
       /* leave previous state */
     }
-  }
+  }, [offset]);
   useEffect(() => {
     void load();
-  }, []);
+  }, [load]);
 
   async function remove(id: number) {
     try {
@@ -40,26 +48,66 @@ export function AdminComments() {
 
   if (!rows) return <p className="muted">Carregando…</p>;
 
+  const from = total === 0 ? 0 : offset + 1;
+  const to = Math.min(offset + PAGE, total);
+
   return (
     <>
-      <h1 className="settings-title">Comentários</h1>
+      <header className="admin-page-head">
+        <h1 className="settings-title">Comentários</h1>
+        <p className="muted">{total} comentários no total.</p>
+      </header>
+
       <div className="admin-table">
         {rows.map((c) => (
           <div key={c.id} className={`admin-row${c.deletedAt ? " is-removed" : ""}`}>
             <div className="admin-row-main">
               <span className="muted">
-                {c.authorName ?? "?"} · {c.targetType} {c.targetId}
+                {c.authorName ?? "?"}
+                {c.workTitle ? (
+                  <>
+                    {" "}
+                    · em <strong>{c.workTitle}</strong>
+                  </>
+                ) : (
+                  <> · {c.targetType}</>
+                )}
               </span>
-              <span>{c.deletedAt ? <em>removido</em> : c.body}</span>
+              <span>{c.deletedAt ? <em>removido</em> : <EmojiText text={c.body ?? ""} />}</span>
             </div>
             {!c.deletedAt && (
-              <button type="button" className="comment-link is-banned" onClick={() => remove(c.id)}>
+              <Button variant="danger" size="sm" icon="x" onClick={() => remove(c.id)}>
                 Excluir
-              </button>
+              </Button>
             )}
           </div>
         ))}
       </div>
+
+      {total > PAGE && (
+        <div className="admin-pager">
+          <Button
+            variant="ghost"
+            size="sm"
+            icon="chevron-left"
+            disabled={offset === 0}
+            onClick={() => setOffset(Math.max(0, offset - PAGE))}
+          >
+            Anterior
+          </Button>
+          <span className="muted">
+            {from}–{to} de {total}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            disabled={to >= total}
+            onClick={() => setOffset(offset + PAGE)}
+          >
+            Próximos
+          </Button>
+        </div>
+      )}
     </>
   );
 }

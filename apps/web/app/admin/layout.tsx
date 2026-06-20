@@ -1,15 +1,17 @@
 import Link from "next/link";
 
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
 import { getCurrentUser, hasRole } from "@/lib/auth/session";
 import { routes } from "@/lib/routes";
 
 /**
- * Admin area guard. Only users with role admin/staff get in; everyone else sees
- * a not-authorized notice (no redirect loop, no info leak about the panel).
+ * Admin shell | a fixed sidebar (sections + active state) beside the page body.
+ * Guarded: only admin/staff get in; everyone else sees a not-authorized notice
+ * (no redirect loop, no info leak about the panel).
  */
 export default async function AdminLayout({ children }: React.PropsWithChildren) {
-  const user = await getCurrentUser();
-  const allowed = hasRole(user as { role?: string } | null, "staff");
+  const user = (await getCurrentUser()) as { name?: string; role?: string } | null;
+  const allowed = hasRole(user, "staff");
 
   if (!allowed) {
     return (
@@ -23,17 +25,9 @@ export default async function AdminLayout({ children }: React.PropsWithChildren)
   }
 
   return (
-    <div className="admin-wrap">
-      <nav className="admin-nav">
-        <Link href={routes.admin.root}>Visão geral</Link>
-        <Link href={routes.admin.users}>Usuários</Link>
-        <Link href={routes.admin.comments}>Comentários</Link>
-        <Link href={routes.admin.donations}>Doações</Link>
-        <Link href={routes.admin.affiliates}>Afiliados</Link>
-        <Link href={routes.admin.pixels}>Pixels</Link>
-        <Link href={routes.admin.connectors}>Conectores</Link>
-      </nav>
-      {children}
+    <div className="admin-shell">
+      <AdminSidebar name={user?.name ?? "Equipe"} role={user?.role ?? "staff"} />
+      <main className="admin-main">{children}</main>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 import type { MangaSort, MangaStatus } from "@packages/contracts";
 import { NextResponse } from "next/server";
 
-import { api } from "@/lib/orpc.server";
+import { api, apiFresh } from "@/lib/orpc.server";
 import { translateSummaries } from "@/lib/translate";
 
 /**
@@ -26,11 +26,18 @@ export async function GET(req: Request) {
     const sort: MangaSort = SORTS.includes(sp.get("sort") as MangaSort)
       ? (sp.get("sort") as MangaSort)
       : "popular";
+    const fmt = sp.get("format");
+    const format = fmt === "novel" || fmt === "manga" ? (fmt as "novel" | "manga") : undefined;
 
-    const r =
+    const browseArgs = { lang: "pt-br", genre, status, sort, format, page };
+    let r =
       q.length >= 2
         ? await api.manga.search({ lang: "pt-br", q, genre, status, page })
-        : await api.manga.popular({ lang: "pt-br", genre, status, sort, page });
+        : await api.manga.popular(browseArgs);
+    // Self-heal a transient empty pinned by the 6h catalog cache (browse only).
+    if (q.length < 2 && r.list.length === 0) {
+      r = await apiFresh.manga.popular(browseArgs).catch(() => r);
+    }
     return NextResponse.json({
       list: await translateSummaries(r.list),
       hasNextPage: r.hasNextPage,

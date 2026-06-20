@@ -22,6 +22,39 @@ export interface Badge {
   tone: BadgeTone;
   /** Optional rule explanation, shown as a tooltip on the profile. */
   description?: string;
+  /** Optional custom emote name (`:name:`, from the editable catalog). */
+  emote?: string;
+  /** Emote image URL, resolved from `emote` at the server boundary. */
+  emoteUrl?: string;
+  /** Optional hex color (catalog override); falls back to the tone class. */
+  color?: string;
+}
+
+/** Catalog row shape (subset) used to overlay editable display onto a badge. */
+export interface TagOverride {
+  key: string;
+  label?: string | null;
+  emote?: string | null;
+  color?: string | null;
+  description?: string | null;
+}
+
+/**
+ * Overlay the editable catalog onto code-resolved badges, by key. Catalog values
+ * win when present; missing fields keep the code default. Pure so it's unit-tested.
+ */
+export function applyCatalog(badges: Badge[], catalog: Map<string, TagOverride>): Badge[] {
+  return badges.map((b) => {
+    const c = catalog.get(b.key);
+    if (!c) return b;
+    return {
+      ...b,
+      label: c.label || b.label,
+      emote: c.emote ?? b.emote,
+      color: c.color ?? b.color,
+      description: c.description ?? b.description,
+    };
+  });
 }
 
 /** Reputation ladder (sum of upvotes on the user's comments). Highest match wins. */

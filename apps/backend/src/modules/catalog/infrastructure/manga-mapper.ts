@@ -57,6 +57,7 @@ export const MangaMapper = {
       genres: item.genres,
       chapters: item.chapters,
       description: item.description,
+      format: item.format,
     };
   },
 

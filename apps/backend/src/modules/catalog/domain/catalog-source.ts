@@ -1,4 +1,4 @@
-import type { MangaStatus } from "@packages/contracts";
+import type { MangaStatus, WorkFormat } from "@packages/contracts";
 
 /**
  * Discovery/catalog port. The catalog (listing, search, suggest, genres, and a
@@ -21,6 +21,8 @@ export type CatalogItem = {
   chapters?: number;
   /** Short plain-text teaser for listing hover; undefined when unavailable. */
   description?: string;
+  /** Editorial format (`novel` ⇒ text). Absent ⇒ manga/image. */
+  format?: WorkFormat;
 };
 
 /** A work's full catalog record | drives the detail page's non-chapter content. */
@@ -41,7 +43,7 @@ export type CatalogPage = {
 };
 
 /** Optional refinements shared by browse + search. */
-export type CatalogFilters = { genre?: string; status?: MangaStatus };
+export type CatalogFilters = { genre?: string; status?: MangaStatus; format?: WorkFormat };
 
 export type CatalogSource = {
   /** Free-text search, paginated, optionally constrained by genre/status. */

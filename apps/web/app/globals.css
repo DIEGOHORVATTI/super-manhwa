@@ -3328,8 +3328,10 @@ html[data-reader] .footer {
 }
 .modal {
   position: relative;
-  width: 100%;
-  max-width: 700px;
+  /* Definite width (not just max-width) | the centering overlay shrink-wraps to
+   * content otherwise, so a narrow form would collapse to ~sm. `vw` breaks the
+   * dependency on content width; `40px` matches the overlay's 20px padding. */
+  width: min(700px, calc(100vw - 40px));
   max-height: 88vh;
   overflow: auto;
   background: var(--surface, #14171d);
@@ -3338,6 +3340,26 @@ html[data-reader] .footer {
   box-shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+.modal-sm {
+  width: min(440px, calc(100vw - 40px));
+}
+.modal-md {
+  width: min(600px, calc(100vw - 40px));
+}
+.modal-lg {
+  width: min(820px, calc(100vw - 40px));
+}
+/* Page wrappers rendered inside a modal shouldn't add their own max-width /
+ * page paddings | the modal body already frames the content. */
+.modal-body .settings-wrap,
+.modal-body .profile-wrap {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+.modal-body .settings-card:last-child {
+  margin-bottom: 0;
 }
 .modal::-webkit-scrollbar {
   width: 8px;
@@ -3706,33 +3728,54 @@ html[data-reader] .footer {
   gap: 6px;
   margin-top: 8px;
 }
+/* All KPIs on a single row | equal narrow columns, horizontal scroll on small
+   screens so they never wrap to a second line. */
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
-  gap: 10px;
-  margin: 18px 0 28px;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(76px, 1fr);
+  gap: 8px;
+  margin: 16px 0 26px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
 }
 .profile-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 14px 8px;
+  gap: 4px;
+  padding: 11px 6px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+  transition: border-color 0.12s;
+}
+.profile-stat:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 .profile-stat-icon {
-  font-size: 19px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
 }
 .profile-stat-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
+  line-height: 1;
 }
 .profile-stat-label {
-  font-size: 11px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--muted);
   text-align: center;
+  line-height: 1.2;
 }
 .profile-section {
   margin-bottom: 30px;
@@ -3743,23 +3786,86 @@ html[data-reader] .footer {
   justify-content: space-between;
   gap: 10px;
 }
-/* Reading heatmap */
+/* Reading heatmap | columns flex to fill the width, so it resizes instead of
+   scrolling. Cells stay square via aspect-ratio. */
+.heatmap-months {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.heatmap-month {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .heatmap {
   display: flex;
   gap: 3px;
-  overflow-x: auto;
-  padding: 4px 0 6px;
+  width: 100%;
+  padding-bottom: 2px;
 }
 .heatmap-col {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 .heatmap-cell {
-  width: 11px;
-  height: 11px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 2px;
   background: var(--surface-2);
+}
+.heatmap-cell:hover {
+  outline: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: -1px;
+  z-index: 5;
+}
+/* Today's cell: a persistent ring (box-shadow so it coexists with hover). */
+.heatmap-cell.is-today {
+  box-shadow: 0 0 0 1.6px var(--text);
+}
+/* Custom popover on hover (replaces the native title). */
+.heatmap-cell[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 12px 26px -10px rgba(0, 0, 0, 0.7);
+}
+.heatmap-cell[data-tip]:hover::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  border: 5px solid transparent;
+  border-top-color: var(--border);
+  pointer-events: none;
+}
+/* Mobile: show only the most recent ~17 weeks (today backwards), no scroll. */
+@media (max-width: 600px) {
+  .heatmap-col:nth-last-child(n + 18),
+  .heatmap-month:nth-last-child(n + 18) {
+    display: none;
+  }
 }
 .heatmap-l0 {
   background: var(--surface-2);
@@ -3780,8 +3886,14 @@ html[data-reader] .footer {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 11px;
+}
+.heatmap-legend .heatmap-cell {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  aspect-ratio: auto;
 }
 /* AniList panel */
 .anilist-link {
@@ -4148,29 +4260,214 @@ html[data-reader] .footer {
   margin: 0 auto;
   padding: 24px 0 60px;
 }
-.admin-nav {
+
+/* ── Dashboard shell: fixed sidebar + content ── */
+.admin-shell {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 22px;
+  align-items: flex-start;
+  gap: 28px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 24px 0 60px;
 }
-.admin-nav a {
-  padding: 8px 14px;
+.admin-sidebar {
+  position: sticky;
+  top: 16px;
+  flex: none;
+  width: 232px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 16px 12px;
   border: 1px solid var(--border);
-  border-radius: 999px;
+  border-radius: 16px;
   background: var(--surface);
-  color: var(--text);
+}
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+.admin-side-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.admin-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-nav-heading {
+  margin: 0 0 4px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+.admin-side-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 10px;
+  color: var(--muted);
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
+  transition:
+    background 0.12s,
+    color 0.12s;
 }
-.admin-nav a:hover {
+.admin-side-link:hover {
+  background: color-mix(in srgb, var(--text) 6%, transparent);
+  color: var(--text);
+}
+.admin-side-link.is-active {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+}
+.admin-side-foot {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.admin-side-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 8px;
+}
+.admin-side-name {
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-main {
+  flex: 1;
+  min-width: 0;
+}
+.admin-page-head {
+  margin-bottom: 20px;
+}
+.admin-section-title {
+  margin: 28px 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+/* ── KPI stat cards ── */
+.admin-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+.admin-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    border-color 0.12s,
+    transform 0.12s;
+}
+.admin-kpi:hover {
   border-color: var(--accent);
+  transform: translateY(-1px);
 }
+.admin-kpi-icon {
+  display: inline-flex;
+  color: var(--muted);
+}
+.admin-kpi-value {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.admin-kpi-label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* ── Area cards ── */
 .admin-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
+}
+.admin-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--text);
+  transition:
+    border-color 0.12s,
+    transform 0.12s;
+}
+.admin-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.admin-card-icon {
+  display: inline-flex;
+  flex: none;
+  padding: 9px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
+}
+.admin-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.admin-card-text .muted {
+  font-size: 12px;
+}
+
+@media (max-width: 760px) {
+  .admin-shell {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0 60px;
+  }
+  .admin-sidebar {
+    position: static;
+    width: 100%;
+  }
+  .admin-side-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .admin-nav-heading {
+    display: none;
+  }
+  .admin-side-foot {
+    display: none;
+  }
 }
 .admin-table {
   display: flex;
@@ -4204,6 +4501,381 @@ html[data-reader] .footer {
 }
 .comment-link.is-banned {
   color: #ff8a8a;
+}
+
+/* ───────────────────────── Shared UI primitives ───────────────────────── */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font: inherit;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.12s,
+    border-color 0.12s,
+    filter 0.12s,
+    transform 0.08s;
+}
+.ui-btn:active {
+  transform: translateY(1px);
+}
+.ui-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  pointer-events: none;
+}
+.ui-btn-md {
+  padding: 9px 14px;
+  font-size: 14px;
+}
+.ui-btn-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+.ui-btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.ui-btn-primary:hover {
+  filter: brightness(1.07);
+}
+.ui-btn-ghost {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+.ui-btn-ghost:hover {
+  border-color: var(--accent);
+}
+.ui-btn-subtle {
+  background: transparent;
+  color: var(--muted);
+}
+.ui-btn-subtle:hover {
+  background: color-mix(in srgb, var(--text) 7%, transparent);
+  color: var(--text);
+}
+.ui-btn-danger {
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  border-color: color-mix(in srgb, #ef4444 35%, transparent);
+  color: #f87171;
+}
+.ui-btn-danger:hover {
+  background: color-mix(in srgb, #ef4444 22%, transparent);
+}
+
+.ui-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.ui-field-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--muted);
+}
+.ui-field-hint {
+  font-size: 11.5px;
+  color: var(--muted);
+}
+.ui-input {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2, var(--surface));
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition:
+    border-color 0.12s,
+    box-shadow 0.12s;
+}
+.ui-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.ui-textarea {
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* ── Emote picker ── */
+.emote-picker {
+  position: relative;
+}
+.emote-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2, var(--surface));
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.emote-trigger:hover {
+  border-color: var(--accent);
+}
+.emote-img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+.emote-pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 6px);
+  left: 0;
+  width: 264px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 18px 40px -16px rgba(0, 0, 0, 0.6);
+}
+.emote-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 8px;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+}
+.emote-search input {
+  flex: 1;
+  border: none;
+  background: none;
+  outline: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 0;
+}
+.emote-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.emote-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  padding: 4px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+.emote-cell:hover {
+  background: color-mix(in srgb, var(--text) 8%, transparent);
+}
+.emote-cell.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+.emote-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  font-size: 12px;
+  padding: 12px 0;
+}
+
+/* ── Admin page header with an action on the right ── */
+.admin-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* ── Admin pagination ── */
+.admin-pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+
+/* ── Affiliate per-row metrics ── */
+.affiliate-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.affiliate-metrics span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.affiliate-pending {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Admin forms (tag CRUD etc.) ── */
+.ui-color {
+  width: 44px;
+  height: 38px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2, var(--surface));
+  cursor: pointer;
+}
+.ui-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 8px 0;
+}
+.form-error {
+  margin-top: 10px;
+  color: #f87171;
+  font-size: 13px;
+}
+.admin-card-block {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  margin-bottom: 8px;
+}
+.admin-card-block .admin-section-title {
+  margin-top: 0;
+}
+.admin-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px 14px;
+  align-items: end;
+}
+.admin-form-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 4px;
+}
+.admin-tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.admin-tag-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+}
+.admin-tag-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-tag-auto {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.admin-tag-card-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Manual tags in the user list + the tag CRUD */
+.admin-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+.admin-tag-x {
+  margin-left: 4px;
+  border: none;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  font-weight: 900;
+  line-height: 1;
+}
+.admin-tag-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+.admin-tag-row {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+.admin-tag-emoji {
+  width: 64px;
+  text-align: center;
+}
+.admin-tag-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* DMCA / contact request fields */
+.admin-legal-fields {
+  margin: 6px 0 0;
+  display: grid;
+  gap: 4px;
+}
+.admin-legal-fields div {
+  display: grid;
+  grid-template-columns: 110px 1fr;
+  gap: 8px;
+}
+.admin-legal-fields dt {
+  font-weight: 700;
+  color: var(--muted);
+}
+.admin-legal-fields dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 /* ───────────────────────── Novel reader (language learning) ───────────────────────── */
@@ -4616,6 +5288,60 @@ html[data-reader] .footer {
 .footer-donate:hover {
   background: rgba(255, 62, 110, 0.25);
 }
+.footer-discord {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  margin-right: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(88, 101, 242, 0.15);
+  border: 1px solid rgba(88, 101, 242, 0.45);
+  color: var(--text);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+.footer-discord svg {
+  color: #818cf8;
+}
+.footer-discord:hover {
+  background: rgba(88, 101, 242, 0.25);
+}
+/* Imagem do Discord ao lado da prateleira "Em tendência". A prateleira
+   ocupa o espaço restante (min-width:0 evita o scroller estourar o flex);
+   no mobile empilha embaixo. */
+.trending-with-discord {
+  display: flex;
+  align-items: stretch;
+  gap: 16px;
+}
+.trending-with-discord .shelf {
+  flex: 1;
+  min-width: 0;
+}
+.discord-side {
+  flex: 0 0 280px;
+  display: block;
+}
+.discord-side img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+@media (max-width: 620px) {
+  .trending-with-discord {
+    flex-direction: column;
+  }
+  .discord-side {
+    flex: none;
+  }
+  .discord-side img {
+    height: auto;
+  }
+}
 @media (max-width: 560px) {
   .learn-cta-go span,
   .learn-cta-text span {
@@ -4667,7 +5393,9 @@ html[data-reader] .footer {
 
 /* ───────────────────────── Badges (chat + profile) ───────────────────────── */
 .badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
@@ -4676,6 +5404,11 @@ html[data-reader] .footer {
   border-radius: 999px;
   vertical-align: middle;
   line-height: 1.5;
+}
+.badge-emote {
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
 }
 /* Styled tooltip (replaces the native title) explaining how a badge was earned. */
 .has-tip {
@@ -5438,4 +6171,178 @@ html[data-reader] .footer {
 .format-switch-btn:hover {
   background: var(--accent);
   color: #fff;
+}
+
+/* ── Admin cache console ── */
+.cache-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.cache-search {
+  flex: 1;
+  min-width: 220px;
+}
+.cache-tabs {
+  display: flex;
+  gap: 4px;
+}
+.cache-row {
+  align-items: center;
+  gap: 12px;
+}
+.cache-thumb {
+  width: 40px;
+  height: 56px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--surface-2);
+}
+.cache-thumb-empty {
+  display: inline-block;
+  border: 1px solid var(--border);
+}
+
+/* avatar/banner upload error feedback */
+.profile-img-error {
+  position: absolute;
+  bottom: -28px;
+  left: 0;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff8a8a;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 3px 8px;
+  z-index: 3;
+}
+
+/* ───────────────────────── Organizações ───────────────────────── */
+.orgs-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 0 60px;
+}
+/* textarea/select share the input look inside auth-field */
+.auth-field textarea,
+.auth-field select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+.auth-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.auth-checkbox input {
+  width: auto;
+}
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 0;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Directory grid */
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.org-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+.org-card:hover {
+  border-color: var(--accent);
+}
+.org-avatar,
+.org-page-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 22px;
+  font-weight: 700;
+  overflow: hidden;
+}
+.org-avatar img,
+.org-page-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.org-page-avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+.org-card-bio {
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Members / works rows in management */
+.org-members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.org-member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.org-member-row > span:first-child {
+  flex: 1;
+}
+
+/* Public page team chips */
+.org-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.org-team-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
 }

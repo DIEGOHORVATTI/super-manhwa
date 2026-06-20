@@ -100,7 +100,7 @@ export function Autocomplete() {
         <input
           className="combobox-field"
           value={q}
-          placeholder="Buscar mangá pelo nome…"
+          placeholder="Buscar obra..."
           onChange={(e) => setQ(e.target.value)}
           onFocus={() => {
             setFocused(true);

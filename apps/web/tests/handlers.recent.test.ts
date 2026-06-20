@@ -57,14 +57,13 @@ mock.module("@/lib/perms", () => ({
 mock.module("@/lib/reading-sync", () => ({
   syncReadingAchievements: async () => readingUnlocked,
 }));
-mock.module("@/lib/orpc.server", () => ({
-  api: {
-    manga: {
-      popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
-      search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
-    },
+const orpcApiMock = {
+  manga: {
+    popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
+    search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
   },
-}));
+};
+mock.module("@/lib/orpc.server", () => ({ api: orpcApiMock, apiFresh: orpcApiMock }));
 mock.module("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) => (name === "ref" && refCookie ? { value: refCookie } : undefined),
@@ -197,12 +196,19 @@ describe("rpc.affiliate admin (staff)", () => {
     const res = await call(appRouter.affiliate.adminList, undefined as never, {
       context: fakeContext({
         user: { id: "u1", role: "staff" },
+        // Four queries (FIFO): affiliates, referral counts, commission agg, periods.
         results: [
-          [{ id: 1, code: "abc123", pixKey: null, name: "A", handle: "a", pendingCents: 600 }],
+          [{ id: 1, code: "abc123", pixKey: null, ratePct: 20, name: "A", handle: "a" }],
+          [{ affiliateId: 1, n: 3 }],
+          [{ affiliateId: 1, pendingCents: 600, paidCents: 0, conversions: 2 }],
+          [{ period: "2026-06" }],
         ],
       }),
     });
     expect(res.affiliates[0]?.pendingCents).toBe(600);
+    expect(res.affiliates[0]?.referrals).toBe(3);
+    expect(res.kpis.pendingCents).toBe(600);
+    expect(res.periods).toEqual(["2026-06"]);
   });
   it("markPaid for staff", async () => {
     const res = await call(

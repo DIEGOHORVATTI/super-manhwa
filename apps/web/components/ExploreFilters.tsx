@@ -20,6 +20,12 @@ const SORT_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
   { value: "newest", label: "Mais novos" },
 ];
 
+const FORMAT_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  { value: "", label: "Formato" },
+  { value: "manga", label: "Mangás" },
+  { value: "novel", label: "Novels" },
+];
+
 /**
  * The Explorar filter bar. Source of truth is the URL | each control rewrites
  * the querystring (resetting to page 1) and lets the server re-render. The text
@@ -31,6 +37,7 @@ export function ExploreFilters({
   genre,
   status,
   sort,
+  format,
   basePath = routes.home,
 }: {
   genres: string[];
@@ -38,37 +45,34 @@ export function ExploreFilters({
   genre: string;
   status: string;
   sort: string;
+  format: string;
   /** Where filter changes navigate to | `/` now that explore is the home. */
   basePath?: string;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState(q);
 
-  const go = (next: Partial<{ q: string; genre: string; status: string; sort: string }>) => {
-    const params = new URLSearchParams();
-    const merged = { q: query, genre, status, sort, ...next };
-    if (merged.q.trim()) params.set("q", merged.q.trim());
-    if (merged.genre) params.set("genre", merged.genre);
-    if (merged.status) params.set("status", merged.status);
-    if (merged.sort && merged.sort !== "popular") params.set("sort", merged.sort);
-    const qs = params.toString();
-    router.push(qs ? `${basePath}?${qs}` : basePath);
-  };
+  type FilterState = { q: string; genre: string; status: string; sort: string; format: string };
 
-  // Remove a single applied filter | rebuilt from the *applied* props (not the
-  // in-progress text input), resetting page to 1.
-  const removeFilter = (
-    patch: Partial<{ q: string; genre: string; status: string; sort: string }>,
-  ) => {
-    const m = { q, genre, status, sort, ...patch };
+  const pushFrom = (m: FilterState) => {
     const params = new URLSearchParams();
     if (m.q.trim()) params.set("q", m.q.trim());
     if (m.genre) params.set("genre", m.genre);
     if (m.status) params.set("status", m.status);
     if (m.sort && m.sort !== "popular") params.set("sort", m.sort);
-    if (patch.q === "") setQuery("");
+    if (m.format) params.set("format", m.format);
     const qs = params.toString();
     router.push(qs ? `${basePath}?${qs}` : basePath);
+  };
+
+  const go = (next: Partial<FilterState>) =>
+    pushFrom({ q: query, genre, status, sort, format, ...next });
+
+  // Remove a single applied filter | rebuilt from the *applied* props (not the
+  // in-progress text input), resetting page to 1.
+  const removeFilter = (patch: Partial<FilterState>) => {
+    if (patch.q === "") setQuery("");
+    pushFrom({ q, genre, status, sort, format, ...patch });
   };
 
   // Applied filters as removable chips (popular sort is the default → no chip).
@@ -87,6 +91,13 @@ export function ExploreFilters({
           key: "sort",
           label: SORT_OPTIONS.find((o) => o.value === sort)?.label ?? sort,
           clear: () => removeFilter({ sort: "popular" }),
+        }
+      : null,
+    format
+      ? {
+          key: "format",
+          label: FORMAT_OPTIONS.find((o) => o.value === format)?.label ?? format,
+          clear: () => removeFilter({ format: "" }),
         }
       : null,
   ].filter((c): c is { key: string; label: string; clear: () => void } => c !== null);
@@ -141,6 +152,15 @@ export function ExploreFilters({
           value={status}
           onChange={(v) => go({ status: v })}
           options={STATUS_OPTIONS as { value: string; label: string }[]}
+          className="explore-select"
+        />
+
+        <Select
+          aria-label="Formato"
+          value={format}
+          onChange={(v) => go({ format: v })}
+          options={FORMAT_OPTIONS as { value: string; label: string }[]}
+          disabled={!!query.trim()}
           className="explore-select"
         />
 
