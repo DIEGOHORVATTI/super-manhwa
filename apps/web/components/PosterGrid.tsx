@@ -16,21 +16,12 @@ const COVER_SIZES = "(max-width: 620px) 33vw, 160px";
  * carries only the opaque id; the slug tail is the keyword-rich title used for
  * SEO and doubles as the fallback detail-lookup hint (de-slugified server-side).
  */
-export function PosterGrid({
-  items,
-  banner,
-}: {
-  items: readonly MangaSummary[];
-  banner?: React.ReactNode;
-}) {
+export function PosterGrid({ items }: { items: readonly MangaSummary[] }) {
   if (items.length === 0) {
     return <p className="muted">Nada por aqui ainda.</p>;
   }
   return (
     <div className="poster-grid">
-      {/* Banner é um item da grade fixado no canto sup. direito (2 colunas);
-          grid-auto-flow: dense faz as obras preencherem o resto. */}
-      {banner}
       {items.map((m, i) => {
         const href = routes.manga(m.id, m.name);
         return (

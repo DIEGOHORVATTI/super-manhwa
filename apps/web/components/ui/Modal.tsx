@@ -1,16 +1,30 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 
 import { Icon } from "@/components/Icon";
-import { SettingsView } from "@/components/SettingsView";
+
+type Size = "sm" | "md" | "lg";
 
 /**
- * Account settings as a modal (no dedicated page). Controlled | the trigger lives
- * wherever it's used (profile "Editar perfil", account menu "Configurações").
- * Closes on overlay click, the ✕, or Escape.
+ * Generic modal dialog. Portals to <body> (the header's backdrop-filter would
+ * otherwise anchor a fixed overlay to it), closes on overlay click / ✕ / Escape,
+ * and renders whatever children you pass. `title` is the accessible label; `size`
+ * caps the width (sm/md/lg).
  */
-export function SettingsModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function Modal({
+  open,
+  onClose,
+  title,
+  size = "md",
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  title?: string;
+  size?: Size;
+  children: ReactNode;
+}) {
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
@@ -22,24 +36,20 @@ export function SettingsModal({ open, onClose }: { open: boolean; onClose: () =>
 
   if (!open || typeof document === "undefined") return null;
 
-  // Portal to <body> | the header has a transform/backdrop-filter, which would
-  // otherwise make this fixed overlay anchor to the header instead of the viewport.
   return createPortal(
-    // biome-ignore lint/a11y/useKeyWithClickEvents: overlay close mirrors the Esc handler above
+    // oxlint-disable-next-line click-events-have-key-events -- overlay close mirrors the Esc handler
     <div className="modal-overlay" onClick={onClose}>
       <div
-        className="modal"
+        className={`modal modal-${size}`}
         role="dialog"
         aria-modal="true"
-        aria-label="Configurações"
+        aria-label={title}
         onClick={(e) => e.stopPropagation()}
       >
         <button type="button" className="modal-close" aria-label="Fechar" onClick={onClose}>
           <Icon name="x" size={18} />
         </button>
-        <div className="modal-body">
-          <SettingsView />
-        </div>
+        <div className="modal-body">{children}</div>
       </div>
     </div>,
     document.body,

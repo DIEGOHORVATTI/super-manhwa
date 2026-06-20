@@ -17,13 +17,11 @@ export function InfiniteList({
   initialPage,
   hasNextPage,
   params,
-  banner,
 }: {
   initial: MangaSummary[];
   initialPage: number;
   hasNextPage: boolean;
   params: Record<string, string>; // feed/q/genre/status/sort (no page)
-  banner?: React.ReactNode; // optional grid-cell banner (e.g. Discord CTA on the landing)
 }) {
   const [items, setItems] = useState<MangaSummary[]>(initial);
   const [page, setPage] = useState(initialPage);
@@ -67,7 +65,7 @@ export function InfiniteList({
 
   return (
     <>
-      <PosterGrid items={items} banner={banner} />
+      <PosterGrid items={items} />
       {more && (
         <div className="infinite-foot">
           <div ref={sentinel} aria-hidden="true" />

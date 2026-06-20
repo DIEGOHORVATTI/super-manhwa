@@ -57,6 +57,7 @@ export const routes = {
     affiliates: "/admin/affiliates",
     connectors: "/admin/connectors",
     cache: "/admin/cache",
+    legal: "/admin/legal",
   },
 
   // ── Dynamic pages ──

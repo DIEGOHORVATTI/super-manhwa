@@ -3,15 +3,27 @@ import { eq, inArray } from "drizzle-orm";
 
 import { applyCatalog, badgesFor, type Badge, type TagOverride } from "@/lib/badges";
 import { dbEnabled, getDb, schema } from "@/lib/db";
+import { listEmojisPublic } from "@/lib/emoji-manifest";
 
 export interface CatalogTag {
   key: string;
   label: string;
-  emoji: string | null;
+  emote: string | null;
   color: string | null;
   description: string | null;
   assignable: boolean;
   sortOrder: number;
+}
+
+/** name → image URL for every custom emote (best-effort; empty without R2). */
+async function emoteUrls(): Promise<Map<string, string>> {
+  const list = await listEmojisPublic().catch(() => []);
+  return new Map(list.map((e) => [e.name, e.url]));
+}
+
+/** Fill in `emoteUrl` for badges that reference an emote by name. */
+function withEmoteUrls(badges: Badge[], urls: Map<string, string>): Badge[] {
+  return badges.map((b) => (b.emote ? { ...b, emoteUrl: urls.get(b.emote) ?? b.emoteUrl } : b));
 }
 
 /**
@@ -24,7 +36,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "admin",
     label: "Admin",
-    emoji: null,
+    emote: null,
     color: "#f87171",
     description: "Administra o site",
     assignable: false,
@@ -33,7 +45,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "staff",
     label: "Moderador",
-    emoji: null,
+    emote: null,
     color: "#60a5fa",
     description: "Modera a comunidade",
     assignable: false,
@@ -42,7 +54,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "premium",
     label: "Premium",
-    emoji: null,
+    emote: null,
     color: "#ff3e6e",
     description: "Assinante Premium",
     assignable: false,
@@ -51,7 +63,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "early-adopter",
     label: "Pioneiro",
-    emoji: null,
+    emote: null,
     color: "#fbbf24",
     description: "Entrou no comecinho do projeto",
     assignable: false,
@@ -60,7 +72,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "words_100",
     label: "100 palavras",
-    emoji: null,
+    emote: null,
     color: "#4ade80",
     description: "Aprendeu 100 palavras",
     assignable: false,
@@ -69,7 +81,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "words_1000",
     label: "1.000 palavras",
-    emoji: null,
+    emote: null,
     color: "#4ade80",
     description: "Aprendeu 1.000 palavras",
     assignable: false,
@@ -78,7 +90,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "streak_7",
     label: "7 dias seguidos",
-    emoji: null,
+    emote: null,
     color: "#4ade80",
     description: "Estudou 7 dias seguidos",
     assignable: false,
@@ -87,7 +99,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "streak_30",
     label: "30 dias seguidos",
-    emoji: null,
+    emote: null,
     color: "#4ade80",
     description: "Estudou 30 dias seguidos",
     assignable: false,
@@ -96,7 +108,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "first_chapter",
     label: "Primeiro capítulo",
-    emoji: null,
+    emote: null,
     color: "#4ade80",
     description: "Leu o primeiro capítulo",
     assignable: false,
@@ -105,7 +117,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "read_10_works",
     label: "10 obras lidas",
-    emoji: null,
+    emote: null,
     color: "#2dd4bf",
     description: "Leu 10 obras diferentes",
     assignable: false,
@@ -114,7 +126,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "read_50_works",
     label: "50 obras lidas",
-    emoji: null,
+    emote: null,
     color: "#2dd4bf",
     description: "Leu 50 obras diferentes",
     assignable: false,
@@ -123,7 +135,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "read_100_chapters",
     label: "100 capítulos",
-    emoji: null,
+    emote: null,
     color: "#2dd4bf",
     description: "Leu 100 capítulos",
     assignable: false,
@@ -132,7 +144,7 @@ const DEFAULT_TAGS: CatalogTag[] = [
   {
     key: "read_500_chapters",
     label: "500 capítulos",
-    emoji: null,
+    emote: null,
     color: "#2dd4bf",
     description: "Leu 500 capítulos",
     assignable: false,
@@ -165,24 +177,28 @@ export async function manualBadgesForUsers(userIds: string[]): Promise<Map<strin
   if (!dbEnabled || userIds.length === 0) return out;
   const db = getDb();
   const { userTags, tags } = schema;
-  const rows = await db
-    .select({
-      userId: userTags.userId,
-      key: tags.key,
-      label: tags.label,
-      emoji: tags.emoji,
-      color: tags.color,
-      description: tags.description,
-    })
-    .from(userTags)
-    .innerJoin(tags, eq(userTags.tagKey, tags.key))
-    .where(inArray(userTags.userId, userIds));
+  const [rows, urls] = await Promise.all([
+    db
+      .select({
+        userId: userTags.userId,
+        key: tags.key,
+        label: tags.label,
+        emote: tags.emote,
+        color: tags.color,
+        description: tags.description,
+      })
+      .from(userTags)
+      .innerJoin(tags, eq(userTags.tagKey, tags.key))
+      .where(inArray(userTags.userId, userIds)),
+    emoteUrls(),
+  ]);
   for (const r of rows) {
     const badge: Badge = {
       key: r.key,
       label: r.label,
       tone: "special",
-      emoji: r.emoji ?? undefined,
+      emote: r.emote ?? undefined,
+      emoteUrl: r.emote ? urls.get(r.emote) : undefined,
       color: r.color ?? undefined,
       description: r.description ?? undefined,
     };
@@ -198,8 +214,13 @@ export async function resolveProfileBadges(
   signals: Parameters<typeof badgesFor>[0],
   userId: string,
 ): Promise<Badge[]> {
-  const map = catalogMap(await loadTagCatalog());
-  const auto = applyCatalog(badgesFor(signals), map);
-  const manual = applyCatalog((await manualBadgesForUsers([userId])).get(userId) ?? [], map);
+  const [catalog, manualByUser, urls] = await Promise.all([
+    loadTagCatalog(),
+    manualBadgesForUsers([userId]),
+    emoteUrls(),
+  ]);
+  const map = catalogMap(catalog);
+  const auto = withEmoteUrls(applyCatalog(badgesFor(signals), map), urls);
+  const manual = applyCatalog(manualByUser.get(userId) ?? [], map);
   return [...auto, ...manual];
 }

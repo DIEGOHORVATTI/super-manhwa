@@ -4,14 +4,14 @@ import { applyCatalog, badgesFor, chatBadges, type TagOverride } from "../lib/ba
 import { newlyUnlockedReading } from "../lib/reading";
 
 describe("applyCatalog", () => {
-  it("overlays catalog label/emoji/color by key and keeps unmatched badges", () => {
+  it("overlays catalog label/emote/color by key and keeps unmatched badges", () => {
     const map = new Map<string, TagOverride>([
-      ["admin", { key: "admin", label: "Chefe", emoji: "👑", color: "#fff" }],
+      ["admin", { key: "admin", label: "Chefe", emote: "crown", color: "#fff" }],
     ]);
     const out = applyCatalog(badgesFor({ role: "admin", plan: "premium" }), map);
     expect(out.find((b) => b.key === "admin")).toMatchObject({
       label: "Chefe",
-      emoji: "👑",
+      emote: "crown",
       color: "#fff",
     });
     expect(out.find((b) => b.key === "premium")?.label).toBe("Premium");
@@ -19,7 +19,7 @@ describe("applyCatalog", () => {
 
   it("keeps the code default when a catalog field is null/empty", () => {
     const map = new Map<string, TagOverride>([
-      ["premium", { key: "premium", label: "", emoji: null, color: null }],
+      ["premium", { key: "premium", label: "", emote: null, color: null }],
     ]);
     const out = applyCatalog(badgesFor({ plan: "premium" }), map);
     expect(out[0].label).toBe("Premium");

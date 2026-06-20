@@ -1,12 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { BadgeChip } from "@/components/Badge";
+import { Button } from "@/components/ui/Button";
+import { EmotePicker } from "@/components/ui/EmotePicker";
+import { Field, Input } from "@/components/ui/Field";
+import { useEmoteUrl } from "@/lib/use-emotes";
 import { rpc } from "@/lib/rpc/client";
 
 interface CatalogTag {
   key: string;
   label: string;
-  emoji: string | null;
+  emote: string | null;
   color: string | null;
   description: string | null;
   assignable: boolean;
@@ -16,16 +21,29 @@ interface CatalogTag {
 const blank = {
   key: "",
   label: "",
-  emoji: "",
+  emote: null as string | null,
   color: "#a78bfa",
   description: "",
   assignable: true,
 };
 
-const chipStyle = (color: string | null) =>
-  color ? { background: `color-mix(in srgb, ${color} 18%, transparent)`, color } : undefined;
+/** Live preview of a tag as the badge it will render to. */
+function TagPreview({ t }: { t: { label: string; emote: string | null; color: string | null } }) {
+  const emoteUrl = useEmoteUrl(t.emote);
+  return (
+    <BadgeChip
+      b={{
+        key: "preview",
+        tone: "special",
+        label: t.label || "rótulo",
+        emoteUrl,
+        color: t.color ?? undefined,
+      }}
+    />
+  );
+}
 
-/** CRUD for the badge catalog. Auto badges (assignable=false) are editable but not deletable-safe. */
+/** CRUD for the badge catalog. Assignable tags are the ones admins hand out. */
 export function AdminTags() {
   const [tags, setTags] = useState<CatalogTag[] | null>(null);
   const [draft, setDraft] = useState({ ...blank });
@@ -49,7 +67,7 @@ export function AdminTags() {
       await rpc.admin.tags.create({
         key: draft.key.trim(),
         label: draft.label.trim(),
-        emoji: draft.emoji.trim() || null,
+        emote: draft.emote,
         color: draft.color || null,
         description: draft.description.trim() || null,
         assignable: draft.assignable,
@@ -66,9 +84,9 @@ export function AdminTags() {
       await rpc.admin.tags.update({
         key: t.key,
         label: t.label,
-        emoji: t.emoji || null,
-        color: t.color || null,
-        description: t.description || null,
+        emote: t.emote,
+        color: t.color,
+        description: t.description,
         assignable: t.assignable,
         sortOrder: t.sortOrder,
       });
@@ -96,100 +114,118 @@ export function AdminTags() {
 
   return (
     <>
-      <h1 className="settings-title">Tags</h1>
-      <p className="muted">
-        Tags <em>atribuíveis</em> aparecem na lista de usuários para você dar/remover. As demais
-        (admin, premium, conquistas) são concedidas automaticamente — aqui você só edita o visual.
-      </p>
+      <header className="admin-page-head">
+        <h1 className="settings-title">Tags</h1>
+        <p className="muted">
+          Tags <em>atribuíveis</em> aparecem na lista de usuários para você dar/remover. As demais
+          (admin, premium, conquistas) são concedidas automaticamente — aqui você só edita o visual.
+        </p>
+      </header>
 
-      <div className="admin-tag-form">
-        <input
-          className="input"
-          placeholder="key (ex: vip)"
-          value={draft.key}
-          onChange={(e) => setDraft({ ...draft, key: e.target.value })}
-        />
-        <input
-          className="input"
-          placeholder="Rótulo"
-          value={draft.label}
-          onChange={(e) => setDraft({ ...draft, label: e.target.value })}
-        />
-        <input
-          className="input admin-tag-emoji"
-          placeholder="🏆"
-          value={draft.emoji}
-          onChange={(e) => setDraft({ ...draft, emoji: e.target.value })}
-        />
-        <input
-          type="color"
-          value={draft.color}
-          onChange={(e) => setDraft({ ...draft, color: e.target.value })}
-        />
-        <input
-          className="input"
-          placeholder="Descrição (tooltip)"
-          value={draft.description}
-          onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-        />
-        <label className="admin-tag-check">
-          <input
-            type="checkbox"
-            checked={draft.assignable}
-            onChange={(e) => setDraft({ ...draft, assignable: e.target.checked })}
-          />
-          atribuível
-        </label>
-        <button type="button" className="btn btn-primary" onClick={create}>
-          Criar
-        </button>
-      </div>
-      {error && <p className="form-error">{error}</p>}
-
-      <div className="admin-table">
-        {tags.map((t) => (
-          <div key={t.key} className="admin-row admin-tag-row">
-            <span className="badge badge-special" style={chipStyle(t.color)}>
-              {t.emoji ? `${t.emoji} ` : ""}
-              {t.label}
-            </span>
-            <code className="muted">{t.key}</code>
-            <input
-              className="input"
-              value={t.label}
-              onChange={(e) => patch(t.key, { label: e.target.value })}
+      <section className="admin-card-block">
+        <h2 className="admin-section-title">Nova tag</h2>
+        <div className="admin-form-grid">
+          <Field label="Key">
+            <Input
+              placeholder="vip"
+              value={draft.key}
+              onChange={(e) => setDraft({ ...draft, key: e.target.value })}
             />
-            <input
-              className="input admin-tag-emoji"
-              value={t.emoji ?? ""}
-              placeholder="emoji"
-              onChange={(e) => patch(t.key, { emoji: e.target.value })}
+          </Field>
+          <Field label="Rótulo">
+            <Input
+              placeholder="VIP"
+              value={draft.label}
+              onChange={(e) => setDraft({ ...draft, label: e.target.value })}
             />
+          </Field>
+          <Field label="Emote">
+            <EmotePicker value={draft.emote} onChange={(emote) => setDraft({ ...draft, emote })} />
+          </Field>
+          <Field label="Cor">
             <input
               type="color"
-              value={t.color ?? "#a78bfa"}
-              onChange={(e) => patch(t.key, { color: e.target.value })}
+              className="ui-color"
+              value={draft.color}
+              onChange={(e) => setDraft({ ...draft, color: e.target.value })}
             />
-            <input
-              className="input"
-              value={t.description ?? ""}
-              placeholder="descrição"
-              onChange={(e) => patch(t.key, { description: e.target.value })}
+          </Field>
+          <Field label="Descrição (tooltip)">
+            <Input
+              placeholder="Apoiador especial"
+              value={draft.description}
+              onChange={(e) => setDraft({ ...draft, description: e.target.value })}
             />
-            <label className="admin-tag-check">
+          </Field>
+          <Field label="Atribuível">
+            <label className="ui-switch">
               <input
                 type="checkbox"
-                checked={t.assignable}
-                onChange={(e) => patch(t.key, { assignable: e.target.checked })}
+                checked={draft.assignable}
+                onChange={(e) => setDraft({ ...draft, assignable: e.target.checked })}
               />
-              atribuível
+              <span>pode ser dada a usuários</span>
             </label>
-            <button type="button" className="comment-link" onClick={() => save(t)}>
-              Salvar
-            </button>
-            <button type="button" className="comment-link is-banned" onClick={() => remove(t.key)}>
-              Apagar
-            </button>
+          </Field>
+          <div className="admin-form-foot">
+            <TagPreview t={draft} />
+            <Button icon="circle-check-big" onClick={create} disabled={!draft.key || !draft.label}>
+              Criar tag
+            </Button>
+          </div>
+        </div>
+        {error && <p className="form-error">{error}</p>}
+      </section>
+
+      <h2 className="admin-section-title">Catálogo</h2>
+      <div className="admin-tag-list">
+        {tags.map((t) => (
+          <div key={t.key} className="admin-tag-card">
+            <div className="admin-tag-card-head">
+              <TagPreview t={t} />
+              <code className="muted">{t.key}</code>
+              {!t.assignable && <span className="muted admin-tag-auto">automática</span>}
+            </div>
+            <div className="admin-form-grid">
+              <Field label="Rótulo">
+                <Input value={t.label} onChange={(e) => patch(t.key, { label: e.target.value })} />
+              </Field>
+              <Field label="Emote">
+                <EmotePicker value={t.emote} onChange={(emote) => patch(t.key, { emote })} />
+              </Field>
+              <Field label="Cor">
+                <input
+                  type="color"
+                  className="ui-color"
+                  value={t.color ?? "#a78bfa"}
+                  onChange={(e) => patch(t.key, { color: e.target.value })}
+                />
+              </Field>
+              <Field label="Descrição">
+                <Input
+                  value={t.description ?? ""}
+                  onChange={(e) => patch(t.key, { description: e.target.value })}
+                />
+              </Field>
+              <Field label="Atribuível">
+                <label className="ui-switch">
+                  <input
+                    type="checkbox"
+                    checked={t.assignable}
+                    onChange={(e) => patch(t.key, { assignable: e.target.checked })}
+                  />
+                  <span>dar a usuários</span>
+                </label>
+              </Field>
+            </div>
+            <div className="admin-tag-card-actions">
+              <Button variant="ghost" size="sm" icon="circle-check-big" onClick={() => save(t)}>
+                Salvar
+              </Button>
+              <Button variant="danger" size="sm" icon="x" onClick={() => remove(t.key)}>
+                Apagar
+              </Button>
+            </div>
           </div>
         ))}
       </div>

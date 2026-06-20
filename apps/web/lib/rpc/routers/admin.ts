@@ -1,5 +1,5 @@
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { cacheChaptersOnRead, cacheWorkOnRead } from "@/lib/cache-works";
@@ -42,7 +42,8 @@ const usersRouter = {
         tags: (byUser.get(u.id) ?? []).map((b) => ({
           key: b.key,
           label: b.label,
-          emoji: b.emoji ?? null,
+          emote: b.emote ?? null,
+          emoteUrl: b.emoteUrl ?? null,
           color: b.color ?? null,
         })),
       })),
@@ -109,25 +110,66 @@ const usersRouter = {
 };
 
 const commentsRouter = {
-  list: staff.handler(async ({ context }) => {
-    const { comments, user } = schema;
-    const rows = await context.db
-      .select({
-        id: comments.id,
-        body: comments.body,
-        targetType: comments.targetType,
-        targetId: comments.targetId,
-        createdAt: comments.createdAt,
-        deletedAt: comments.deletedAt,
-        authorName: user.name,
-        authorHandle: user.handle,
-      })
-      .from(comments)
-      .leftJoin(user, eq(comments.userId, user.id))
-      .orderBy(desc(comments.createdAt))
-      .limit(100);
-    return { comments: rows };
-  }),
+  list: staff
+    .input(
+      z
+        .object({
+          limit: z.number().int().min(1).max(100).default(50),
+          offset: z.number().int().min(0).default(0),
+        })
+        .optional(),
+    )
+    .handler(async ({ input, context }) => {
+      const limit = input?.limit ?? 50;
+      const offset = input?.offset ?? 0;
+      const { comments, user, cachedChapters, cachedWorks } = schema;
+      const [rows, [tot]] = await Promise.all([
+        context.db
+          .select({
+            id: comments.id,
+            body: comments.body,
+            targetType: comments.targetType,
+            targetId: comments.targetId,
+            createdAt: comments.createdAt,
+            deletedAt: comments.deletedAt,
+            authorName: user.name,
+            authorHandle: user.handle,
+          })
+          .from(comments)
+          .leftJoin(user, eq(comments.userId, user.id))
+          .orderBy(desc(comments.createdAt))
+          .limit(limit)
+          .offset(offset),
+        context.db.select({ n: count() }).from(comments),
+      ]);
+
+      // Resolve the work each comment was on (chapter comments go through the
+      // cached chapter → its work), so moderators see the title, not an opaque id.
+      const workTargets = rows.filter((c) => c.targetType === "work").map((c) => c.targetId);
+      const chapterTargets = rows.filter((c) => c.targetType === "chapter").map((c) => c.targetId);
+      const chRows = chapterTargets.length
+        ? await context.db
+            .select({ chapterKey: cachedChapters.chapterKey, catalogId: cachedChapters.catalogId })
+            .from(cachedChapters)
+            .where(inArray(cachedChapters.chapterKey, chapterTargets))
+        : [];
+      const chapterToCatalog = new Map(chRows.map((r) => [r.chapterKey, r.catalogId]));
+      const catalogIds = [...workTargets, ...chRows.map((r) => r.catalogId)];
+      const titleRows = catalogIds.length
+        ? await context.db
+            .select({ catalogId: cachedWorks.catalogId, title: cachedWorks.title })
+            .from(cachedWorks)
+            .where(inArray(cachedWorks.catalogId, catalogIds))
+        : [];
+      const titleMap = new Map(titleRows.map((r) => [r.catalogId, r.title]));
+
+      const list = rows.map((c) => {
+        const workId =
+          c.targetType === "work" ? c.targetId : (chapterToCatalog.get(c.targetId) ?? null);
+        return { ...c, workTitle: workId ? (titleMap.get(workId) ?? null) : null };
+      });
+      return { comments: list, total: Number(tot?.n ?? 0) };
+    }),
 };
 
 const donationsRouter = {
@@ -283,7 +325,11 @@ const tagSchema = z.object({
     .max(40)
     .regex(/^[a-z0-9-]+$/, "Use minúsculas, números e hífens."),
   label: z.string().min(1).max(40),
-  emoji: z.string().max(8).nullish(),
+  emote: z
+    .string()
+    .max(40)
+    .regex(/^[a-z0-9_-]+$/i, "Nome de emote inválido.")
+    .nullish(),
   color: z
     .string()
     .regex(/^#[0-9a-fA-F]{6}$/, "Cor hex (#rrggbb).")
@@ -300,7 +346,7 @@ const tagsRouter = {
     await context.db.insert(schema.tags).values({
       key: input.key,
       label: input.label,
-      emoji: input.emoji ?? null,
+      emote: input.emote ?? null,
       color: input.color ?? null,
       description: input.description ?? null,
       assignable: input.assignable ?? true,
@@ -325,6 +371,37 @@ const tagsRouter = {
     }),
 };
 
+/** DMCA takedowns + contact submissions | a read-only inbox with cleanup. */
+const legalRouter = {
+  list: staff.handler(async ({ context }) => {
+    const { legalRequests } = schema;
+    const rows = await context.db
+      .select()
+      .from(legalRequests)
+      .orderBy(desc(legalRequests.createdAt))
+      .limit(300);
+    return {
+      requests: rows.map((r) => {
+        let fields: Record<string, unknown> = {};
+        try {
+          const parsed = JSON.parse(r.payload) as Record<string, unknown>;
+          // Drop the honeypot; it's always empty for real submissions.
+          const { hp: _hp, ...rest } = parsed;
+          fields = rest;
+        } catch {
+          fields = { payload: r.payload };
+        }
+        return { id: r.id, type: r.type, createdAt: r.createdAt, fields };
+      }),
+    };
+  }),
+
+  remove: staff.input(z.object({ id: z.number().int() })).handler(async ({ input, context }) => {
+    await context.db.delete(schema.legalRequests).where(eq(schema.legalRequests.id, input.id));
+    return { ok: true };
+  }),
+};
+
 export const adminRouter = {
   users: usersRouter,
   tags: tagsRouter,
@@ -333,4 +410,5 @@ export const adminRouter = {
   pixels: pixelsRouter,
   connectors: connectorsRouter,
   cache: cacheRouter,
+  legal: legalRouter,
 };

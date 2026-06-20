@@ -14,7 +14,10 @@ export function BadgeChip({ b, tip = false }: { b: Badge; tip?: boolean }) {
       className={`badge badge-${b.tone}${tip && b.description ? " has-tip" : ""}`}
       style={style}
     >
-      {b.emoji ? `${b.emoji} ` : ""}
+      {b.emoteUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={b.emoteUrl} alt="" className="badge-emote" />
+      )}
       {b.label}
       {tip && b.description && (
         <span className="badge-tip" role="tooltip">

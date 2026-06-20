@@ -1,4 +1,4 @@
-import { and, count, eq, sql } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { z } from "zod";
 
@@ -115,29 +115,113 @@ export const affiliateRouter = {
     return { ok: true };
   }),
 
-  /** Admin: affiliates with pending commission total + payout Pix key. */
-  adminList: staff.handler(async ({ context }) => {
-    const { affiliates, affiliateCommissions, user } = schema;
-    const rows = await context.db
-      .select({
-        id: affiliates.id,
-        code: affiliates.code,
-        pixKey: affiliates.pixKey,
-        name: user.name,
-        handle: user.handle,
-        pendingCents: sql<number>`coalesce(sum(case when ${affiliateCommissions.status} = 'pending' then ${affiliateCommissions.amountCents} else 0 end), 0)`,
-      })
-      .from(affiliates)
-      .leftJoin(user, eq(affiliates.userId, user.id))
-      .leftJoin(affiliateCommissions, eq(affiliateCommissions.affiliateId, affiliates.id))
-      .groupBy(affiliates.id, user.name, user.handle);
+  /**
+   * Admin dashboard: KPIs + per-affiliate breakdown, optionally scoped to one
+   * month (YYYY-MM). Commissions filter on their `period`; referrals on the month
+   * of their `createdAt`. Returns the list of months that have data for the picker.
+   */
+  adminList: staff
+    .input(
+      z
+        .object({
+          period: z
+            .string()
+            .regex(/^\d{4}-\d{2}$/)
+            .optional(),
+        })
+        .optional(),
+    )
+    .handler(async ({ input, context }) => {
+      const { affiliates, affiliateCommissions, referrals, user } = schema;
+      const period = input?.period;
+      const comWhere = period ? eq(affiliateCommissions.period, period) : undefined;
+      const refWhere = period
+        ? sql`to_char(${referrals.createdAt}, 'YYYY-MM') = ${period}`
+        : undefined;
 
-    return { affiliates: rows.map((r) => ({ ...r, pendingCents: Number(r.pendingCents) })) };
-  }),
+      const [base, refCounts, comAgg, periodRows] = await Promise.all([
+        context.db
+          .select({
+            id: affiliates.id,
+            code: affiliates.code,
+            pixKey: affiliates.pixKey,
+            ratePct: affiliates.ratePct,
+            name: user.name,
+            handle: user.handle,
+          })
+          .from(affiliates)
+          .leftJoin(user, eq(affiliates.userId, user.id)),
+        context.db
+          .select({ affiliateId: referrals.affiliateId, n: count() })
+          .from(referrals)
+          .where(refWhere)
+          .groupBy(referrals.affiliateId),
+        context.db
+          .select({
+            affiliateId: affiliateCommissions.affiliateId,
+            pendingCents: sql<number>`coalesce(sum(case when ${affiliateCommissions.status} = 'pending' then ${affiliateCommissions.amountCents} else 0 end), 0)`,
+            paidCents: sql<number>`coalesce(sum(case when ${affiliateCommissions.status} = 'paid' then ${affiliateCommissions.amountCents} else 0 end), 0)`,
+            conversions: sql<number>`count(distinct ${affiliateCommissions.referredUserId})`,
+          })
+          .from(affiliateCommissions)
+          .where(comWhere)
+          .groupBy(affiliateCommissions.affiliateId),
+        context.db
+          .selectDistinct({ period: affiliateCommissions.period })
+          .from(affiliateCommissions)
+          .orderBy(desc(affiliateCommissions.period)),
+      ]);
+
+      const refMap = new Map(refCounts.map((r) => [r.affiliateId, Number(r.n)]));
+      const comMap = new Map(
+        comAgg.map((c) => [
+          c.affiliateId,
+          {
+            pending: Number(c.pendingCents),
+            paid: Number(c.paidCents),
+            conversions: Number(c.conversions),
+          },
+        ]),
+      );
+
+      const list = base
+        .map((a) => {
+          const c = comMap.get(a.id);
+          return {
+            ...a,
+            referrals: refMap.get(a.id) ?? 0,
+            conversions: c?.conversions ?? 0,
+            pendingCents: c?.pending ?? 0,
+            paidCents: c?.paid ?? 0,
+          };
+        })
+        .sort((a, b) => b.pendingCents + b.paidCents - (a.pendingCents + a.paidCents));
+
+      const referralsTotal = list.reduce((s, a) => s + a.referrals, 0);
+      const conversionsTotal = list.reduce((s, a) => s + a.conversions, 0);
+      const kpis = {
+        affiliates: list.length,
+        referrals: referralsTotal,
+        conversions: conversionsTotal,
+        convRate: referralsTotal ? Math.round((conversionsTotal / referralsTotal) * 100) : 0,
+        pendingCents: list.reduce((s, a) => s + a.pendingCents, 0),
+        paidCents: list.reduce((s, a) => s + a.paidCents, 0),
+      };
+
+      return { kpis, affiliates: list, periods: periodRows.map((p) => p.period) };
+    }),
 
   /** Admin: mark an affiliate's pending commissions as paid (records a timestamp). */
   markPaid: staff
-    .input(z.object({ affiliateId: z.number().int().positive() }))
+    .input(
+      z.object({
+        affiliateId: z.number().int().positive(),
+        period: z
+          .string()
+          .regex(/^\d{4}-\d{2}$/)
+          .optional(),
+      }),
+    )
     .handler(async ({ input, context }) => {
       const { affiliateCommissions } = schema;
       await context.db
@@ -147,6 +231,7 @@ export const affiliateRouter = {
           and(
             eq(affiliateCommissions.affiliateId, input.affiliateId),
             eq(affiliateCommissions.status, "pending"),
+            input.period ? eq(affiliateCommissions.period, input.period) : undefined,
           ),
         );
       return { ok: true };

@@ -16,6 +16,24 @@ export function PosterGridSkeleton({ count = 18 }: { count?: number }) {
   );
 }
 
+/** Related-works placeholder | Suspense fallback while the relation lookups
+ *  stream in on the detail page. Mirrors the `.related-works` section + grid. */
+export function RelatedWorksSkeleton({ count = 6 }: { count?: number }) {
+  return (
+    <section className="related-works" aria-hidden="true">
+      <h2 className="section">Obras relacionadas</h2>
+      <div className="poster-grid">
+        {Array.from({ length: count }, (_, i) => (
+          <div key={i} className="poster">
+            <div className="poster-cover skel" />
+            <div className="skel skel-line" style={{ width: "80%", marginTop: 8 }} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 /** Chapter-grid placeholder | the Suspense fallback while the cross-source
  *  chapter fan-out streams in on the detail page. Mirrors `.chapters-grid`. */
 export function ChaptersGridSkeleton({ count = 18 }: { count?: number }) {

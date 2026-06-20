@@ -2,9 +2,10 @@
 import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
-import { SettingsModal } from "@/components/SettingsModal";
+import { SettingsView } from "@/components/SettingsView";
+import { Modal } from "@/components/ui/Modal";
 
-/** "Editar perfil" trigger on the profile page | opens the settings modal. */
+/** "Editar perfil" trigger on the profile page | opens settings in a modal. */
 export function EditProfileButton() {
   const [open, setOpen] = useState(false);
   return (
@@ -12,7 +13,9 @@ export function EditProfileButton() {
       <button type="button" className="btn btn-ghost" onClick={() => setOpen(true)}>
         <Icon name="pen-line" size={14} /> Editar perfil
       </button>
-      <SettingsModal open={open} onClose={() => setOpen(false)} />
+      <Modal open={open} onClose={() => setOpen(false)} title="Configurações" size="md">
+        <SettingsView />
+      </Modal>
     </>
   );
 }

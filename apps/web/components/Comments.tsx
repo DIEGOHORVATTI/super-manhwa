@@ -148,7 +148,7 @@ export function Comments({ targetType, targetId }: { targetType: Target; targetI
                     key: t.key,
                     label: t.label,
                     tone: "special",
-                    emoji: t.emoji ?? undefined,
+                    emoteUrl: t.emoteUrl ?? undefined,
                     color: t.color ?? undefined,
                   }}
                 />

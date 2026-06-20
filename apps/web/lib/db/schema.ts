@@ -510,7 +510,9 @@ export const userAchievements = pgTable(
 export const tags = pgTable("tags", {
   key: text("key").primaryKey(), // slug, e.g. "vip" or "admin"
   label: text("label").notNull(),
-  emoji: text("emoji"),
+  // Holds a custom emote name (:name:), resolved to an image URL on read. The
+  // physical column stays "emoji" (pre-existing) to avoid a shared-DB migration.
+  emote: text("emoji"),
   color: text("color"), // hex; null falls back to the tone CSS class
   description: text("description"),
   assignable: boolean("assignable").notNull().default(true),

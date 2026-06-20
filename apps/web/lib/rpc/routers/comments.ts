@@ -62,7 +62,8 @@ export const commentsRouter = {
         authorTags: (r.userId ? (tagsByUser.get(r.userId) ?? []) : []).map((b) => ({
           key: b.key,
           label: b.label,
-          emoji: b.emoji ?? null,
+          emote: b.emote ?? null,
+          emoteUrl: b.emoteUrl ?? null,
           color: b.color ?? null,
         })),
       }));

@@ -22,8 +22,10 @@ export interface Badge {
   tone: BadgeTone;
   /** Optional rule explanation, shown as a tooltip on the profile. */
   description?: string;
-  /** Optional leading emoji (from the editable catalog). */
-  emoji?: string;
+  /** Optional custom emote name (`:name:`, from the editable catalog). */
+  emote?: string;
+  /** Emote image URL, resolved from `emote` at the server boundary. */
+  emoteUrl?: string;
   /** Optional hex color (catalog override); falls back to the tone class. */
   color?: string;
 }
@@ -32,7 +34,7 @@ export interface Badge {
 export interface TagOverride {
   key: string;
   label?: string | null;
-  emoji?: string | null;
+  emote?: string | null;
   color?: string | null;
   description?: string | null;
 }
@@ -48,7 +50,7 @@ export function applyCatalog(badges: Badge[], catalog: Map<string, TagOverride>)
     return {
       ...b,
       label: c.label || b.label,
-      emoji: c.emoji ?? b.emoji,
+      emote: c.emote ?? b.emote,
       color: c.color ?? b.color,
       description: c.description ?? b.description,
     };

@@ -1,12 +1,15 @@
 "use client";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/Select";
 import { rpc } from "@/lib/rpc/client";
 
 interface Tag {
   key: string;
   label: string;
-  emoji: string | null;
+  emote: string | null;
+  emoteUrl: string | null;
   color: string | null;
 }
 
@@ -20,12 +23,20 @@ interface Row {
   tags: Tag[];
 }
 
-interface CatalogTag extends Tag {
+interface CatalogTag {
+  key: string;
+  label: string;
   assignable: boolean;
 }
 
 const chipStyle = (color: string | null) =>
   color ? { background: `color-mix(in srgb, ${color} 18%, transparent)`, color } : undefined;
+
+const ROLE_OPTIONS = [
+  { value: "user", label: "Usuário" },
+  { value: "staff", label: "Staff" },
+  { value: "admin", label: "Admin" },
+];
 
 /** User management: change role, ban/unban and hand out manual tags. */
 export function AdminUsers() {
@@ -83,71 +94,71 @@ export function AdminUsers() {
 
   return (
     <>
-      <h1 className="settings-title">Usuários</h1>
+      <header className="admin-page-head">
+        <h1 className="settings-title">Usuários</h1>
+        <p className="muted">{users.length} contas mais recentes.</p>
+      </header>
+
       <div className="admin-table">
-        {users.map((u) => (
-          <div key={u.id} className="admin-row">
-            <div className="admin-row-main">
-              <strong>{u.name}</strong>
-              <span className="muted">{u.email}</span>
-              {u.handle && <span className="muted">@{u.handle}</span>}
-              <div className="admin-tags">
-                {u.tags.map((t) => (
-                  <span key={t.key} className="badge badge-special" style={chipStyle(t.color)}>
-                    {t.emoji ? `${t.emoji} ` : ""}
-                    {t.label}
-                    <button
-                      type="button"
-                      className="admin-tag-x"
-                      aria-label={`Remover ${t.label}`}
-                      onClick={() => unassign(u.id, t.key)}
-                    >
-                      ×
-                    </button>
-                  </span>
-                ))}
+        {users.map((u) => {
+          const available = catalog.filter((t) => !u.tags.some((x) => x.key === t.key));
+          return (
+            <div key={u.id} className="admin-row">
+              <div className="admin-row-main">
+                <strong>{u.name}</strong>
+                <span className="muted">{u.email}</span>
+                {u.handle && <span className="muted">@{u.handle}</span>}
+                {u.tags.length > 0 && (
+                  <div className="admin-tags">
+                    {u.tags.map((t) => (
+                      <span key={t.key} className="badge badge-special" style={chipStyle(t.color)}>
+                        {t.emoteUrl && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={t.emoteUrl} alt="" className="badge-emote" />
+                        )}
+                        {t.label}
+                        <button
+                          type="button"
+                          className="admin-tag-x"
+                          aria-label={`Remover ${t.label}`}
+                          onClick={() => unassign(u.id, t.key)}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              <div className="admin-row-actions">
+                {available.length > 0 && (
+                  <Select
+                    aria-label="Adicionar tag"
+                    value=""
+                    onChange={(v) => assign(u.id, v)}
+                    options={[
+                      { value: "", label: "+ tag…" },
+                      ...available.map((t) => ({ value: t.key, label: t.label })),
+                    ]}
+                  />
+                )}
+                <Select
+                  aria-label="Papel"
+                  value={u.role}
+                  onChange={(v) => patch(u.id, { role: v as "user" | "staff" | "admin" })}
+                  options={ROLE_OPTIONS}
+                />
+                <Button
+                  variant={u.banned ? "ghost" : "danger"}
+                  size="sm"
+                  onClick={() => patch(u.id, { banned: !u.banned })}
+                >
+                  {u.banned ? "Desbanir" : "Banir"}
+                </Button>
               </div>
             </div>
-            <div className="admin-row-actions">
-              <select
-                className="select"
-                value=""
-                onChange={(e) => {
-                  assign(u.id, e.target.value);
-                  e.target.value = "";
-                }}
-              >
-                <option value="">+ tag…</option>
-                {catalog
-                  .filter((t) => !u.tags.some((x) => x.key === t.key))
-                  .map((t) => (
-                    <option key={t.key} value={t.key}>
-                      {t.emoji ? `${t.emoji} ` : ""}
-                      {t.label}
-                    </option>
-                  ))}
-              </select>
-              <select
-                className="select"
-                value={u.role}
-                onChange={(e) =>
-                  patch(u.id, { role: e.target.value as "user" | "staff" | "admin" })
-                }
-              >
-                <option value="user">user</option>
-                <option value="staff">staff</option>
-                <option value="admin">admin</option>
-              </select>
-              <button
-                type="button"
-                className={`comment-link${u.banned ? " is-banned" : ""}`}
-                onClick={() => patch(u.id, { banned: !u.banned })}
-              >
-                {u.banned ? "Desbanir" : "Banir"}
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </>
   );

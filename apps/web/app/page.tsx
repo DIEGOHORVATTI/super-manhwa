@@ -76,12 +76,24 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         <>
           {/* Continue reading now sits below the search/filters. */}
           <ContinueReading />
-          <PosterRow
-            title="Em tendência"
-            icon="flame"
-            items={trending.list.slice(0, SHELF_SIZE)}
-            moreHref="/?sort=trending"
-          />
+          <div className="trending-with-discord">
+            <PosterRow
+              title="Em tendência"
+              icon="flame"
+              items={trending.list.slice(0, SHELF_SIZE)}
+              moreHref="/?sort=trending"
+            />
+            <a
+              href={process.env.NEXT_PUBLIC_DISCORD_URL ?? "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="discord-side"
+              aria-label="Faça parte da nossa comunidade no Discord"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/discord.png" alt="Entre na nossa comunidade do Discord" loading="lazy" />
+            </a>
+          </div>
           <PosterRow
             title="Mais novos"
             icon="calendar-plus"
@@ -102,20 +114,6 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
           initialPage={page}
           hasNextPage={result.hasNextPage}
           params={listParams}
-          banner={
-            isLanding ? (
-              <a
-                href={process.env.NEXT_PUBLIC_DISCORD_URL ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="poster discord-card"
-                aria-label="Faça parte da nossa comunidade no Discord"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/discord.png" alt="Entre na nossa comunidade do Discord" loading="lazy" />
-              </a>
-            ) : undefined
-          }
         />
       )}
     </>
