@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { donationsEnabled } from "@/lib/flags";
 import { routes } from "@/lib/routes";
 
 const YEAR = new Date().getFullYear();
@@ -87,12 +88,14 @@ export function Footer() {
             </svg>
             Entrar no Discord
           </a>
-          <Link href={routes.donate} className="footer-donate">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
-              <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2.2 5 5.5 5c1.9 0 3.3 1 4.5 2.4C11.2 6 12.6 5 14.5 5 17.8 5 19.5 8.4 22 11.8 19.5 16.4 12 21 12 21Z" />
-            </svg>
-            Apoiar via Pix
-          </Link>
+          {donationsEnabled && (
+            <Link href={routes.donate} className="footer-donate">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden>
+                <path d="M12 21s-7.5-4.6-10-9.2C.5 8.4 2.2 5 5.5 5c1.9 0 3.3 1 4.5 2.4C11.2 6 12.6 5 14.5 5 17.8 5 19.5 8.4 22 11.8 19.5 16.4 12 21 12 21Z" />
+              </svg>
+              Apoiar via Pix
+            </Link>
+          )}
         </div>
 
         <nav className="footer-col" aria-label="Explorar">
@@ -107,7 +110,7 @@ export function Footer() {
           <h3>Comunidade</h3>
           <Link href={routes.about}>Sobre nós</Link>
           <Link href={routes.contact}>Contato</Link>
-          <Link href={routes.donate}>Doar</Link>
+          {donationsEnabled && <Link href={routes.donate}>Doar</Link>}
         </nav>
 
         <nav className="footer-col" aria-label="Legal">

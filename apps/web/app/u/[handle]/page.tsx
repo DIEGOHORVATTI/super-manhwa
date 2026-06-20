@@ -9,6 +9,7 @@ import { ReadingHeatmap } from "@/components/profile/ReadingHeatmap";
 import { EditProfileButton } from "@/components/EditProfileButton";
 import { EditableAvatar, EditableBanner } from "@/components/profile/EditableProfileImages";
 import { BadgeChip } from "@/components/Badge";
+import { Cover } from "@/components/Cover";
 import { getCurrentUser } from "@/lib/auth/session";
 import { loadProfileData } from "@/lib/profile-data";
 import { resolveProfileBadges } from "@/lib/tags";
@@ -102,14 +103,14 @@ export default async function ProfilePage({ params }: { params: Params }) {
 
       <ProfileStats
         stats={[
-          { label: "reputação", value: reputation, icon: "⭐" },
-          { label: "comentários", value: commentsCount, icon: "💬" },
-          { label: "capítulos lidos", value: reading.chapters, icon: "📖" },
-          { label: "obras lidas", value: reading.works, icon: "📚" },
-          { label: "XP", value: user.xp, icon: "✨" },
-          { label: "dias de streak", value: user.streakDays, icon: "🔥" },
-          { label: "palavras", value: wordsLearned, icon: "🧠" },
-          { label: "obras publicadas", value: works.length, icon: "🎨" },
+          { label: "reputação", value: reputation, icon: "star" },
+          { label: "comentários", value: commentsCount, icon: "message-square" },
+          { label: "capítulos lidos", value: reading.chapters, icon: "book-open" },
+          { label: "obras lidas", value: reading.works, icon: "library" },
+          { label: "XP", value: user.xp, icon: "sparkles" },
+          { label: "dias de streak", value: user.streakDays, icon: "flame" },
+          { label: "palavras", value: wordsLearned, icon: "brain" },
+          { label: "obras publicadas", value: works.length, icon: "palette" },
         ]}
       />
 
@@ -124,10 +125,17 @@ export default async function ProfilePage({ params }: { params: Params }) {
         {works.length === 0 ? (
           <p className="muted">Nenhuma obra publicada ainda.</p>
         ) : (
-          <div className="profile-works">
+          <div className="poster-grid">
             {works.map((w) => (
-              <Link key={w.id} href={routes.obra(w.slug)} className="profile-work">
-                {w.title}
+              <Link key={w.id} href={routes.obra(w.slug)} className="poster">
+                <div className="poster-cover">
+                  <Cover
+                    src={w.coverR2Key && r2Enabled ? publicUrlFor(w.coverR2Key) : undefined}
+                    alt={w.title}
+                    sizes="160px"
+                  />
+                </div>
+                <span className="poster-name">{w.title}</span>
               </Link>
             ))}
           </div>

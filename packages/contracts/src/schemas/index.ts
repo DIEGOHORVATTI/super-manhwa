@@ -8,5 +8,6 @@ export * from "./donation";
 export * from "./learn";
 export * from "./legal";
 export * from "./newsletter";
+export * from "./org";
 export * from "./profile";
 export * from "./studio";

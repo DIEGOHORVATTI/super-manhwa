@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Icon } from "@/components/Icon";
 import { authClient } from "@/lib/auth/client";
+import { googleAuthEnabled } from "@/lib/flags";
 import { routes } from "@/lib/routes";
 
 type Mode = "login" | "signup" | "forgot" | "reset";
@@ -168,7 +169,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             {copy.sub}
           </p>
 
-          {showSocial && (
+          {showSocial && googleAuthEnabled && (
             <>
               <button type="button" className="auth-google" onClick={google} disabled={busy}>
                 <svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">

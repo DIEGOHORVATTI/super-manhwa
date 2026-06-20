@@ -4,7 +4,7 @@ import { ContinueReading } from "@/components/ContinueReading";
 import { ExploreFilters } from "@/components/ExploreFilters";
 import { InfiniteList } from "@/components/InfiniteList";
 import { PosterRow } from "@/components/PosterRow";
-import { api } from "@/lib/orpc.server";
+import { api, apiFresh } from "@/lib/orpc.server";
 import { translateSummaries } from "@/lib/translate";
 
 const SHELF_SIZE = 15;
@@ -12,7 +12,14 @@ const SHELF_SIZE = 15;
 const SORTS: ReadonlyArray<MangaSort> = ["popular", "trending", "newest"];
 const STATUSES: ReadonlyArray<MangaStatus> = ["ongoing", "completed", "hiatus", "cancelled"];
 
-type SP = Promise<{ q?: string; genre?: string; status?: string; sort?: string; page?: string }>;
+type SP = Promise<{
+  q?: string;
+  genre?: string;
+  status?: string;
+  sort?: string;
+  format?: string;
+  page?: string;
+}>;
 
 // Every filter/sort/page variant is the same landing content reshuffled, so they
 // all canonicalize to "/" | keeping Google's index on one strong home URL.
@@ -33,16 +40,19 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
     ? (sp.status as MangaStatus)
     : undefined;
   const sort: MangaSort = SORTS.includes(sp.sort as MangaSort) ? (sp.sort as MangaSort) : "popular";
+  const format =
+    sp.format === "novel" || sp.format === "manga" ? (sp.format as "novel" | "manga") : undefined;
   const page = Math.max(1, Number.parseInt(sp.page ?? "1", 10) || 1);
 
-  const isLanding = q === "" && !genre && !status && sort === "popular" && page === 1;
+  const isLanding = q === "" && !genre && !status && !format && sort === "popular" && page === 1;
   const searching = q.length >= 2;
 
-  const [genresRes, result, trending, newest] = await Promise.all([
+  const browseArgs = { lang: "pt-br", genre: genre || undefined, status, sort, format, page };
+  const [genresRes, browseResult, trending, newest] = await Promise.all([
     api.manga.genres({ lang: "pt-br" }).catch(() => ({ genres: [] })),
     (searching
       ? api.manga.search({ lang: "pt-br", q, genre: genre || undefined, status, page })
-      : api.manga.popular({ lang: "pt-br", genre: genre || undefined, status, sort, page })
+      : api.manga.popular(browseArgs)
     ).catch(() => ({ list: [], hasNextPage: false })),
     isLanding
       ? api.manga.popular({ lang: "pt-br", sort: "trending", page: 1 }).catch(() => ({ list: [] }))
@@ -51,6 +61,13 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
       ? api.manga.popular({ lang: "pt-br", sort: "newest", page: 1 }).catch(() => ({ list: [] }))
       : Promise.resolve({ list: [] }),
   ]);
+
+  // A browse listing should never be empty because of a transient upstream blip
+  // that the 6h catalog cache then pins | retry once uncached before giving up.
+  const result =
+    !searching && browseResult.list.length === 0
+      ? await apiFresh.manga.popular(browseArgs).catch(() => browseResult)
+      : browseResult;
 
   // Grid descriptions show on hover | translate them to pt-br (rows don't).
   const list = await translateSummaries(result.list);
@@ -61,6 +78,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
   if (genre) listParams.genre = genre;
   if (status) listParams.status = status;
   if (sort !== "popular") listParams.sort = sort;
+  if (format) listParams.format = format;
 
   return (
     <>
@@ -70,6 +88,7 @@ export default async function Home({ searchParams }: { searchParams: SP }) {
         genre={genre}
         status={status ?? ""}
         sort={sort}
+        format={format ?? ""}
       />
 
       {isLanding && (

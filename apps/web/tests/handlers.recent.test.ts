@@ -57,14 +57,13 @@ mock.module("@/lib/perms", () => ({
 mock.module("@/lib/reading-sync", () => ({
   syncReadingAchievements: async () => readingUnlocked,
 }));
-mock.module("@/lib/orpc.server", () => ({
-  api: {
-    manga: {
-      popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
-      search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
-    },
+const orpcApiMock = {
+  manga: {
+    popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
+    search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
   },
-}));
+};
+mock.module("@/lib/orpc.server", () => ({ api: orpcApiMock, apiFresh: orpcApiMock }));
 mock.module("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) => (name === "ref" && refCookie ? { value: refCookie } : undefined),

@@ -87,6 +87,9 @@ export function UserMenu() {
           <Link href={routes.library} role="menuitem" onClick={() => setOpen(false)}>
             <Icon name="heart" size={15} /> Biblioteca
           </Link>
+          <Link href={routes.orgs} role="menuitem" onClick={() => setOpen(false)}>
+            <Icon name="layout-dashboard" size={15} /> Organizações
+          </Link>
           <button
             type="button"
             role="menuitem"

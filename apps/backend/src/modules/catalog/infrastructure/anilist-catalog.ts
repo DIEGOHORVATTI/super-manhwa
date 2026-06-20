@@ -1,4 +1,4 @@
-import type { MangaStatus } from "@packages/contracts";
+import type { MangaStatus, WorkFormat } from "@packages/contracts";
 import { httpFetch } from "@/shared/http-fetch";
 
 import type {
@@ -28,6 +28,7 @@ const MEDIA_FIELDS = `
   genres
   averageScore
   status
+  format
   chapters
   description(asHtml: false)
 `;
@@ -44,6 +45,7 @@ interface MediaNode {
   genres?: Array<string | null>;
   averageScore?: number | null;
   status?: string | null;
+  format?: string | null;
   chapters?: number | null;
   bannerImage?: string | null;
   description?: string | null;
@@ -87,6 +89,8 @@ const toItem = (m: MediaNode): CatalogItem => ({
   status: m.status ? STATUS_MAP[m.status] : undefined,
   genres: (m.genres ?? []).filter((g): g is string => !!g),
   score: m.averageScore ?? undefined,
+  // AniList only distinguishes NOVEL; everything else reads as paginated manga.
+  format: m.format === "NOVEL" ? "novel" : undefined,
   chapters: m.chapters ?? undefined,
   description: shortDesc(m.description),
 });
@@ -124,17 +128,22 @@ const statusFilterFor = (sort: CatalogSort, status?: MangaStatus): string | unde
   return undefined;
 };
 
-/** Build a paginated browse query for a sort/genre/status combination. */
+/** Build a paginated browse query for a sort/genre/status/format combination. */
 const buildListQuery = (
   sort: CatalogSort,
   genre?: string,
   status?: MangaStatus,
+  format?: WorkFormat,
 ): { query: string; vars: Record<string, unknown> } => {
   const filters = [`sort: ${SORT_BY[sort]}`];
   const decls = ["$page: Int", "$perPage: Int"];
   const statusFilter = statusFilterFor(sort, status);
   if (statusFilter) filters.push(`status: ${statusFilter}`);
   else if (sort === "newest") filters.push("status_not: NOT_YET_RELEASED");
+  // AniList groups light novels under type MANGA, tagged format NOVEL. A `novel`
+  // filter keeps only those; any image format (manga/manhwa/manhua) excludes them.
+  if (format === "novel") filters.push("format: NOVEL");
+  else if (format) filters.push("format_not: NOVEL");
   if (genre) {
     filters.push("genre: $genre");
     decls.push("$genre: String");
@@ -200,8 +209,8 @@ export const makeAniListCatalog = (): CatalogSource => ({
     return listFrom(gql, { ...vars, search: query, page, perPage: PER_PAGE });
   },
 
-  list: ({ sort, genre, status, page }) => {
-    const { query, vars } = buildListQuery(sort, genre, status);
+  list: ({ sort, genre, status, format, page }) => {
+    const { query, vars } = buildListQuery(sort, genre, status, format);
     return listFrom(query, { ...vars, page, perPage: PER_PAGE });
   },
 

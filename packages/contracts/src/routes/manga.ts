@@ -16,6 +16,7 @@ import {
   metaResultSchema,
   pagesResultSchema,
   suggestResultSchema,
+  workFormatSchema,
 } from "../schemas/manga";
 
 const prefix = oc.route({ tags: ["Manga"] });
@@ -33,6 +34,8 @@ export const manga = oc.prefix("/manga").router({
         genre: z.string().optional(),
         status: mangaStatusSchema.optional(),
         sort: mangaSortSchema.default("popular"),
+        /** Editorial format filter | `novel` lists only light novels. */
+        format: workFormatSchema.optional(),
       }),
     )
     .output(mangaListSchema),

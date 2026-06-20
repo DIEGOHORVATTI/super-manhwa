@@ -59,9 +59,6 @@ export function LearnDashboard() {
         <h1 className="settings-title" style={{ margin: 0 }}>
           Aprender
         </h1>
-        <span className={`status-badge ${stats.plan === "premium" ? "status-published" : ""}`}>
-          {stats.plan === "premium" ? "Premium" : "Grátis"}
-        </span>
       </div>
 
       <div className="learn-stats">
@@ -120,34 +117,16 @@ export function LearnDashboard() {
         )}
       </section>
 
-      {stats.entitlements.canExportAnki && (
-        <section className="settings-card">
-          <h2>Ferramentas Premium</h2>
-          <a
-            href={routes.api.learnExport}
-            className="auth-google"
-            style={{ alignSelf: "flex-start" }}
-          >
-            Exportar cards pro Anki (.tsv)
-          </a>
-        </section>
-      )}
-
-      {stats.plan !== "premium" && (
-        <section className="settings-card">
-          <h2>Premium</h2>
-          <p className="muted">
-            Palavras e cards ilimitados, sentence mining, estatísticas e export pro Anki.
-          </p>
-          <Link
-            href={routes.learnPremium}
-            className="auth-submit"
-            style={{ alignSelf: "flex-start" }}
-          >
-            Assinar Premium
-          </Link>
-        </section>
-      )}
+      <section className="settings-card">
+        <h2>Exportar para o Anki</h2>
+        <a
+          href={routes.api.learnExport}
+          className="auth-google"
+          style={{ alignSelf: "flex-start" }}
+        >
+          Exportar cards (.tsv)
+        </a>
+      </section>
     </div>
   );
 }

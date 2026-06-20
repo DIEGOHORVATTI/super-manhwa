@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { Autocomplete } from "@/components/Autocomplete";
 import { Icon, type IconName } from "@/components/Icon";
 import { UserMenu } from "@/components/UserMenu";
+import { donationsEnabled } from "@/lib/flags";
 import { routes } from "@/lib/routes";
 
 /**
@@ -21,7 +22,10 @@ import { routes } from "@/lib/routes";
 const NAV: ReadonlyArray<{ href: string; label: string; icon: IconName; sort: string | null }> = [
   { href: routes.home, label: "Explorar", icon: "house", sort: null },
   { href: routes.library, label: "Biblioteca", icon: "heart", sort: null },
-  { href: routes.donate, label: "Doação", icon: "hand-heart", sort: null },
+  // Donations are hidden for now (see lib/flags).
+  ...(donationsEnabled
+    ? [{ href: routes.donate, label: "Doação", icon: "hand-heart" as IconName, sort: null }]
+    : []),
 ];
 
 /** A NAV entry is a home catalog filter (`/`, `/?sort=`) or a standalone page. */

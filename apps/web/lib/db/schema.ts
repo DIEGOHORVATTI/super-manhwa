@@ -200,12 +200,23 @@ export const donations = pgTable("donations", {
  * Teams grant collaborators scoped roles; chapters move through a draft → review
  * → scheduled → published lifecycle with pages stored in R2.
  */
+/**
+ * A team backs every work for collaboration. When it also carries a `slug` it is
+ * a public-facing **Organização** (a scanlation group / studio) that aggregates
+ * many works and a roster of members — the auto-created per-work teams keep a
+ * null slug and stay private. `isPublic` gates the directory + public page.
+ */
 export const teams = pgTable("teams", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   ownerId: text("owner_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  slug: text("slug").unique(), // set ⇒ this team is an Organização (public identity)
+  bio: text("bio"),
+  avatarR2Key: text("avatar_r2_key"),
+  bannerR2Key: text("banner_r2_key"),
+  isPublic: boolean("is_public").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

@@ -3728,33 +3728,54 @@ html[data-reader] .footer {
   gap: 6px;
   margin-top: 8px;
 }
+/* All KPIs on a single row | equal narrow columns, horizontal scroll on small
+   screens so they never wrap to a second line. */
 .profile-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
-  gap: 10px;
-  margin: 18px 0 28px;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(76px, 1fr);
+  gap: 8px;
+  margin: 16px 0 26px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  padding-bottom: 2px;
 }
 .profile-stat {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  padding: 14px 8px;
+  gap: 4px;
+  padding: 11px 6px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+  transition: border-color 0.12s;
+}
+.profile-stat:hover {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
 }
 .profile-stat-icon {
-  font-size: 19px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent);
 }
 .profile-stat-value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
+  line-height: 1;
 }
 .profile-stat-label {
-  font-size: 11px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--muted);
   text-align: center;
+  line-height: 1.2;
 }
 .profile-section {
   margin-bottom: 30px;
@@ -3765,23 +3786,86 @@ html[data-reader] .footer {
   justify-content: space-between;
   gap: 10px;
 }
-/* Reading heatmap */
+/* Reading heatmap | columns flex to fill the width, so it resizes instead of
+   scrolling. Cells stay square via aspect-ratio. */
+.heatmap-months {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.heatmap-month {
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1;
+  color: var(--muted);
+  white-space: nowrap;
+}
 .heatmap {
   display: flex;
   gap: 3px;
-  overflow-x: auto;
-  padding: 4px 0 6px;
+  width: 100%;
+  padding-bottom: 2px;
 }
 .heatmap-col {
   display: flex;
   flex-direction: column;
   gap: 3px;
+  flex: 1 1 0;
+  min-width: 0;
 }
 .heatmap-cell {
-  width: 11px;
-  height: 11px;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
   border-radius: 2px;
   background: var(--surface-2);
+}
+.heatmap-cell:hover {
+  outline: 1.5px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline-offset: -1px;
+  z-index: 5;
+}
+/* Today's cell: a persistent ring (box-shadow so it coexists with hover). */
+.heatmap-cell.is-today {
+  box-shadow: 0 0 0 1.6px var(--text);
+}
+/* Custom popover on hover (replaces the native title). */
+.heatmap-cell[data-tip]:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 7px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  padding: 5px 9px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: 0 12px 26px -10px rgba(0, 0, 0, 0.7);
+}
+.heatmap-cell[data-tip]:hover::before {
+  content: "";
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  border: 5px solid transparent;
+  border-top-color: var(--border);
+  pointer-events: none;
+}
+/* Mobile: show only the most recent ~17 weeks (today backwards), no scroll. */
+@media (max-width: 600px) {
+  .heatmap-col:nth-last-child(n + 18),
+  .heatmap-month:nth-last-child(n + 18) {
+    display: none;
+  }
 }
 .heatmap-l0 {
   background: var(--surface-2);
@@ -3802,8 +3886,14 @@ html[data-reader] .footer {
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 11px;
+}
+.heatmap-legend .heatmap-cell {
+  flex: none;
+  width: 11px;
+  height: 11px;
+  aspect-ratio: auto;
 }
 /* AniList panel */
 .anilist-link {
@@ -6130,4 +6220,129 @@ html[data-reader] .footer {
   border-radius: 6px;
   padding: 3px 8px;
   z-index: 3;
+}
+
+/* ───────────────────────── Organizações ───────────────────────── */
+.orgs-wrap {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 24px 0 60px;
+}
+/* textarea/select share the input look inside auth-field */
+.auth-field textarea,
+.auth-field select {
+  width: 100%;
+  padding: 12px 13px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+.auth-checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
+.auth-checkbox input {
+  width: auto;
+}
+.btn-link {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  padding: 0;
+}
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Directory grid */
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.org-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  color: inherit;
+  text-decoration: none;
+}
+.org-card:hover {
+  border-color: var(--accent);
+}
+.org-avatar,
+.org-page-avatar {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  font-size: 22px;
+  font-weight: 700;
+  overflow: hidden;
+}
+.org-avatar img,
+.org-page-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.org-page-avatar {
+  width: 80px;
+  height: 80px;
+  font-size: 32px;
+}
+.org-card-bio {
+  font-size: 12px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Members / works rows in management */
+.org-members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.org-member-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.org-member-row > span:first-child {
+  flex: 1;
+}
+
+/* Public page team chips */
+.org-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.org-team-chip {
+  padding: 6px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 13px;
 }
