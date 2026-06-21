@@ -1,16 +1,32 @@
+import { randomUUID } from "node:crypto";
+
 import { ORPCError } from "@orpc/server";
+import { render } from "@react-email/render";
 import {
   orgCreateSchema,
+  orgInviteSchema,
   orgMemberAddSchema,
   orgUpdateSchema,
   slugifyOrg,
 } from "@packages/contracts";
+import { OrgInviteEmail } from "@packages/emails";
 import { and, desc, eq, isNotNull, ne } from "drizzle-orm";
 import { z } from "zod";
 
+import { emailEnabled, sendEmail } from "@/lib/email";
+import { env } from "@/lib/env";
+import { publicUrlFor, r2Enabled } from "@/lib/r2";
+import { routes } from "@/lib/routes";
 import * as schema from "@/lib/db/schema";
 import { authed } from "../base";
 import type { RpcDb } from "../context";
+
+/** Role label for the invitation e-mail. */
+const ROLE_PT: Record<string, string> = {
+  editor: "Editor",
+  translator: "Tradutor",
+  reviewer: "Revisor",
+};
 
 /**
  * Organização surface | a team that carries a public `slug` is an Organização
@@ -75,10 +91,10 @@ export const orgRouter = {
     return { orgs };
   }),
 
-  /** Owner's management view: identity + members + the caller's works (to
-   *  attach/detach). One call backs the whole manage page. */
+  /** Owner's management view: identity + members + pending invites + the
+   *  caller's works (to attach/detach). One call backs the whole manage page. */
   manage: authed.input(orgIdInput).handler(async ({ input, context }) => {
-    const { teams, teamMembers, userWorks, user } = schema;
+    const { teams, teamMembers, orgInvitations, userWorks, user } = schema;
     const [org] = await context.db.select().from(teams).where(eq(teams.id, input.id)).limit(1);
     if (!org || !org.slug) throw new ORPCError("NOT_FOUND");
     if (org.ownerId !== context.user.id) throw new ORPCError("FORBIDDEN");
@@ -94,6 +110,12 @@ export const orgRouter = {
       .leftJoin(user, eq(teamMembers.userId, user.id))
       .where(eq(teamMembers.teamId, org.id));
 
+    const invitations = await context.db
+      .select({ id: orgInvitations.id, email: orgInvitations.email, role: orgInvitations.role })
+      .from(orgInvitations)
+      .where(and(eq(orgInvitations.teamId, org.id), eq(orgInvitations.status, "pending")))
+      .orderBy(desc(orgInvitations.createdAt));
+
     const myWorks = await context.db
       .select({
         id: userWorks.id,
@@ -106,8 +128,107 @@ export const orgRouter = {
       .where(eq(userWorks.ownerId, context.user.id))
       .orderBy(desc(userWorks.createdAt));
 
-    return { org, members, myWorks };
+    const avatarUrl = org.avatarR2Key && r2Enabled ? publicUrlFor(org.avatarR2Key) : null;
+    const bannerUrl = org.bannerR2Key && r2Enabled ? publicUrlFor(org.bannerR2Key) : null;
+
+    return { org, members, invitations, myWorks, avatarUrl, bannerUrl };
   }),
+
+  invite: {
+    /** Invite someone by e-mail (owner only). Returns the link too, so the owner
+     *  can share it manually when e-mail isn't configured. */
+    send: authed
+      .input(orgInviteSchema.extend(orgIdInput.shape))
+      .handler(async ({ input, context }) => {
+        if (!(await ownsOrg(context.db, input.id, context.user.id))) {
+          throw new ORPCError("FORBIDDEN");
+        }
+        const { teams, orgInvitations } = schema;
+        const [org] = await context.db
+          .select({ name: teams.name })
+          .from(teams)
+          .where(eq(teams.id, input.id))
+          .limit(1);
+        if (!org) throw new ORPCError("NOT_FOUND");
+
+        const token = randomUUID();
+        await context.db.insert(orgInvitations).values({
+          teamId: input.id,
+          email: input.email,
+          role: input.role,
+          token,
+          invitedBy: context.user.id,
+        });
+
+        const base = context.headers.get("origin") ?? env.BETTER_AUTH_URL ?? "";
+        const link = `${base}${routes.orgInvite(token)}`;
+        if (emailEnabled) {
+          try {
+            const html = await render(
+              OrgInviteEmail({ url: link, orgName: org.name, role: ROLE_PT[input.role] }),
+            );
+            await sendEmail({
+              to: input.email,
+              subject: `Convite para ${org.name} | Super Manhwa`,
+              html,
+            });
+          } catch {
+            // e-mail failed | the owner still has the link to share manually
+          }
+        }
+        return { ok: true, link };
+      }),
+
+    /** Revoke a pending invite (owner only). */
+    revoke: authed
+      .input(orgIdInput.extend({ inviteId: z.number().int().positive() }))
+      .handler(async ({ input, context }) => {
+        if (!(await ownsOrg(context.db, input.id, context.user.id))) {
+          throw new ORPCError("FORBIDDEN");
+        }
+        const { orgInvitations } = schema;
+        await context.db
+          .update(orgInvitations)
+          .set({ status: "revoked" })
+          .where(and(eq(orgInvitations.id, input.inviteId), eq(orgInvitations.teamId, input.id)));
+        return { ok: true };
+      }),
+
+    /** Accept an invite (the signed-in user must own the invited e-mail). */
+    accept: authed.input(z.object({ token: z.string() })).handler(async ({ input, context }) => {
+      const { orgInvitations, teamMembers, teams } = schema;
+      const [inv] = await context.db
+        .select()
+        .from(orgInvitations)
+        .where(eq(orgInvitations.token, input.token))
+        .limit(1);
+      if (!inv || inv.status !== "pending") {
+        throw new ORPCError("NOT_FOUND", { message: "Convite inválido ou já usado." });
+      }
+      if ((context.user.email ?? "").toLowerCase() !== inv.email.toLowerCase()) {
+        throw new ORPCError("FORBIDDEN", { message: "Este convite é para outro e-mail." });
+      }
+
+      await context.db
+        .insert(teamMembers)
+        .values({ teamId: inv.teamId, userId: context.user.id, role: inv.role })
+        .onConflictDoUpdate({
+          target: [teamMembers.teamId, teamMembers.userId],
+          set: { role: inv.role },
+        });
+      await context.db
+        .update(orgInvitations)
+        .set({ status: "accepted" })
+        .where(eq(orgInvitations.id, inv.id));
+
+      const [org] = await context.db
+        .select({ slug: teams.slug })
+        .from(teams)
+        .where(eq(teams.id, inv.teamId))
+        .limit(1);
+      return { ok: true, slug: org?.slug ?? null };
+    }),
+  },
 
   /** Edit org identity (owner only). */
   update: authed

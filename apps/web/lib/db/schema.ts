@@ -236,6 +236,25 @@ export const teamMembers = pgTable(
   (t) => [uniqueIndex("team_member_uniq").on(t.teamId, t.userId)],
 );
 
+/** Pending e-mail invitations to join an Organização (a team) with a role. The
+ *  invitee accepts via the tokenized link; accepting writes a `teamMembers` row. */
+export const orgInvitations = pgTable(
+  "org_invitations",
+  {
+    id: serial("id").primaryKey(),
+    teamId: integer("team_id")
+      .notNull()
+      .references(() => teams.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull().default("translator"), // editor | translator | reviewer
+    token: text("token").notNull().unique(),
+    invitedBy: text("invited_by").references(() => user.id, { onDelete: "set null" }),
+    status: text("status").notNull().default("pending"), // pending | accepted | revoked
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("org_invitation_team_idx").on(t.teamId)],
+);
+
 export const userWorks = pgTable(
   "user_works",
   {

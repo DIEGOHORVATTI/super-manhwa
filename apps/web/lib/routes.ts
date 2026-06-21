@@ -65,6 +65,7 @@ export const routes = {
   manga: (id: string, name: string) => mangaHref(id, name),
   org: (slug: string) => `/org/${slug}`,
   orgManage: (id: string | number) => `/orgs/${id}`,
+  orgInvite: (token: string) => `/orgs/invite/${token}`,
   obra: (slug: string) => `/obra/${slug}`,
   obraChapter: (slug: string, chapterId: string | number) => `/obra/${slug}/${chapterId}`,
   user: (handle: string) => `/u/${handle}`,
@@ -97,6 +98,10 @@ export const routes = {
       cover: (workId: string | number) => `/api/studio/works/${workId}/cover`,
       chapters: (workId: string | number) => `/api/studio/works/${workId}/chapters`,
       pages: (chapterId: string | number) => `/api/studio/chapters/${chapterId}/pages`,
+    },
+    org: {
+      avatar: (id: string | number) => `/api/org/${id}/avatar`,
+      banner: (id: string | number) => `/api/org/${id}/banner`,
     },
     profile: {
       banner: "/api/profile/banner",
