@@ -40,3 +40,9 @@ export const orgMemberAddSchema = z.object({
   handle: z.string().trim().toLowerCase(),
   role: orgMemberRoleSchema,
 });
+
+/** Invite someone to the org by e-mail (they accept via a tokenized link). */
+export const orgInviteSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+  role: orgMemberRoleSchema,
+});

@@ -10,7 +10,7 @@ import { ReaderNav } from "@/components/ReaderNav";
 import { ReaderPages } from "@/components/ReaderPages";
 import { cacheNovelChapterOnRead, getCachedNovelChapter } from "@/lib/cache-works";
 import { signPagePath } from "@/lib/image-sign";
-import { api } from "@/lib/orpc.server";
+import { api, apiFresh } from "@/lib/orpc.server";
 import { shouldOpenNovel } from "@/lib/reader-format";
 import { routes } from "@/lib/routes";
 import { sanitizeProse } from "@/lib/sanitize-prose";
@@ -97,8 +97,14 @@ export default async function ReadPage({ params, searchParams }: { params: P; se
   }
 
   const [chaptersRes, coreRes] = await Promise.allSettled([chaptersPromise, corePromise]);
-  const chapters =
+  let chapters =
     chaptersRes.status === "fulfilled" && chaptersRes.value ? chaptersRes.value.chapters : [];
+  // A transient empty chapter fan-out pinned by the 6h catalog cache would strip
+  // the reader nav (prev/next) | retry once uncached before giving up.
+  if (chapters.length === 0 && m) {
+    const fresh = await apiFresh.manga.chapters({ id: m, name: mn }).catch(() => null);
+    if (fresh?.chapters.length) chapters = fresh.chapters;
+  }
   const hasContext = chapters.length > 0 && !!m && !!mn;
 
   // Chapter number (sources return newest-first) + cover, for the
