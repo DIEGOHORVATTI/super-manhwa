@@ -24,8 +24,6 @@
     "@mui/material-nextjs": "^7.3.10",
     "@neondatabase/serverless": "1.1.0",
     "@orpc/client": "catalog:",
-    "@orpc/contract": "catalog:",
-    "@orpc/openapi-client": "catalog:",
     "@orpc/server": "catalog:",
     "@packages/contracts": "workspace:*",
     "@packages/emails": "workspace:*",

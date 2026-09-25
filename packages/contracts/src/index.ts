@@ -1,14 +1,5 @@
-export * from "./schemas";
-
-import * as routes from "./routes";
-
 /**
- * Single source of truth for the wire. The backend `implement(contracts)`s this;
- * the frontend `createORPCClient<typeof contracts>()`s. There is no `sources`
- * route by design | the frontend is source-agnostic.
- *
- * @see https://orpc.dev/docs/quick-start
+ * Zod schemas shared by the web's oRPC procedures and forms | one source of
+ * truth for validation and the derived types.
  */
-export const contracts = routes;
-
-export type AppRouter = typeof contracts;
+export * from "./schemas";

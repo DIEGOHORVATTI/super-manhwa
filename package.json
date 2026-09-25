@@ -1,5 +1,5 @@
 {
-  "name": "manga-search-app",
+  "name": "super-manhwa",
   "version": "0.1.0",
   "private": true,
   "workspaces": {
@@ -10,34 +10,24 @@
     "catalog": {
       "@orpc/client": "1.14.3",
       "@orpc/contract": "1.14.3",
-      "@orpc/openapi": "1.14.3",
-      "@orpc/openapi-client": "1.14.3",
       "@orpc/server": "1.14.3",
-      "@orpc/zod": "1.14.3",
       "typescript": "5.5.3",
       "zod": "4.4.3"
     }
   },
   "type": "module",
   "scripts": {
-    "dev": "bunx concurrently -k -n api,web -c blue,green \"cd apps/backend && bun run dev\" \"cd apps/web && bun run dev\"",
+    "dev": "cd apps/web && bun run dev",
     "dev:web": "cd apps/web && bun run dev",
-    "dev:api": "cd apps/backend && bun run --watch dev",
     "dev:email": "cd packages/emails && bun run dev",
-    "start": "cd apps/backend && bun run start",
     "build": "cd apps/web && bun run build",
-    "type-check": "cd apps/backend && bunx tsc --noEmit && cd ../web && bunx tsc --noEmit",
+    "type-check": "cd apps/web && bunx tsc --noEmit",
     "format": "bunx oxfmt",
     "format:check": "bunx oxfmt --check",
     "lint": "bunx oxlint",
     "lint:fix": "bunx oxlint --fix",
     "ci": "bun run format:check && bun run lint && bun run type-check",
-    "test": "cd apps/backend && bun test && cd ../web && bun test",
-    "test:api": "cd apps/backend && bun test",
-    "test:web": "cd apps/web && bun test",
-    "test:unit": "cd apps/backend && bun test tests/unit",
-    "test:e2e": "cd apps/backend && bun test tests/e2e",
-    "test:watch": "cd apps/backend && bun test --watch",
-    "extensions:list": "bun -e 'import { CONNECTORS } from \"@packages/extension\"; for (const c of CONNECTORS) console.log(c.id, c.lang, c.hasCloudflare ? \"CF\" : \"\");'"
+    "test": "cd apps/web && bun test",
+    "test:web": "cd apps/web && bun test"
   }
 }

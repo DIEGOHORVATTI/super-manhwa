@@ -1,7 +1,7 @@
 # Variáveis de ambiente | guia completo
 
 Inventário de **toda** configuração do projeto, onde mora, se é obrigatória e **como
-obter/gerar** cada valor. Os arquivos `.env.example` (root, `apps/web`, `apps/backend`)
+obter/gerar** cada valor. Os arquivos `.env.example` (root e `apps/web`)
 trazem o mesmo conteúdo comentado | copie-os para `.env` / `.env.local` e preencha.
 
 > As features degradam graciosamente quando suas vars não estão setadas
@@ -15,19 +15,13 @@ Gere e cole no arquivo indicado. **Em produção, gere valores novos.**
 
 ```bash
 openssl rand -base64 32   # BETTER_AUTH_API_KEY
-openssl rand -hex 32      # CRON_SECRET, IMAGE_TOKEN_SECRET, IMAGE_SIGN_SECRET
-openssl rand -hex 24      # API_KEY
+openssl rand -hex 32      # CRON_SECRET
 ```
 
-| Variável              | Arquivo(s)                                   | Observação                       |
-| --------------------- | -------------------------------------------- | -------------------------------- | ------------------------ |
-| `BETTER_AUTH_API_KEY` | `apps/web/.env.local`                        | assina as sessões do Better Auth |
-| `CRON_SECRET`         | `apps/web/.env.local` (+ Vercel)             | protege `/api/cron/*`            |
-| `IMAGE_TOKEN_SECRET`  | root `.env` + `apps/backend/.env`            | AES do id-store de imagens       |
-| `IMAGE_SIGN_SECRET`   | **os 3**: root + `apps/backend` + `apps/web` | HMAC de capas                    | **mesmo valor nos três** |
-| `API_KEY`             | **os 3**                                     | X-API-KEY web↔backend            | **mesmo valor nos três** |
-
-> ⚠️ `IMAGE_SIGN_SECRET` e `API_KEY` precisam ser **idênticos** entre web e backend.
+| Variável              | Arquivo(s)                       | Observação                       |
+| --------------------- | -------------------------------- | -------------------------------- |
+| `BETTER_AUTH_API_KEY` | `apps/web/.env.local`            | assina as sessões do Better Auth |
+| `CRON_SECRET`         | `apps/web/.env.local` (+ Vercel) | protege `/api/cron/*`            |
 
 ---
 
@@ -35,13 +29,11 @@ openssl rand -hex 24      # API_KEY
 
 ```bash
 # apps/web/.env.local
-DELIVERY_SERVICE_URL=http://localhost:8787   # URL do backend
 BETTER_AUTH_URL=http://localhost:3000        # URL base do app
 SITE_URL=http://localhost:3000               # canonical/OG
-
-# root .env e apps/backend/.env
-PORT=8787
 ```
+
+O catálogo vem direto do Central Novel (`centralnovel.com`), sem chave nem backend próprio.
 
 ---
 
@@ -64,11 +56,10 @@ PORT=8787
 | Variável                         | Arquivo               | Para quê                                      |
 | -------------------------------- | --------------------- | --------------------------------------------- |
 | `LEARN_PREMIUM_PRICE`            | `apps/web/.env.local` | preço mensal BRL do Premium (default `14.90`) |
-| `FLARESOLVERR_URL`               | `apps/backend/.env`   | solver de Cloudflare p/ fontes protegidas     |
-| `LOG_FORMAT`                     | `apps/backend/.env`   | `json` (prod) ou `pretty` (dev)               |
+| `FLARESOLVERR_URL`               | `apps/web/.env.local` | só se o Central Novel bloquear o servidor     |
 | `NEXT_PUBLIC_NEWSLETTER_ENABLED` | `apps/web/.env.local` | `true` mostra o signup (precisa DB + Resend)  |
 
-**Remover:** `NEXT_PUBLIC_DISQUS_SHORTNAME` | o Disqus foi substituído por comentários nativos.
+**Remover:** `NEXT_PUBLIC_DISQUS_SHORTNAME` (Disqus virou comentários nativos) e `DELIVERY_SERVICE_URL`, `API_KEY`, `IMAGE_SIGN_SECRET`, `IMAGE_TOKEN_SECRET`, `PORT`, `LOG_FORMAT` (o backend de catálogo foi removido).
 
 ---
 

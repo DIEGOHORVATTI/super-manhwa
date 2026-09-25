@@ -304,3 +304,22 @@ Extension contract (methods `MProvider` subclasses implement): `getPopular(page)
 `getLatestUpdates(page)`, `search(query, page, filters)`, `getDetail(url)`,
 `getPageList(url)`, `getFilterList()`, `getSourcePreferences()` (+ `getVideoList(url)`
 for anime).
+
+## ADR-0015 — Novel-only catalog read straight from Central Novel
+
+- **Status:** Accepted (2026-09-25). Supersedes ADR-0001, ADR-0002 (backend part), ADR-0004 and
+  the favourites part of ADR-0013.
+- **Context:** The multi-source manga catalog (a separate oRPC backend on Railway running
+  Mangayomi-style extensions, AES ids, signed image proxy, DB catalog cache, FlareSolverr) cost
+  more to run and debug than it returned. The product is now focused on novels, and Central Novel
+  exposes everything needed: wp-json for chapters and text (CORS open), and a Themesia listing /
+  search HTML with covers and filters.
+- **Decision:** Drop `apps/backend`, `packages/extension` and `packages/core`. `apps/web` reads the
+  catalog directly (`lib/catalog`), cached by Next's fetch cache. Works and chapters are identified
+  by Central Novel slugs. The reader narrates chapters with Web Speech, one consistent voice per
+  character (`lib/player`). Catalog, reader and library pages move to MUI (scale theme).
+- **Consequences:** (+) One deployable (Vercel), no shared secrets between services, far less code.
+  (+) Stable, human-readable ids. (−) A single source: if Central Novel changes its theme markup,
+  `lib/catalog/parse.ts` must follow (its tests pin the expected markup). (−) Library/progress
+  entries saved with old ids are dropped. (−) The unused `cached_*` tables stay until a drop
+  migration is approved.
