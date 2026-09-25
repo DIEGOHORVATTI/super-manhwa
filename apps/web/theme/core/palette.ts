@@ -81,6 +81,19 @@ export type PaletteExtend = {
  * ➤
  */
 export const primary = createPaletteChannel(themeConfig.palette.primary);
+
+/** Brand accent per scheme: silver on the dark theme, ink on the sepia paper. */
+export const primaryByScheme = {
+  dark: primary,
+  light: createPaletteChannel({
+    lighter: "#EDE3CC",
+    light: "#6F5F4E",
+    main: "#3B2F25",
+    dark: "#2A211A",
+    darker: "#1A140F",
+    contrastText: "#FBF5E6",
+  }),
+};
 export const secondary = createPaletteChannel(themeConfig.palette.secondary);
 export const info = createPaletteChannel(themeConfig.palette.info);
 export const success = createPaletteChannel(themeConfig.palette.success);
@@ -158,12 +171,14 @@ export const palette: SchemesRecord<ColorSystemOptions["palette"]> = {
   light: {
     ...basePalette,
     divider: "rgba(91, 70, 54, 0.16)",
+    primary: primaryByScheme.light,
     text: text.light,
     background: background.light,
     action: action("light"),
   },
   dark: {
     ...basePalette,
+    primary: primaryByScheme.dark,
     text: text.dark,
     background: background.dark,
     action: action("dark"),
