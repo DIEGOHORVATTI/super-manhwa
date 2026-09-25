@@ -67,7 +67,7 @@ export function ContinueReadingRail() {
               size="small"
               aria-label={`Remover ${entry.name} do histórico`}
               onClick={() => removeProgress(entry.id)}
-              sx={{ position: "absolute", top: 10, right: 10, bgcolor: "rgba(20, 26, 33, 0.72)" }}
+              sx={{ position: "absolute", top: 10, right: 10, bgcolor: "rgba(13, 13, 13, 0.72)" }}
             >
               <CloseRoundedIcon fontSize="small" />
             </IconButton>

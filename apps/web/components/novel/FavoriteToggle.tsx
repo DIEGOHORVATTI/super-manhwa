@@ -40,9 +40,9 @@ export function FavoriteToggle({ slug, title, cover, compact = false }: Favorite
           aria-pressed={isFavorite}
           aria-label={label}
           sx={{
-            bgcolor: "rgba(20, 26, 33, 0.72)",
+            bgcolor: "rgba(13, 13, 13, 0.72)",
             color: isFavorite ? "error.main" : "common.white",
-            "&:hover": { bgcolor: "rgba(20, 26, 33, 0.9)" },
+            "&:hover": { bgcolor: "rgba(13, 13, 13, 0.9)" },
           }}
         >
           {icon}
