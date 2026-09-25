@@ -1,13 +1,20 @@
+import "@fontsource-variable/public-sans";
+import "@fontsource/barlow/600.css";
+import "@fontsource/barlow/700.css";
+import "@fontsource/barlow/800.css";
 import "./globals.css";
 import { env } from "@/lib/env";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
 import type { Metadata } from "next";
 import { AffiliateAttributor } from "@/components/AffiliateAttributor";
 import { LibrarySync } from "@/components/LibrarySync";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ThemeProvider, themeConfig } from "@/theme";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
@@ -46,7 +53,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/banner_1500x500.jpeg"] },
 };
 
-export const viewport = { themeColor: "#0e1016" };
+export const viewport = { themeColor: "#141A21" };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
   const base = env.SITE_URL ?? "http://localhost:3000";
@@ -73,24 +80,36 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
   };
 
   return (
-    <html lang="pt-br">
+    <html lang="pt-br" suppressHydrationWarning>
       <body>
-        <script
-          type="application/ld+json"
-          // Trusted, server-built JSON-LD (no user input).
-          dangerouslySetInnerHTML={{ __html: JSON.stringify([siteLd, orgLd]) }}
+        <InitColorSchemeScript
+          modeStorageKey={themeConfig.modeStorageKey}
+          attribute={themeConfig.cssVariables.colorSchemeSelector}
+          defaultMode={themeConfig.defaultMode}
         />
-        <Header />
-        <main className="app">
-          {children}
+        <AppRouterCacheProvider>
+          <ThemeProvider
+            modeStorageKey={themeConfig.modeStorageKey}
+            defaultMode={themeConfig.defaultMode}
+          >
+            <script
+              type="application/ld+json"
+              // Trusted, server-built JSON-LD (no user input).
+              dangerouslySetInnerHTML={{ __html: JSON.stringify([siteLd, orgLd]) }}
+            />
+            <Header />
+            <main className="app">
+              {children}
 
-          <Footer />
-        </main>
-        <Analytics />
-        <SpeedInsights />
-        <ServiceWorkerRegister />
-        <AffiliateAttributor />
-        <LibrarySync />
+              <Footer />
+            </main>
+            <Analytics />
+            <SpeedInsights />
+            <ServiceWorkerRegister />
+            <AffiliateAttributor />
+            <LibrarySync />
+          </ThemeProvider>
+        </AppRouterCacheProvider>
       </body>
     </html>
   );
