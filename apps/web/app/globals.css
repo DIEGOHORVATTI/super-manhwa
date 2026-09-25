@@ -27,9 +27,9 @@ html[data-color-scheme="light"] {
   --border: rgba(91, 70, 54, 0.16);
   --text: #3b2f25;
   --muted: #6f5f4e;
-  --accent: #3b2f25;
-  --accent-hover: #6f5f4e;
-  --accent-rgb: 59, 47, 37;
+  --accent: #9a5b34;
+  --accent-hover: #7a4526;
+  --accent-rgb: 154, 91, 52;
   --accent-contrast: #fbf5e6;
   --header-bg: rgba(244, 236, 216, 0.94);
   --header-island-bg: rgba(251, 245, 230, 0.96);
