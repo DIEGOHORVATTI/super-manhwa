@@ -2,6 +2,7 @@
 
 import type { PlayerState } from "@/lib/player/speech-player";
 
+import { varAlpha } from "minimal-shared/utils";
 import { useEffect } from "react";
 
 import Fab from "@mui/material/Fab";
@@ -18,6 +19,8 @@ import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
 import FastRewindRoundedIcon from "@mui/icons-material/FastRewindRounded";
 import FastForwardRoundedIcon from "@mui/icons-material/FastForwardRounded";
+import KeyboardArrowDownRoundedIcon from "@mui/icons-material/KeyboardArrowDownRounded";
+import KeyboardArrowUpRoundedIcon from "@mui/icons-material/KeyboardArrowUpRounded";
 import SkipPreviousRoundedIcon from "@mui/icons-material/SkipPreviousRounded";
 import RecordVoiceOverRoundedIcon from "@mui/icons-material/RecordVoiceOverRounded";
 
@@ -39,6 +42,8 @@ type PlayerBarProps = {
   onNextChapter: () => void;
   onOpenVoices: () => void;
   onOpenSettings: () => void;
+  hidden: boolean;
+  onHiddenChange: (hidden: boolean) => void;
 };
 
 function isTyping(target: EventTarget | null) {
@@ -81,9 +86,46 @@ export function PlayerBar({
   onNextChapter,
   onOpenVoices,
   onOpenSettings,
+  hidden,
+  onHiddenChange,
 }: PlayerBarProps) {
   usePlayerShortcuts(onToggle, onSkip);
   const isPlaying = state.status === "playing";
+
+  if (hidden) {
+    return (
+      <Stack
+        direction="row"
+        spacing={1}
+        alignItems="center"
+        sx={(theme) => ({
+          position: "fixed",
+          right: 24,
+          bottom: 24,
+          zIndex: theme.zIndex.appBar,
+          p: 0.75,
+          borderRadius: 99,
+          bgcolor: varAlpha(theme.vars.palette.background.defaultChannel, 0.9),
+          backdropFilter: "blur(14px)",
+          boxShadow: theme.vars.customShadows.z16,
+        })}
+      >
+        <Fab
+          color="primary"
+          size="medium"
+          onClick={onToggle}
+          aria-label={isPlaying ? "Pausar" : "Ouvir"}
+        >
+          {isPlaying ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />}
+        </Fab>
+        <Tooltip title="Mostrar player">
+          <IconButton onClick={() => onHiddenChange(false)} aria-label="Mostrar player">
+            <KeyboardArrowUpRoundedIcon />
+          </IconButton>
+        </Tooltip>
+      </Stack>
+    );
+  }
 
   return (
     <Paper
@@ -93,10 +135,11 @@ export function PlayerBar({
         insetInline: 0,
         bottom: 0,
         zIndex: theme.zIndex.appBar,
-        borderTop: 1,
-        borderColor: "divider",
         borderRadius: 0,
-        boxShadow: theme.vars.customShadows.z16,
+        boxShadow: "none",
+        backgroundImage: "none",
+        bgcolor: varAlpha(theme.vars.palette.background.defaultChannel, 0.94),
+        backdropFilter: "blur(14px)",
       })}
     >
       <Container maxWidth="md" sx={{ py: 1 }}>
@@ -119,7 +162,7 @@ export function PlayerBar({
             value={rate}
             options={RATE_OPTIONS}
             onChange={onChangeRate}
-            sx={{ width: 110 }}
+            sx={{ width: 150 }}
           />
 
           <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -157,7 +200,7 @@ export function PlayerBar({
             </Tooltip>
           </Stack>
 
-          <Stack direction="row" justifyContent="flex-end" sx={{ width: 110 }}>
+          <Stack direction="row" justifyContent="flex-end" sx={{ width: 150 }}>
             <Tooltip title="Vozes dos personagens">
               <IconButton onClick={onOpenVoices}>
                 <RecordVoiceOverRoundedIcon />
@@ -166,6 +209,11 @@ export function PlayerBar({
             <Tooltip title="Configurações">
               <IconButton onClick={onOpenSettings}>
                 <TuneRoundedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Ocultar player">
+              <IconButton onClick={() => onHiddenChange(true)} aria-label="Ocultar player">
+                <KeyboardArrowDownRoundedIcon />
               </IconButton>
             </Tooltip>
           </Stack>
