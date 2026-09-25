@@ -56,7 +56,7 @@ export function AnilistPanel({
                 <Link
                   key={f.id}
                   className="anilist-fav"
-                  href={routes.manga(String(f.id), f.title)}
+                  href={routes.browse({ q: f.title })}
                   title={f.title}
                 >
                   {f.cover ? (

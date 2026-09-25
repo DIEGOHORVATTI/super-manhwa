@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { Autocomplete } from "@/components/Autocomplete";
+import { NovelSearch } from "@/components/novel/NovelSearch";
 import { Icon, type IconName } from "@/components/Icon";
 import { UserMenu } from "@/components/UserMenu";
 import { donationsEnabled } from "@/lib/flags";
@@ -150,8 +150,7 @@ export function Header() {
     const onScroll = () => {
       const y = window.scrollY;
       setScrolled(y > 60);
-      if (y > lastY && y > 80)
-        setHidden(true); // scrolling down, past the header
+      if (y > lastY && y > 80) setHidden(true); // scrolling down, past the header
       else if (y < lastY) setHidden(false); // scrolling up
       lastY = y;
     };
@@ -183,7 +182,7 @@ export function Header() {
           </Suspense>
 
           <div className="header-search">
-            <Autocomplete />
+            <NovelSearch />
           </div>
 
           <UserMenu />

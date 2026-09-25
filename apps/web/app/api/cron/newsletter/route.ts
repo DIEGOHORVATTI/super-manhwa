@@ -1,10 +1,10 @@
-import type { MangaSummary } from "@packages/contracts";
+import type { NovelSummary } from "@/lib/catalog";
 import { env } from "@/lib/env";
 import { render } from "@react-email/render";
 import { type DigestItem, NewsletterDigestEmail } from "@packages/emails";
 import { dbEnabled } from "@/lib/db";
 import { emailEnabled, sendEmail } from "@/lib/email";
-import { api } from "@/lib/orpc.server";
+import { browseNovels } from "@/lib/catalog";
 import { subscribersRepo } from "@/lib/repositories/subscribers";
 import { routes } from "@/lib/routes";
 
@@ -19,11 +19,11 @@ export const maxDuration = 60;
  */
 const base = env.SITE_URL;
 
-const toItem = (m: MangaSummary): DigestItem => ({
-  title: m.name,
-  imageUrl: m.imageUrl ? `${base}${m.imageUrl}` : undefined,
-  link: `${base}${routes.manga(m.id, m.name)}`,
-  description: m.description,
+const toItem = (novel: NovelSummary): DigestItem => ({
+  title: novel.title,
+  imageUrl: novel.cover,
+  link: `${base}${routes.novel(novel.slug)}`,
+  description: novel.excerpt,
 });
 
 export async function GET(req: Request): Promise<Response> {
@@ -36,8 +36,8 @@ export async function GET(req: Request): Promise<Response> {
   }
 
   const [trending, newest] = await Promise.all([
-    api.manga.popular({ lang: "pt-br", sort: "trending", page: 1 }).catch(() => ({ list: [] })),
-    api.manga.popular({ lang: "pt-br", sort: "newest", page: 1 }).catch(() => ({ list: [] })),
+    browseNovels({ sort: "update" }).catch(() => ({ list: [] })),
+    browseNovels({ sort: "latest" }).catch(() => ({ list: [] })),
   ]);
   const trendingItems = trending.list.slice(0, 6).map(toItem);
   const newestItems = newest.list.slice(0, 6).map(toItem);

@@ -59,6 +59,7 @@ export default async function ReadPage({ params }: ReadPageProps) {
       </Stack>
 
       <ChapterReaderLoader
+        key={chapter.slug}
         novel={novelInfo}
         chapter={{ slug: chapter.slug, title: chapter.title, paragraphs: chapter.paragraphs }}
         chapters={chapters}

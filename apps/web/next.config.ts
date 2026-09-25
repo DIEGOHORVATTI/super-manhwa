@@ -23,7 +23,10 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: monorepoRoot,
   },
-  transpilePackages: ["@packages/contracts", "@packages/extension-runtime"],
+  transpilePackages: ["@packages/contracts"],
+  async redirects() {
+    return [{ source: "/manga/:path*", destination: "/", permanent: true }];
+  },
   images: {
     // Covers are local, same-origin (`/api/img/<token>?k=<sig>`). Next 16 blocks
     // local images that carry a query string unless a localPattern allows them.

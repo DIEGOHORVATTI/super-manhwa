@@ -2,6 +2,7 @@ import "server-only";
 import { and, count, countDistinct, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 
 import { anilistProfile, type AnilistProfile } from "@/lib/anilist-profile";
+import { resolveTargets } from "@/lib/catalog/targets";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 
 export interface ProfileData {
@@ -29,8 +30,8 @@ export interface ProfileData {
     body: string;
     score: number;
     createdAt: Date;
-    workId: string | null;
-    workTitle: string | null;
+    href: string;
+    targetTitle: string | null;
   }>;
   anilist: { username: string | null; profile: AnilistProfile | null };
 }
@@ -41,17 +42,7 @@ const YEAR_MS = 365 * 24 * 60 * 60 * 1000;
 export async function loadProfileData(handle: string): Promise<ProfileData | null> {
   if (!dbEnabled) return null;
   const db = getDb();
-  const {
-    user,
-    userWorks,
-    userAchievements,
-    readingEvents,
-    userWords,
-    comments,
-    account,
-    cachedWorks,
-    cachedChapters,
-  } = schema;
+  const { user, userWorks, userAchievements, readingEvents, userWords, comments, account } = schema;
 
   const [u] = await db
     .select({
@@ -132,38 +123,15 @@ export async function loadProfileData(handle: string): Promise<ProfileData | nul
         .limit(8),
     ]);
 
-  // Resolve each comment's work title for display. Work comments key on the work
-  // catalogId directly; chapter comments resolve their work via cachedChapters.
-  const workTargets = recent.filter((c) => c.targetType === "work").map((c) => c.targetId);
-  const chapterTargets = recent.filter((c) => c.targetType === "chapter").map((c) => c.targetId);
-  const chRows = chapterTargets.length
-    ? await db
-        .select({ chapterKey: cachedChapters.chapterKey, catalogId: cachedChapters.catalogId })
-        .from(cachedChapters)
-        .where(inArray(cachedChapters.chapterKey, chapterTargets))
-    : [];
-  const chapterToCatalog = new Map(chRows.map((r) => [r.chapterKey, r.catalogId]));
-  const catalogIds = [...workTargets, ...chRows.map((r) => r.catalogId)];
-  const titleRows = catalogIds.length
-    ? await db
-        .select({ catalogId: cachedWorks.catalogId, title: cachedWorks.title })
-        .from(cachedWorks)
-        .where(inArray(cachedWorks.catalogId, catalogIds))
-    : [];
-  const titleMap = new Map(titleRows.map((r) => [r.catalogId, r.title]));
-
-  const recentComments = recent.map((c) => {
-    const workId =
-      c.targetType === "work" ? c.targetId : (chapterToCatalog.get(c.targetId) ?? null);
-    return {
-      id: c.id,
-      body: c.body ?? "",
-      score: c.score,
-      createdAt: c.createdAt,
-      workId,
-      workTitle: workId ? (titleMap.get(workId) ?? null) : null,
-    };
-  });
+  const targetOf = await resolveTargets(recent);
+  const recentComments = recent.map((c) => ({
+    id: c.id,
+    body: c.body ?? "",
+    score: c.score,
+    createdAt: c.createdAt,
+    href: targetOf(c).href,
+    targetTitle: targetOf(c).title,
+  }));
 
   const link = links[0];
   const profile =

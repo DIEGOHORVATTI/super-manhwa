@@ -26,7 +26,7 @@ import {
 } from "./parse";
 
 export type * from "./types";
-export { chapterLabel } from "./parse";
+export { chapterLabel } from "./labels";
 
 const HOUR = 60 * 60;
 const CHAPTERS_PER_PAGE = 100;

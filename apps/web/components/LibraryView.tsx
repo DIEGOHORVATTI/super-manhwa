@@ -1,44 +1,62 @@
 "use client";
-import type { MangaSummary } from "@packages/contracts";
-import Link from "next/link";
-import { AniListSync } from "@/components/AniListSync";
-import { ContinueReading } from "@/components/ContinueReading";
-import { Icon } from "@/components/Icon";
-import { PosterGrid } from "@/components/PosterGrid";
+
+import Box from "@mui/material/Box";
+import Link from "@mui/material/Link";
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
+import NextLink from "next/link";
+
+import { ContinueReadingRail } from "@/components/novel/ContinueReadingRail";
+import { NovelCard } from "@/components/novel/NovelCard";
 import { useFavorites } from "@/lib/library";
 import { routes } from "@/lib/routes";
 
+const COLUMNS = {
+  xs: "repeat(2, minmax(0, 1fr))",
+  sm: "repeat(4, minmax(0, 1fr))",
+  md: "repeat(5, minmax(0, 1fr))",
+  lg: "repeat(6, minmax(0, 1fr))",
+};
+
 /**
- * The local library screen | favorites grid + the continue-reading rail, both
- * sourced from localStorage. Client-only by nature; the server page wraps it so
- * metadata still renders. Empty state nudges to the catalog.
+ * The local library screen | favorites grid + the continue-listening rail, both
+ * sourced from localStorage (mirrored to the DB when signed in).
  */
 export function LibraryView() {
   const favorites = useFavorites();
-  // LibEntry → the minimal MangaSummary shape PosterGrid needs.
-  const items: MangaSummary[] = favorites.map((f) => ({
-    id: f.id,
-    name: f.name,
-    imageUrl: f.imageUrl,
-    lang: "",
-  }));
 
   return (
-    <>
-      <AniListSync />
+    <Stack spacing={4}>
+      <ContinueReadingRail />
 
-      <ContinueReading />
-
-      <h2 className="section">Favoritos</h2>
-      {items.length === 0 ? (
-        <p className="muted">
-          Nenhuma obra salva ainda. Toque em <Icon name="heart" size={13} /> numa obra para
-          adicioná-la | fica salvo só neste navegador.{" "}
-          <Link href={routes.home}>Explorar o catálogo</Link>.
-        </p>
-      ) : (
-        <PosterGrid items={items} />
-      )}
-    </>
+      <Stack spacing={2}>
+        <Typography variant="h5" component="h2">
+          Favoritas
+        </Typography>
+        {favorites.length === 0 ? (
+          <Typography color="text.secondary">
+            Nenhuma novel salva ainda. Toque no coração de uma obra para guardá-la aqui.{" "}
+            <Link component={NextLink} href={routes.home}>
+              Explorar o catálogo
+            </Link>
+            .
+          </Typography>
+        ) : (
+          <Box sx={{ display: "grid", gap: 2, gridTemplateColumns: COLUMNS }}>
+            {favorites.map((favorite) => (
+              <NovelCard
+                key={favorite.id}
+                novel={{
+                  slug: favorite.id,
+                  title: favorite.name,
+                  cover: favorite.imageUrl,
+                  genres: [],
+                }}
+              />
+            ))}
+          </Box>
+        )}
+      </Stack>
+    </Stack>
   );
 }
