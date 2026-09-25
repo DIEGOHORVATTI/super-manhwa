@@ -19,18 +19,18 @@ import { ThemeProvider, themeConfig } from "@/theme";
 export const metadata: Metadata = {
   metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Super Manhwa | Ler Manhwas, Mangás e Webtoons Online Grátis",
+    default: "Super Manhwa | Ler e Ouvir Novels em Português",
     template: "%s · Super Manhwa",
   },
   description:
-    "Leia manhwas, mangás e webtoons em português, de graça e atualizados todo dia. Milhares de obras como Solo Leveling com capítulos novos direto de várias fontes.",
+    "Leia ou ouça light novels e web novels em português, de graça, com uma voz diferente para cada personagem. Capítulos novos todo dia.",
   keywords: [
-    "ler manhwa",
-    "ler mangá online",
-    "manhwa português",
-    "webtoon grátis",
-    "ler webtoon",
-    "mangá online grátis",
+    "ler novel",
+    "light novel português",
+    "web novel português",
+    "ouvir novel",
+    "audiobook novel",
+    "novel online grátis",
     "super manhwa",
   ],
   applicationName: "Super Manhwa",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/banner_1500x500.jpeg"] },
 };
 
-export const viewport = { themeColor: "#141A21" };
+export const viewport = { themeColor: "#0D0D0D" };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
   const base = env.SITE_URL ?? "http://localhost:3000";

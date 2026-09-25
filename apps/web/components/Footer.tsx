@@ -57,8 +57,8 @@ export function Footer() {
             </span>
           </Link>
           <p className="muted">
-            Uma base completa de mangás, manhwas e webtoons feita para facilitar sua leitura em
-            várias fontes.
+            Light novels e web novels em português para ler ou ouvir, com uma voz para cada
+            personagem.
           </p>
           <div className="footer-socials">
             {SOCIALS.map((s) => (
@@ -101,8 +101,8 @@ export function Footer() {
         <nav className="footer-col" aria-label="Explorar">
           <h3>Explorar</h3>
           <Link href={routes.home}>Início</Link>
-          <Link href={`${routes.home}?sort=trending`}>Tendência</Link>
-          <Link href={`${routes.home}?sort=newest`}>Mais novos</Link>
+          <Link href={routes.browse({ sort: "update" })}>Atualizadas</Link>
+          <Link href={routes.browse({ sort: "latest" })}>Novas</Link>
           <Link href={routes.library}>Biblioteca</Link>
         </nav>
 

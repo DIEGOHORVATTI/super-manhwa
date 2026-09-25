@@ -11,7 +11,5 @@
       "schedule": "0 9 * * *"
     }
   ],
-  "regions": [
-    "gru1"
-  ]
+  "regions": ["gru1"]
 }

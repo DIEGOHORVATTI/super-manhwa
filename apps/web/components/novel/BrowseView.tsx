@@ -1,10 +1,12 @@
 import type { BrowseState } from "./BrowseFilters";
 
+import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 
 import { browseNovels, getGenres, searchNovels } from "@/lib/catalog";
 import { toListParams } from "@/lib/catalog/browse-state";
+import { routes } from "@/lib/routes";
 
 import { BrowseFilters } from "./BrowseFilters";
 import { ContinueReadingRail } from "./ContinueReadingRail";
@@ -41,14 +43,21 @@ export async function BrowseView({ state, title }: BrowseViewProps) {
         </Typography>
       )}
 
-      <BrowseFilters genres={genres} state={state} />
+      {!state.q && <BrowseFilters genres={genres} state={state} />}
 
       {isLanding && <ContinueReadingRail />}
 
       <Stack spacing={2}>
-        <Typography variant="h5" component="h2">
-          {isSearching ? `Resultados para “${state.q}”` : isLanding ? "Populares" : "Novels"}
-        </Typography>
+        <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+          <Typography variant="h5" component="h2">
+            {isSearching ? `Resultados para “${state.q}”` : isLanding ? "Populares" : "Novels"}
+          </Typography>
+          {state.q && (
+            <Button href={routes.home} color="inherit" variant="outlined" size="small">
+              Limpar busca
+            </Button>
+          )}
+        </Stack>
         {state.q.length === 1 ? (
           <Typography color="text.secondary">Digite ao menos 2 caracteres para buscar.</Typography>
         ) : (

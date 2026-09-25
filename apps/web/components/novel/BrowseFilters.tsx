@@ -2,12 +2,8 @@
 
 import type { Genre, NovelSort, NovelStatus } from "@/lib/catalog/types";
 
-import SearchRoundedIcon from "@mui/icons-material/SearchRounded";
-import InputAdornment from "@mui/material/InputAdornment";
 import Stack from "@mui/material/Stack";
-import TextField from "@mui/material/TextField";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 import { SelectAutocomplete } from "@/components/mui/SelectAutocomplete";
 import { routes } from "@/lib/routes";
@@ -41,7 +37,6 @@ const STATUS_OPTIONS: { value: NovelStatus | ""; label: string }[] = [
 
 export function BrowseFilters({ genres, state }: BrowseFiltersProps) {
   const router = useRouter();
-  const [query, setQuery] = useState(state.q);
 
   const apply = (patch: Partial<BrowseState>) => {
     const next = { ...state, ...patch };
@@ -60,57 +55,28 @@ export function BrowseFilters({ genres, state }: BrowseFiltersProps) {
   );
 
   return (
-    <Stack spacing={2}>
-      <form
-        role="search"
-        onSubmit={(event) => {
-          event.preventDefault();
-          apply({ q: query.trim() });
-        }}
-      >
-        <TextField
-          fullWidth
-          name="q"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Buscar novel pelo nome"
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchRoundedIcon />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-      </form>
-
-      {!state.q && (
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          <SelectAutocomplete
-            label="Gênero"
-            value={state.genre}
-            options={genreOptions}
-            onChange={(genre) => apply({ genre })}
-            sx={{ flex: 1 }}
-          />
-          <SelectAutocomplete
-            label="Status"
-            value={state.status}
-            options={STATUS_OPTIONS}
-            onChange={(status) => apply({ status })}
-            sx={{ flex: 1 }}
-          />
-          <SelectAutocomplete
-            label="Ordenar"
-            value={state.sort}
-            options={SORT_OPTIONS}
-            onChange={(sort) => apply({ sort })}
-            sx={{ flex: 1 }}
-          />
-        </Stack>
-      )}
+    <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
+      <SelectAutocomplete
+        label="Gênero"
+        value={state.genre}
+        options={genreOptions}
+        onChange={(genre) => apply({ genre })}
+        sx={{ flex: 1 }}
+      />
+      <SelectAutocomplete
+        label="Status"
+        value={state.status}
+        options={STATUS_OPTIONS}
+        onChange={(status) => apply({ status })}
+        sx={{ flex: 1 }}
+      />
+      <SelectAutocomplete
+        label="Ordenar"
+        value={state.sort}
+        options={SORT_OPTIONS}
+        onChange={(sort) => apply({ sort })}
+        sx={{ flex: 1 }}
+      />
     </Stack>
   );
 }

@@ -1,9 +1,9 @@
 :root {
   color-scheme: dark;
-  --bg: #141a21;
-  --surface: #1c252e;
-  --surface-2: #28323d;
-  --border: rgba(145, 158, 171, 0.2);
+  --bg: #0d0d0d;
+  --surface: #1f1f1f;
+  --surface-2: #262626;
+  --border: rgba(145, 158, 171, 0.16);
   --text: #ffffff;
   --muted: #919eab;
   --accent: #00a76f;
@@ -31,7 +31,7 @@ body {
     sans-serif;
 }
 body {
-  background-image: radial-gradient(1200px 600px at 50% -10%, #1c252e 0%, var(--bg) 60%);
+  background-image: radial-gradient(1200px 600px at 50% -10%, #1a1a1a 0%, var(--bg) 60%);
   min-height: 100vh;
   /* 100vw full-bleed sections include the scrollbar width; clip the overflow. */
   overflow-x: clip;
@@ -245,7 +245,7 @@ a:hover {
    stretch edge-to-edge on wide screens. Override the combobox flex min-width so
    it can shrink on phones. */
 .header-search {
-  flex: 0 1 380px;
+  flex: 0 1 520px;
   min-width: 0;
   margin-left: auto;
 }

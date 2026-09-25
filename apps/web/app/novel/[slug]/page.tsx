@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import Card from "@mui/material/Card";
 import Chip from "@mui/material/Chip";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
@@ -147,16 +146,11 @@ export default async function NovelPage({ params }: NovelPageProps) {
         </Stack>
       </Stack>
 
-      <Card sx={{ p: 2 }}>
-        <Typography variant="h5" component="h2" sx={{ mb: 2 }}>
-          Capítulos
-        </Typography>
-        {chapters.length > 0 ? (
-          <ChapterList novelSlug={slug} novelTitle={novel.title} chapters={chapters} />
-        ) : (
-          <Typography color="text.secondary">Nenhum capítulo publicado ainda.</Typography>
-        )}
-      </Card>
+      {chapters.length > 0 ? (
+        <ChapterList novelSlug={slug} novelTitle={novel.title} chapters={chapters} />
+      ) : (
+        <Typography color="text.secondary">Nenhum capítulo publicado ainda.</Typography>
+      )}
 
       <Comments targetType="work" targetId={slug} />
     </Stack>
