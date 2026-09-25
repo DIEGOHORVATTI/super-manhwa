@@ -10,5 +10,8 @@
       "path": "/api/cron/publish-scheduled",
       "schedule": "0 9 * * *"
     }
+  ],
+  "regions": [
+    "gru1"
   ]
 }
