@@ -1,14 +1,12 @@
 import { ORPCError } from "@orpc/server";
-import { and, count, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 import { z } from "zod";
 
-import { cacheChaptersOnRead, cacheWorkOnRead } from "@/lib/cache-works";
+import { resolveTargets } from "@/lib/catalog/targets";
 import * as schema from "@/lib/db/schema";
-import { api } from "@/lib/orpc.server";
 import { publicUrlFor } from "@/lib/r2";
 import { hasRole } from "@/lib/roles";
 import { loadTagCatalog, manualBadgesForUsers } from "@/lib/tags";
-import { translatePt } from "@/lib/translate";
 import { admin, staff } from "../base";
 
 /**
@@ -122,7 +120,7 @@ const commentsRouter = {
     .handler(async ({ input, context }) => {
       const limit = input?.limit ?? 50;
       const offset = input?.offset ?? 0;
-      const { comments, user, cachedChapters, cachedWorks } = schema;
+      const { comments, user } = schema;
       const [rows, [tot]] = await Promise.all([
         context.db
           .select({
@@ -143,31 +141,8 @@ const commentsRouter = {
         context.db.select({ n: count() }).from(comments),
       ]);
 
-      // Resolve the work each comment was on (chapter comments go through the
-      // cached chapter → its work), so moderators see the title, not an opaque id.
-      const workTargets = rows.filter((c) => c.targetType === "work").map((c) => c.targetId);
-      const chapterTargets = rows.filter((c) => c.targetType === "chapter").map((c) => c.targetId);
-      const chRows = chapterTargets.length
-        ? await context.db
-            .select({ chapterKey: cachedChapters.chapterKey, catalogId: cachedChapters.catalogId })
-            .from(cachedChapters)
-            .where(inArray(cachedChapters.chapterKey, chapterTargets))
-        : [];
-      const chapterToCatalog = new Map(chRows.map((r) => [r.chapterKey, r.catalogId]));
-      const catalogIds = [...workTargets, ...chRows.map((r) => r.catalogId)];
-      const titleRows = catalogIds.length
-        ? await context.db
-            .select({ catalogId: cachedWorks.catalogId, title: cachedWorks.title })
-            .from(cachedWorks)
-            .where(inArray(cachedWorks.catalogId, catalogIds))
-        : [];
-      const titleMap = new Map(titleRows.map((r) => [r.catalogId, r.title]));
-
-      const list = rows.map((c) => {
-        const workId =
-          c.targetType === "work" ? c.targetId : (chapterToCatalog.get(c.targetId) ?? null);
-        return { ...c, workTitle: workId ? (titleMap.get(workId) ?? null) : null };
-      });
+      const targetOf = await resolveTargets(rows);
+      const list = rows.map((c) => ({ ...c, workTitle: targetOf(c).title }));
       return { comments: list, total: Number(tot?.n ?? 0) };
     }),
 };
@@ -247,73 +222,6 @@ const pixelsRouter = {
         )
         .where(eq(pixelBlocks.id, input.id));
       return { ok: true };
-    }),
-};
-
-/** Live connector health, proxied from the catalog backend (X-API-KEY server-side). */
-const connectorsRouter = {
-  list: staff.handler(async () => ({ connectors: await api.connectors() })),
-};
-
-/**
- * Catalog cache warming | staff search/browse the catalog and pre-persist works
- * (metadata + cover/banner to R2 + the merged chapter list) so the first public
- * view is instant and survives the source going down. `list` shows what's already
- * cached and when; `warm` does the same write the detail page does on first view.
- */
-const cacheRouter = {
-  list: staff.handler(async ({ context }) => {
-    const { cachedWorks, cachedChapters } = schema;
-    const [works, counts] = await Promise.all([
-      context.db
-        .select({
-          catalogId: cachedWorks.catalogId,
-          title: cachedWorks.title,
-          coverR2Key: cachedWorks.coverR2Key,
-          refreshedAt: cachedWorks.refreshedAt,
-        })
-        .from(cachedWorks)
-        .orderBy(desc(cachedWorks.refreshedAt))
-        .limit(300),
-      context.db
-        .select({ catalogId: cachedChapters.catalogId, n: sql<number>`count(*)::int` })
-        .from(cachedChapters)
-        .groupBy(cachedChapters.catalogId),
-    ]);
-    const byId = new Map(counts.map((c) => [c.catalogId, Number(c.n)]));
-    return {
-      items: works.map((w) => ({
-        id: w.catalogId,
-        title: w.title,
-        coverUrl: w.coverR2Key ? publicUrlFor(w.coverR2Key) : null,
-        chapters: byId.get(w.catalogId) ?? 0,
-        refreshedAt: w.refreshedAt,
-      })),
-    };
-  }),
-
-  warm: staff
-    .input(z.object({ id: z.string().min(1).max(512), name: z.string().max(512).optional() }))
-    .handler(async ({ input }) => {
-      const { id, name } = input;
-      const [coreRes, chaptersRes, metaRes] = await Promise.allSettled([
-        api.manga.core({ id, name }),
-        api.manga.chapters({ id, name }),
-        name ? api.manga.meta({ name }) : Promise.resolve(null),
-      ]);
-      if (coreRes.status !== "fulfilled") {
-        throw new ORPCError("NOT_FOUND", { message: "Obra não encontrada na fonte." });
-      }
-      const core = coreRes.value.core;
-      const chapters = chaptersRes.status === "fulfilled" ? chaptersRes.value.chapters : [];
-      const meta = metaRes.status === "fulfilled" && metaRes.value ? metaRes.value.meta : null;
-      const desc = await translatePt(core.description ?? meta?.description ?? "").catch(() => "");
-      await cacheWorkOnRead(id, core, {
-        bannerUrl: meta?.bannerImage,
-        descriptionPt: desc || undefined,
-      });
-      await cacheChaptersOnRead(id, chapters);
-      return { ok: true, chapters: chapters.length };
     }),
 };
 
@@ -408,7 +316,5 @@ export const adminRouter = {
   comments: commentsRouter,
   donations: donationsRouter,
   pixels: pixelsRouter,
-  connectors: connectorsRouter,
-  cache: cacheRouter,
   legal: legalRouter,
 };

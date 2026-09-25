@@ -135,8 +135,7 @@ export function OrgManage({ id }: { id: number }) {
     const file = e.target.files?.[0];
     e.target.value = "";
     if (!file) return;
-    const endpoint =
-      field === "avatar" ? routes.api.org.avatar(id) : routes.api.org.banner(id);
+    const endpoint = field === "avatar" ? routes.api.org.avatar(id) : routes.api.org.banner(id);
     const url = await uploadImage(endpoint, file, field === "avatar" ? 512 : 1600);
     if (!url) {
       setError("Não foi possível enviar a imagem.");

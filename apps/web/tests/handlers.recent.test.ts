@@ -57,13 +57,16 @@ mock.module("@/lib/perms", () => ({
 mock.module("@/lib/reading-sync", () => ({
   syncReadingAchievements: async () => readingUnlocked,
 }));
-const orpcApiMock = {
-  manga: {
-    popular: async () => ({ list: [{ id: "pop" }], hasNextPage: true }),
-    search: async () => ({ list: [{ id: "search" }], hasNextPage: false }),
+let browseArgs: unknown = null;
+mock.module("@/lib/catalog", () => ({
+  browseNovels: async (args: unknown) => {
+    browseArgs = args;
+    return { list: [{ slug: "pop" }], hasNextPage: true };
   },
-};
-mock.module("@/lib/orpc.server", () => ({ api: orpcApiMock, apiFresh: orpcApiMock }));
+  searchNovels: async () => ({ list: [{ slug: "search" }], hasNextPage: false }),
+  getNovel: async () => null,
+  getChapter: async () => null,
+}));
 mock.module("next/headers", () => ({
   cookies: async () => ({
     get: (name: string) => (name === "ref" && refCookie ? { value: refCookie } : undefined),
@@ -104,14 +107,17 @@ beforeEach(() => {
   readingUnlocked = [];
 });
 
-describe("GET /api/list (native catalog proxy)", () => {
+describe("GET /api/list (Central Novel listing)", () => {
   it("uses search when q has 2+ chars", async () => {
-    const res = await list.GET(get("http://t/api/list?feed=browse&q=naruto"));
-    expect((await res.json()).list[0].id).toBe("search");
+    const res = await list.GET(get("http://t/api/list?q=mushoku"));
+    expect((await res.json()).list[0].slug).toBe("search");
   });
-  it("browses by popular otherwise", async () => {
-    const res = await list.GET(get("http://t/api/list?feed=browse"));
-    expect((await res.json()).list[0].id).toBe("pop");
+  it("browses with the filters and page otherwise", async () => {
+    const res = await list.GET(
+      get("http://t/api/list?genre=acao&status=completed&sort=rating&page=3"),
+    );
+    expect((await res.json()).list[0].slug).toBe("pop");
+    expect(browseArgs).toEqual({ sort: "rating", genre: "acao", status: "completed", page: 3 });
   });
 });
 

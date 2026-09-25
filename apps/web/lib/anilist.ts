@@ -3,10 +3,8 @@ import { useSyncExternalStore } from "react";
 import { env } from "@/lib/env";
 import { routes } from "@/lib/routes";
 
-import type { LibEntry } from "./library";
-
 /**
- * Optional AniList account sync (favourites only). OAuth2 **authorization code
+ * Optional AniList account link (shown on the profile). OAuth2 **authorization code
  * grant** (AniList doesn't support implicit grant): the browser redirects to
  * AniList → comes back to `/auth/anilist?code=…` → a server route exchanges the
  * code for a token using the client secret (server-only) → hands the token to
@@ -15,9 +13,6 @@ import type { LibEntry } from "./library";
  *
  * The whole feature is gated on `NEXT_PUBLIC_ANILIST_CLIENT_ID`: unset → the UI
  * hides every AniList affordance and the app stays 100% local/anonymous.
- *
- * Our catalog ids ARE AniList media ids, so a favourite maps 1:1 with no lookup:
- * `mediaId = Number(entry.id)`.
  */
 const CLIENT_ID = env.NEXT_PUBLIC_ANILIST_CLIENT_ID;
 export const anilistConfigured = Boolean(CLIENT_ID);
@@ -167,50 +162,4 @@ async function request<T>(
   if (json.errors?.length) throw new Error(json.errors[0].message);
   if (!json.data) throw new Error("empty AniList response");
   return json.data;
-}
-
-interface MediaNode {
-  id: number;
-  title?: { romaji?: string; english?: string; native?: string; userPreferred?: string };
-  coverImage?: { large?: string };
-}
-
-const displayTitle = (m: MediaNode): string =>
-  m.title?.english ?? m.title?.romaji ?? m.title?.userPreferred ?? m.title?.native ?? `#${m.id}`;
-
-/** The viewer's favourited manga → local library entry shape. */
-export async function fetchFavourites(): Promise<LibEntry[]> {
-  const data = await request<{
-    Viewer: { favourites: { manga: { nodes: MediaNode[] } } };
-  }>(
-    `query {
-      Viewer {
-        favourites {
-          manga(perPage: 50) {
-            nodes { id title { romaji english native userPreferred } coverImage { large } }
-          }
-        }
-      }
-    }`,
-    {},
-  );
-  const nodes = data.Viewer?.favourites?.manga?.nodes ?? [];
-  return nodes.map((m) => ({
-    id: String(m.id),
-    name: displayTitle(m),
-    imageUrl: m.coverImage?.large,
-    addedAt: Date.now(),
-  }));
-}
-
-/** Toggle a manga's favourite state on AniList. No-op for non-numeric ids. */
-export async function toggleFavourite(id: string): Promise<void> {
-  const mediaId = Number(id);
-  if (!Number.isFinite(mediaId)) return;
-  await request(
-    `mutation ($id: Int) { ToggleFavourite(mangaId: $id) { manga { pageInfo { total } } } }`,
-    {
-      id: mediaId,
-    },
-  );
 }

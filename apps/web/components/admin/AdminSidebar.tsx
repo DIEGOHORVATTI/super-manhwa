@@ -38,10 +38,7 @@ const NAV: Group[] = [
   },
   {
     title: "Sistema",
-    items: [
-      { href: routes.admin.connectors, label: "Conectores", icon: "plug" },
-      { href: routes.admin.cache, label: "Cache", icon: "database" },
-    ],
+    items: [],
   },
   {
     title: "Jurídico",

@@ -1,170 +1,110 @@
 # CLAUDE.md — Arquitetura & regras do super-manhuwa
 
-Guia operacional para qualquer mudança neste repo. Derivado dos guias **Full-Stack
-(oRPC contract-first)**, **Backend (oRPC + DDD)** e **Frontend (React 2026)**, adaptado à
-realidade do projeto. **Onde o projeto diverge do guia, está marcado como ⚠️ DIVERGÊNCIA.**
+Site de **novels em português**: o catálogo vem 100% do [Central Novel](https://centralnovel.com)
+e o leitor narra os capítulos com uma voz por personagem. Em volta dele fica a plataforma
+(contas, biblioteca, comentários, doações, afiliados, pixels, studio/orgs, admin, aprendizado,
+newsletter), com estado próprio no Postgres.
 
 ---
 
 ## 1. Monorepo (Bun workspaces)
 
 ```
-apps/backend     # serviço de catálogo/leitura — Bun + oRPC + DDD (stateless)
-apps/web         # Next.js 16 (App Router) — SSR + route handlers + Postgres próprio
-packages/contracts   # FONTE DA VERDADE: oc (@orpc/contract) + Zod. ZERO lógica.
-packages/core        # modelos de domínio compartilhados
-packages/extension   # runtime de extensões (QuickJS) + conectores
+apps/web             # Next.js 16 (App Router) — SSR + route handlers + Postgres próprio
+packages/contracts   # schemas Zod da plataforma (validação + tipos). ZERO lógica.
+packages/emails      # templates React Email
 ```
 
-Direção de dependência: `contracts ← backend` (implementa), `contracts ← web` (consome via
-client oRPC). **`contracts` não depende de ninguém** além de `zod` + `@orpc/contract`. Nunca
-importe `backend`/`web` dentro de `contracts`.
+Não existe backend separado: o catálogo é lido direto do Central Novel pelo servidor do Next.
 
-**Regra de versões (inviolável):** todos os `@orpc/*` na mesma versão (hoje `^1.14.3`) +
-`zod` unificado. Divergência gera erros de tipo sutis.
+**Regra de versões:** todos os `@orpc/*` na mesma versão (catalog do `package.json` raiz) +
+`zod` unificado.
 
 ---
 
-## 2. Backend (`apps/backend`) — Clean/DDD por módulo ✅ seguido
+## 2. Catálogo — Central Novel (`apps/web/lib/catalog/`)
 
-```
-modules/<bounded-context>/   # catalog, media, metadata, system
-  domain/          🟢 PURO: entidades, ports (interfaces). Sem framework.
-  application/     🟢 casos de uso (makeX/factory). Orquestra domínio.
-  infrastructure/  🔵 adapters: Drizzle/HTTP/conectores + mappers
-  presentation/routes/  🟣 ÚNICO lugar com @orpc/* — .handler()
-core/ shared/ config/ context/ http/   container.ts (DI)   router.ts
-```
+| Arquivo | Papel |
+|---|---|
+| `index.ts` | API pública (server-only): `browseNovels`, `searchNovels`, `suggestNovels`, `getGenres`, `getNovel`, `getChapters`, `getChapter` |
+| `http.ts` | `fetch` com User-Agent, cache do Next (`revalidate`), fallback opcional por `FLARESOLVERR_URL`, leitura parcial de HTML (`fetchHead`) |
+| `parse.ts` | parsers puros (cheerio) do HTML do tema Themesia — cobertos em `tests/catalog-parse.test.ts` |
+| `labels.ts` | helpers leves seguros para o browser (não importe `parse.ts` em client component: ele traz o cheerio) |
+| `types.ts` | tipos do domínio (`NovelSummary`, `Novel`, `ChapterSummary`, `Chapter`) |
 
-Fluxo de dependência **sempre para dentro**: `presentation → application → domain ← infrastructure`.
+Fontes usadas:
+- **wp-json** (`/wp/v2/categories`, `/wp/v2/posts`): capítulos e texto. A categoria de capítulos
+  tem o **mesmo slug** da série (ex.: `shadow-slave-20260913`).
+- **HTML** `/series/?order=&genre[]=&status=&page=` e `/?s=`: listagens com capa, filtros e busca.
+- **admin-ajax** `ts_ac_do_search`: sugestões do autocomplete.
+- Página da série: lida só até a lista de capítulos (a página inteira passa de 2 MB).
 
-**Regras travadas por lint (oxlint, ver §5):**
-- `domain/` **não** importa application, infrastructure, presentation, `@orpc/*`, `drizzle-orm`, `@neondatabase/*`, http/router/container.
-- `application/` **não** importa presentation, `@orpc/*`, `drizzle-orm`, `@neondatabase/*`, http/router.
-- Arquivos do backend em **kebab-case** (`get-manga-core.ts`).
-- DI por **factory** (`makeX(deps) => (input) => ...`) composta em `container.ts`. Sem decorators.
-- Erros: lance `ORPCError` **só na presentation**; erro de domínio é tipo próprio traduzido na borda.
-- `.output()` do contrato é o DTO de saída — enxuto, sem campos sensíveis.
-
-> ⚠️ **DIVERGÊNCIA aceita:** a `application` importa `MangaMapper`/`ConnectorRegistry` de
-> `infrastructure/` (pragmático, não 100% puro). Por isso o lint **não** bane application→infrastructure.
-> Ao criar código novo, prefira injetar via port; mappers em application são tolerados.
+**Identidade:** obra = slug da série, capítulo = slug do post. Rotas: `/novel/<slug>`,
+`/read/<slug-do-capítulo>`, `/g/<gênero>`. Ids do catálogo antigo (tokens AES, ids AniList) são
+descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a home.
 
 ---
 
-## 3. Web (`apps/web`) — Next.js App Router ⚠️ DIVERGÊNCIA de stack
+## 3. Leitor e narração (`apps/web/lib/player/`, `components/reader/`)
 
-O guia Frontend assume **Vite SPA + React Router + TanStack Query + RHF + Zustand +
-feature-sliced**. **Este projeto NÃO usa isso** — é **Next.js 16 App Router** (RSC + Server
-Actions/route handlers). Regras reais aqui:
+- `script.ts`: separa fala e narração pelos travessões e atribui quem fala (tag de fala,
+  pista de ação, alternância de turnos, interlocutor mais próximo). Nome citado **dentro** da fala
+  nunca troca o falante.
+- `voices.ts`: voz + tom + estilo (criança, adolescente, adulto, idoso, imponente) determinísticos
+  por personagem; overrides salvos por obra. Texto quebrado em frases (≤200 chars) por causa do
+  corte do Chrome em falas longas.
+- `speech-player.ts`: player sobre `speechSynthesis` com contador de geração (erros de falas
+  canceladas são ignorados; interrupção externa repete o trecho; pausa externa sincroniza o botão).
+- `use-media-session.ts`: teclas de mídia / fone / controles do SO.
+- O leitor é **client-only** (`ChapterReaderLoader`, `ssr: false`): vozes, preferências e posição
+  vivem no navegador. Progresso por parágrafo no histórico local (`ProgressEntry.paragraph`).
 
-- **Dados de leitura/catálogo:** via **client oRPC** para o backend (`lib/orpc.server.ts`,
-  `api.manga.*`) — contract-first ponta a ponta. ✅
+---
+
+## 4. Web (`apps/web`) — Next.js App Router
+
+- **UI:** MUI com o tema do scale em `apps/web/theme/` (Minimal). Páginas de catálogo, leitor e
+  biblioteca são MUI; o restante da plataforma ainda usa `app/globals.css`, cujos tokens (`:root`)
+  seguem a paleta do tema. Página nova: faça em MUI.
 - **Features de plataforma** (auth, comentários, doações, studio, admin, afiliados, pixels,
-  aprendizado): **oRPC próprio do web** via o **adaptador Next** (`@orpc/server/fetch`). Router em
+  aprendizado): **oRPC próprio do web** via adaptador Next (`@orpc/server/fetch`). Router em
   `lib/rpc/` (`base.ts` builders + `routers/<domínio>.ts`), montado em `app/api/rpc/[...rest]`,
-  consumido no browser pelo client tipado `lib/rpc/client.ts` (`rpc.<domínio>.<proc>()`). Schemas
-  vêm de `@packages/contracts`; tipos derivam das procedures (não duplique). Persistência em
-  **Drizzle/Neon** no Postgres do web, com **contexto por request** (sessão Better Auth + `db`)
-  e guardas de auth/role nos builders (`pub`/`authed`/`staff`/`admin`).
-  ⚠️ **DIVERGÊNCIA aceita:** esse router é **separado** do `contracts`/DDD do backend (que segue
-  stateless de catálogo) — o web dona seu próprio estado. É oRPC, mas implementation-first (`os`),
-  não o `implement(contracts)` do backend.
-- **Exceções que continuam route handlers nativos** (`app/api/**/route.ts`): Better Auth
-  (`auth/[...all]`), cron, webhooks do Mercado Pago, links de e-mail (newsletter confirm/unsubscribe),
-  o proxy de catálogo (`list`, `[...path]`), export CSV do learn, e **uploads multipart** (capa de
-  obra, páginas de capítulo, imagem do pixel) — URLs fixas batidas por terceiros ou corpos binários.
-- **Estado:** URL (`searchParams`) para filtros/paginação; dados de servidor via **RSC/fetch**
-  (sem TanStack Query); sessão via Better Auth (`useSession`). Sem Zustand/Redux.
-- **Validação:** schemas Zod centralizados em **`@packages/contracts`** (movidos de `lib/schemas/*`),
-  reusados pelas procedures oRPC — uma fonte da verdade para schema + tipo.
-- **Componentes** em PascalCase (`Header.tsx`); libs/utilitários em kebab-case (`comment-tree.ts`).
-- **Auth:** Better Auth (`lib/auth/*`); RBAC via `role` (`hasRole` em `lib/roles.ts`).
-- **Degradação graciosa:** features de DB checam `dbEnabled`; R2 checa `r2Enabled`; e-mail `emailEnabled`.
-
-**Princípios do guia que VALEM aqui:** derive tipos do contrato (não duplique); um schema Zod
-para validar nas duas pontas; estado no "tipo certo"; a11y (label/role/aria); error boundaries
-por rota; não vazar segredo no `.output()`/resposta.
+  consumido no browser por `lib/rpc/client.ts` (`rpc.<domínio>.<proc>()`). Schemas vêm de
+  `@packages/contracts`. Persistência em **Drizzle/Neon** com contexto por request (sessão Better
+  Auth + `db`) e guardas nos builders (`pub`/`authed`/`staff`/`admin`).
+- **Route handlers nativos** (`app/api/**/route.ts`): Better Auth, cron, webhooks do Mercado Pago,
+  links de e-mail, listagem/sugestões do catálogo (`list`, `novels/suggest`), export CSV do learn e
+  uploads multipart.
+- **Estado:** URL (`searchParams`) para filtros; dados de servidor via RSC; biblioteca local em
+  `lib/library.ts` (localStorage, espelhada no banco quando logado); sessão via `useSession`.
+- **Componentes** em PascalCase; libs/utilitários em kebab-case.
+- **Degradação graciosa:** DB checa `dbEnabled`; R2 `r2Enabled`; e-mail `emailEnabled`.
 
 ---
 
-## 4. Padrão de dados (web)
+## 5. Padrão de dados (web)
 
 - Schema Drizzle único: `apps/web/lib/db/schema.ts`; migrações em `apps/web/drizzle/`
-  (`bun run db:generate` / `db:push`). Cliente lazy em `lib/db/index.ts` (`getDb`, `dbEnabled`).
-- Acesso a dados hoje é **inline nas procedures oRPC** (`lib/rpc/routers/*`), usando `context.db`.
-  ⚠️ Existe um padrão de repositório (`lib/repositories/{legal-requests,subscribers}.ts`) — ao
-  crescer, prefira extrair o acesso novo para `lib/repositories/` por consistência (não obrigatório
-  no MVP).
+  (`bun run db:generate` / `db:push`). Cliente lazy em `lib/db/index.ts`.
+- ⚠️ `DATABASE_URL` aponta para o banco de **produção**. Não rode `db:push`/migrações sem pedido
+  explícito.
+- As tabelas `cached_*`, `push_follows` e `work_state` sobraram do catálogo antigo e não são mais
+  usadas pelo código; removê-las exige migração (drop) aprovada.
 
 ---
 
-## 5. Tooling — oxc (substituiu Biome + ESLint)
+## 6. Tooling e testes
 
-- **Lint:** `oxlint` (config `.oxlintrc.json`). **Format:** `oxfmt` (config `.oxfmtrc.json`,
-  estilo: 2 espaços, 100 cols, aspas duplas, `;`, trailing all, lf).
-- Scripts: `bun run lint` · `bun run lint:fix` · `bun run format` · `bun run format:check`.
+- **Lint:** `oxlint` · **Format:** `oxfmt` (2 espaços, 100 cols, aspas duplas, `;`).
 - **`bun run ci`** = `format:check && lint && type-check` (deve ficar verde).
-- Guardrails de arquitetura DDD + kebab-case do backend são **travados via `.oxlintrc.json`
-  overrides** (§2). Provados: importar `infrastructure` no `domain` ou nomear arquivo fora de
-  kebab-case faz o lint falhar.
-
----
-
-## 6. Testes — `bun:test`
-
-- Runtime: **Bun** (`bun test`). Preload `apps/web/tests/setup.ts` stuba `server-only`.
-- Padrão do repo: **extrair lógica pura** em módulos (`lib/*`) e cobrir (ex.: `comment-tree`,
-  `perms.computeAccess`, schemas, `payments/status`). Integração de route handlers via
-  `mock.module` (auth/db/r2/mp) + `tests/helpers/fake-db.ts`. Render de componente puro via
-  `react-dom/server`.
-- Backend: `tests/unit` (offline) e `tests/e2e` (rede — só CI). Use cases testáveis com repo falso.
-- Não persiga 100% de cobertura — cubra regra, fronteiras e fluxos de dinheiro.
-
----
-
-## 7. Convenções de nomenclatura
-
-| Artefato | Convenção | Exemplo |
-|---|---|---|
-| Componente React (web) | PascalCase | `AuthForm.tsx` |
-| Util/lib (web e backend) | kebab-case | `comment-tree.ts`, `get-manga-core.ts` |
-| Use case (backend) | `makeX` factory | `makeGetMangaCore(deps)` |
-| Port de repositório | `XxxRepository` (type) | `ConnectorRegistry` |
-| Schema Zod | `xxxSchema` + tipo inferido | `commentCreateSchema` |
-| Tipo TS | PascalCase, sem `I`/`T` | `WorkAccess` |
-| Tabela Drizzle | camelCase plural | `userWorks` |
-| Erro de domínio | `XxxError` | (traduzido p/ `ORPCError` na presentation) |
-
----
-
-## 8. Evolução do contrato
-
-Aditivo (campo opcional/rota nova) é seguro. Breaking (renomear/remover/obrigatório) acende o
-build dos dois lados — resolva no mesmo PR. `.output()` estreitar = breaking; alargar = seguro.
-
----
-
-## 9. Comandos
+- **Testes:** `bun test` em `apps/web` (preload `tests/setup.ts` stuba `server-only`). Extraia
+  lógica pura e cubra (parsers do catálogo, parser de falas, vozes, player com `speechSynthesis`
+  falso, schemas, pagamentos). `mock.module` vale para o processo todo: ao mockar `@/lib/catalog`,
+  exporte todas as funções usadas pelos outros testes.
 
 ```
-bun run dev          # backend + web juntos
+bun run dev          # web
 bun run ci           # format:check + lint + type-check
-bun run test         # backend + web
+bun run test         # testes do web
 cd apps/web && bun run db:generate | db:push
 ```
-
----
-
-## 10. Resumo da conformidade (auditoria)
-
-| Área | Status |
-|---|---|
-| `contracts` fonte da verdade, sem deps extras, @orpc unificado | ✅ |
-| Backend DDD: domain puro, fluxo para dentro, DI por factory, kebab-case | ✅ (travado no lint) |
-| Backend: `application` importa mappers de `infrastructure` | ⚠️ divergência aceita |
-| Web é Next.js App Router (não o Vite SPA do guia) | ⚠️ por design |
-| Schemas Zod centralizados em `@packages/contracts` (web importa de lá) | ✅ |
-| Features de plataforma em **oRPC próprio do web** (`lib/rpc/`, adaptador Next), router separado do backend | ✅ contract-ish, ⚠️ separado por design |
-| Exceções nativas: auth/cron/webhooks/email-links/proxy-catálogo/uploads | ⚠️ por design |
-| Tooling oxc (oxlint+oxfmt) verde; Biome/ESLint removidos | ✅ |

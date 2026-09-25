@@ -1,15 +1,14 @@
 import Link from "next/link";
 
 import { EmojiText } from "@/components/EmojiText";
-import { routes } from "@/lib/routes";
 
 type Comment = {
   id: number;
   body: string;
   score: number;
   createdAt: Date;
-  workId: string | null;
-  workTitle: string | null;
+  href: string;
+  targetTitle: string | null;
 };
 
 const when = (d: Date) =>
@@ -25,13 +24,9 @@ export function ProfileComments({ comments }: { comments: Comment[] }) {
         {comments.map((c) => (
           <li key={c.id} className="profile-comment">
             <div className="profile-comment-head">
-              {c.workId && c.workTitle ? (
-                <Link href={routes.manga(c.workId, c.workTitle)} className="profile-comment-work">
-                  {c.workTitle}
-                </Link>
-              ) : (
-                <span className="muted">{c.workTitle ?? "obra"}</span>
-              )}
+              <Link href={c.href} className="profile-comment-work">
+                {c.targetTitle ?? "novel"}
+              </Link>
               <span className="profile-comment-meta">
                 ▲ {c.score} · {when(c.createdAt)}
               </span>

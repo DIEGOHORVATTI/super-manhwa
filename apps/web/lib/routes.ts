@@ -1,5 +1,3 @@
-import { mangaHref } from "@/lib/slug";
-
 /**
  * Single source of truth for every route in the web app — page paths AND the
  * native API endpoints we still reference as strings. Never hardcode a path in a
@@ -56,13 +54,11 @@ export const routes = {
     donations: "/admin/donations",
     pixels: "/admin/pixels",
     affiliates: "/admin/affiliates",
-    connectors: "/admin/connectors",
-    cache: "/admin/cache",
     legal: "/admin/legal",
   },
 
   // ── Dynamic pages ──
-  manga: (id: string, name: string) => mangaHref(id, name),
+  novel: (slug: string) => `/novel/${slug}`,
   org: (slug: string) => `/org/${slug}`,
   orgManage: (id: string | number) => `/orgs/${id}`,
   orgInvite: (token: string) => `/orgs/invite/${token}`,
@@ -74,16 +70,14 @@ export const routes = {
   studioWork: (id: string | number) => `/studio/${id}`,
   studioPreview: (workId: string | number, chapterId: string | number) =>
     `/studio/${workId}/preview/${chapterId}`,
-  read: (id: string | number, q?: { m?: string; mn?: string; n?: string; f?: string }) =>
-    `/read/${id}${qs(q)}`,
+  read: (chapterSlug: string) => `/read/${chapterSlug}`,
+  browse: (params?: Record<string, string | number | null | undefined>) => `/${qs(params)}`,
 
   // ── Native API endpoints (the ones still hit as strings) ──
   api: {
     rpc: "/api/rpc",
     list: "/api/list",
-    mangaSuggest: "/api/manga/suggest",
-    img: "/api/img",
-    proxy: "/api",
+    novelSuggest: "/api/novels/suggest",
     learnExport: "/api/learn/export",
     webhooks: {
       donations: "/api/donations/webhook",

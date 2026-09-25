@@ -16,68 +16,6 @@
     "**/.wrangler",
     "**/data",
     "**/*.jsonl",
-    "**/drizzle",
-    "packages/extension/javascript"
-  ],
-  "overrides": [
-    {
-      "files": ["apps/backend/src/**/*.ts"],
-      "rules": {
-        "unicorn/filename-case": ["error", { "case": "kebabCase" }]
-      }
-    },
-    {
-      "files": ["apps/backend/src/**/domain/**/*.ts"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "**/application/**",
-                  "**/infrastructure/**",
-                  "**/presentation/**",
-                  "@orpc/*",
-                  "drizzle-orm",
-                  "drizzle-orm/*",
-                  "@neondatabase/*",
-                  "@/http/*",
-                  "@/http",
-                  "@/container",
-                  "@/router"
-                ],
-                "message": "DDD violation: domain/ must not import application, infrastructure, presentation, transport (@orpc) or persistence (drizzle). Depend inward only (define interfaces/ports here)."
-              }
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "files": ["apps/backend/src/**/application/**/*.ts"],
-      "rules": {
-        "no-restricted-imports": [
-          "error",
-          {
-            "patterns": [
-              {
-                "group": [
-                  "**/presentation/**",
-                  "@orpc/*",
-                  "drizzle-orm",
-                  "drizzle-orm/*",
-                  "@neondatabase/*",
-                  "@/http/*",
-                  "@/http",
-                  "@/router"
-                ],
-                "message": "DDD violation: application/ must not import presentation, HTTP transport (@orpc) or the DB driver (drizzle). Orchestrate domain + ports; let infrastructure adapt persistence."
-              }
-            ]
-          }
-        ]
-      }
-    }
+    "**/drizzle"
   ]
 }

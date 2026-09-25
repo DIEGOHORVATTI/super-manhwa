@@ -23,6 +23,8 @@ export type ProgressEntry = {
   chapterId: string;
   chapterName?: string;
   chapterNo?: number;
+  /** Paragraph of a novel chapter, so a reload resumes the narration where it stopped. */
+  paragraph?: number;
   updatedAt: number;
 };
 
@@ -34,6 +36,14 @@ const K = {
 } as const;
 
 const HISTORY_CAP = 60;
+
+/**
+ * Works are Central Novel slugs (lowercase, digits, hyphens). Entries saved by
+ * the old multi-source catalog (AES tokens, numeric AniList ids) point nowhere
+ * now, so they are dropped on read and never merged back from the server.
+ */
+export const isNovelSlug = (id: string) =>
+  /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) && !/^\d+$/.test(id);
 const READ_CAP_PER_WORK = 2000;
 const EVENT = "mr-store-change";
 const isClient = typeof window !== "undefined";
@@ -96,13 +106,27 @@ function useStore<T>(key: string, fallback: T): T {
 }
 
 const EMPTY_FAVS: LibEntry[] = [];
+
+const filtered = new WeakMap<object, unknown>();
+
+/** Memoized per snapshot, so the filtered array stays referentially stable. */
+function withoutLegacy<T extends { id: string }>(list: T[]): T[] {
+  let result = filtered.get(list) as T[] | undefined;
+  if (!result) {
+    result = list.every((entry) => isNovelSlug(entry.id))
+      ? list
+      : list.filter((entry) => isNovelSlug(entry.id));
+    filtered.set(list, result);
+  }
+  return result;
+}
 const EMPTY_HISTORY: ProgressEntry[] = [];
 const EMPTY_READ: Record<string, string[]> = {};
 
 /* ----------------------------------- favorites ---------------------------- */
 
 export function useFavorites(): LibEntry[] {
-  return useStore<LibEntry[]>(K.favorites, EMPTY_FAVS);
+  return withoutLegacy(useStore<LibEntry[]>(K.favorites, EMPTY_FAVS));
 }
 
 export function useIsFavorite(id: string): boolean {
@@ -129,7 +153,7 @@ export function addFavorite(entry: Omit<LibEntry, "addedAt">): void {
 export function mergeFavorites(entries: LibEntry[]): void {
   if (entries.length === 0) return;
   const byId = new Map(readRaw<LibEntry[]>(K.favorites, []).map((f) => [f.id, f]));
-  for (const e of entries) if (!byId.has(e.id)) byId.set(e.id, e);
+  for (const e of entries) if (isNovelSlug(e.id) && !byId.has(e.id)) byId.set(e.id, e);
   writeRaw(
     K.favorites,
     [...byId.values()].sort((a, b) => b.addedAt - a.addedAt),
@@ -139,7 +163,7 @@ export function mergeFavorites(entries: LibEntry[]): void {
 /* ------------------------------- continue reading ------------------------- */
 
 export function useHistory(): ProgressEntry[] {
-  return useStore<ProgressEntry[]>(K.history, EMPTY_HISTORY);
+  return withoutLegacy(useStore<ProgressEntry[]>(K.history, EMPTY_HISTORY));
 }
 
 /** Record (or move to front) the last chapter opened for a work. */
@@ -162,6 +186,7 @@ export function mergeHistory(entries: ProgressEntry[]): void {
   if (entries.length === 0) return;
   const byId = new Map(readRaw<ProgressEntry[]>(K.history, []).map((e) => [e.id, e]));
   for (const e of entries) {
+    if (!isNovelSlug(e.id)) continue;
     const cur = byId.get(e.id);
     if (!cur || e.updatedAt > cur.updatedAt) byId.set(e.id, e);
   }
