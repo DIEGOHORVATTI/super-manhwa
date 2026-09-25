@@ -175,6 +175,8 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
         onNextChapter={() => next && goTo(next, isPlaying)}
         onOpenVoices={voicesDialog.onTrue}
         onOpenSettings={settingsDialog.onTrue}
+        hidden={settings.playerHidden}
+        onHiddenChange={(playerHidden) => setSettings({ playerHidden })}
       />
 
       <CharacterVoicesDialog
