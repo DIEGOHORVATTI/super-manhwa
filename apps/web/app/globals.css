@@ -13,6 +13,35 @@
   --radius: 10px;
   --maxw: 1280px;
   --header-h: 60px;
+  --header-bg: rgba(13, 13, 13, 0.94);
+  --header-island-bg: rgba(31, 31, 31, 0.96);
+  --glow: #1a1a1a;
+}
+/* Light scheme: aged paper, like Kindle's sepia (MUI sets data-color-scheme on <html>). */
+html[data-color-scheme="light"] {
+  color-scheme: light;
+  --bg: #f4ecd8;
+  --surface: #fbf5e6;
+  --surface-2: #ede3cc;
+  --border: rgba(91, 70, 54, 0.16);
+  --text: #3b2f25;
+  --muted: #6f5f4e;
+  --accent: #007867;
+  --accent-hover: #00a76f;
+  --header-bg: rgba(244, 236, 216, 0.94);
+  --header-island-bg: rgba(251, 245, 230, 0.96);
+  --glow: #fbf5e6;
+}
+html[data-color-scheme="light"] img[src*="white_logo"] {
+  filter: brightness(0) invert(0.22) sepia(0.6);
+}
+html[data-color-scheme="light"] .brand-name {
+  background: none;
+  -webkit-text-fill-color: var(--text);
+}
+html[data-color-scheme="light"] .header-nav {
+  background: rgba(91, 70, 54, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(91, 70, 54, 0.1);
 }
 * {
   box-sizing: border-box;
@@ -31,7 +60,7 @@ body {
     sans-serif;
 }
 body {
-  background-image: radial-gradient(1200px 600px at 50% -10%, #1a1a1a 0%, var(--bg) 60%);
+  background-image: radial-gradient(1200px 600px at 50% -10%, var(--glow) 0%, var(--bg) 60%);
   min-height: 100vh;
   /* 100vw full-bleed sections include the scrollbar width; clip the overflow. */
   overflow-x: clip;
@@ -67,7 +96,7 @@ a:hover {
   border-radius: 0;
   /* Mostly opaque on purpose | backdrop-filter blur isn't reliable here, so the
      bar reads as solid glass via opacity, not blur. */
-  background: rgba(13, 13, 13, 0.94);
+  background: var(--header-bg);
   backdrop-filter: blur(14px) saturate(1.4);
   -webkit-backdrop-filter: blur(14px) saturate(1.4);
   box-shadow: none;
@@ -86,8 +115,8 @@ a:hover {
   width: calc(100% - 28px);
   max-width: 1100px;
   border-radius: 18px;
-  border-color: rgba(145, 158, 171, 0.16);
-  background: rgba(31, 31, 31, 0.96);
+  border-color: var(--border);
+  background: var(--header-island-bg);
   box-shadow:
     0 14px 40px rgba(0, 0, 0, 0.5),
     0 2px 8px rgba(0, 0, 0, 0.35);
@@ -276,7 +305,7 @@ a:hover {
     max-width: 100%;
     border-radius: 0;
     border-color: transparent;
-    background: rgba(13, 13, 13, 0.96);
+    background: var(--header-bg);
     box-shadow: none;
   }
   /* Auto-hide on scroll down, reveal on scroll up (mobile only). Keeps the
@@ -330,8 +359,8 @@ a:hover {
     justify-content: space-around;
     gap: 2px;
     padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
-    background: rgba(13, 13, 13, 0.98);
-    border-top: 1px solid rgba(145, 158, 171, 0.16);
+    background: var(--header-bg);
+    border-top: 1px solid var(--border);
     box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.45);
     transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
   }
