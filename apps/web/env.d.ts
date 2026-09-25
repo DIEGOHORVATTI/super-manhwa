@@ -16,10 +16,8 @@ declare namespace NodeJS {
 
     // Site + services
     SITE_URL?: string;
-    DELIVERY_SERVICE_URL?: string;
-    API_KEY?: string;
     CRON_SECRET?: string;
-    IMAGE_SIGN_SECRET?: string;
+    FLARESOLVERR_URL?: string;
 
     // Auth
     BETTER_AUTH_URL?: string;

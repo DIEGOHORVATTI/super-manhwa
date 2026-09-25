@@ -91,8 +91,6 @@ export default async function AdminOverview() {
       href: routes.admin.affiliates,
     },
     { label: "Pixels", hint: "Aprovação de anúncios", icon: "mouse", href: routes.admin.pixels },
-    { label: "Conectores", hint: "Status e latência", icon: "plug", href: routes.admin.connectors },
-    { label: "Cache", hint: "Obras pré-carregadas", icon: "database", href: routes.admin.cache },
     { label: "DMCA", hint: "Pedidos legais", icon: "scale", href: routes.admin.legal },
   ];
 

@@ -3,7 +3,7 @@ import { z } from "zod";
 /**
  * Single source of truth for environment variables (web app). Every `process.env`
  * read goes through `env` exported here | call sites never touch `process.env`
- * directly. Mirrors the backend's `src/config/env.ts`.
+ * directly.
  *
  * Isomorphic by design: each variable is referenced as a literal `process.env.X`
  * (so Next can inline `NEXT_PUBLIC_*` into the client bundle); on the client the
@@ -22,10 +22,7 @@ const EnvSchema = z.object({
 
   // Public site + services
   SITE_URL: opt,
-  DELIVERY_SERVICE_URL: z.string().default("http://localhost:8787"),
-  API_KEY: opt,
   CRON_SECRET: opt,
-  IMAGE_SIGN_SECRET: opt,
   FLARESOLVERR_URL: opt,
 
   // Auth
@@ -62,10 +59,7 @@ export const env = EnvSchema.parse({
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
   SITE_URL: process.env.SITE_URL,
-  DELIVERY_SERVICE_URL: process.env.DELIVERY_SERVICE_URL,
-  API_KEY: process.env.API_KEY,
   CRON_SECRET: process.env.CRON_SECRET,
-  IMAGE_SIGN_SECRET: process.env.IMAGE_SIGN_SECRET,
   FLARESOLVERR_URL: process.env.FLARESOLVERR_URL,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   BETTER_AUTH_API_KEY: process.env.BETTER_AUTH_API_KEY,
