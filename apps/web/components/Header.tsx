@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef, useState } from "react";
+import { ColorModeToggle } from "@/components/ColorModeToggle";
 import { NovelSearch } from "@/components/novel/NovelSearch";
 import { Icon, type IconName } from "@/components/Icon";
 import { UserMenu } from "@/components/UserMenu";
@@ -185,6 +186,7 @@ export function Header() {
             <NovelSearch />
           </div>
 
+          <ColorModeToggle />
           <UserMenu />
         </div>
       </header>

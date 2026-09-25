@@ -95,12 +95,12 @@ export const grey = createPaletteChannel(themeConfig.palette.grey);
  * ➤
  */
 export const text = {
-  light: createPaletteChannel({ primary: grey[800], secondary: grey[600], disabled: grey[500] }),
+  light: createPaletteChannel({ primary: "#3B2F25", secondary: "#6F5F4E", disabled: "#A08F7A" }),
   dark: createPaletteChannel({ primary: "#FFFFFF", secondary: grey[500], disabled: grey[600] }),
 };
 
 export const background = {
-  light: createPaletteChannel({ paper: "#FFFFFF", default: "#FFFFFF", neutral: grey[200] }),
+  light: createPaletteChannel({ paper: "#FBF5E6", default: "#F4ECD8", neutral: "#EDE3CC" }),
   dark: createPaletteChannel({ paper: "#1F1F1F", default: "#0D0D0D", neutral: "#1A1A1A" }),
 };
 
@@ -157,6 +157,7 @@ const basePalette: ColorSystemOptions["palette"] = {
 export const palette: SchemesRecord<ColorSystemOptions["palette"]> = {
   light: {
     ...basePalette,
+    divider: "rgba(91, 70, 54, 0.16)",
     text: text.light,
     background: background.light,
     action: action("light"),
