@@ -1,7 +1,7 @@
 "use client";
 
 import type { Gender } from "@/lib/player/script";
-import type { VoiceStyle, VoiceChoice, ResolvedVoice } from "@/lib/player/voices";
+import type { VoiceStyle, VoiceChoice, VoiceOption, ResolvedVoice } from "@/lib/player/voices";
 
 import Stack from "@mui/material/Stack";
 import Button from "@mui/material/Button";
@@ -22,7 +22,7 @@ type CharacterVoiceRowProps = {
   gender?: Gender;
   resolved: ResolvedVoice;
   override?: VoiceChoice;
-  voices: SpeechSynthesisVoice[];
+  voices: VoiceOption[];
   onChange: (override?: VoiceChoice) => void;
   onPreview: () => void;
 };

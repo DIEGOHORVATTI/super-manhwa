@@ -1,5 +1,7 @@
 import { beforeEach, expect, test } from "bun:test";
 
+import type { SpeakHandlers, Speaker } from "@/lib/player/speakers";
+
 import { SpeechPlayer } from "@/lib/player/speech-player";
 
 type FakeUtterance = {
@@ -27,6 +29,7 @@ beforeEach(() => {
     speechSynthesis: {
       speak: (utterance: FakeUtterance) => spoken.push(utterance),
       cancel: () => {},
+      getVoices: () => [],
       resume: () => {
         resumed += 1;
       },
@@ -92,5 +95,46 @@ test("pausa pela tecla de mídia atualiza o estado e o play volta a falar", () =
 
   spoken.at(-1)!.onpause!();
   spoken.at(-1)!.onresume!();
+  expect(player.getSnapshot().status).toBe("playing");
+});
+
+test("motor com pausa nativa retoma do mesmo ponto e muda a velocidade sem reiniciar", () => {
+  const calls: string[] = [];
+  let handlers: SpeakHandlers | undefined;
+  const speaker: Speaker = {
+    speak: (item, rate, next) => {
+      handlers = next;
+      calls.push(`speak:${item.text}@${rate}`);
+    },
+    cancel: () => calls.push("cancel"),
+    pause: () => (calls.push("pause"), true),
+    resume: () => (calls.push("resume"), true),
+    setRate: (rate) => (calls.push(`rate:${rate}`), true),
+  };
+  const player = new SpeechPlayer(0, speaker);
+  player.load(queue);
+  player.play();
+  player.pause();
+  player.play();
+  player.setRate(1.5);
+
+  expect(calls).toEqual(["speak:Primeiro.@1", "pause", "resume", "rate:1.5"]);
+  expect(player.getSnapshot().status).toBe("playing");
+
+  handlers!.onEnd();
+  expect(calls.at(-1)).toBe("speak:Segundo.@1.5");
+});
+
+test("play antes da fila existir espera as vozes em vez de encerrar o capítulo", () => {
+  const player = new SpeechPlayer();
+  let finished = false;
+  player.onFinished = () => (finished = true);
+
+  player.play(0);
+  expect(finished).toBe(false);
+  expect(spoken).toHaveLength(0);
+
+  player.load(queue);
+  expect(spoken.at(-1)!.text).toBe("Primeiro.");
   expect(player.getSnapshot().status).toBe("playing");
 });

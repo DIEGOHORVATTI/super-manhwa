@@ -12,15 +12,25 @@ export type VoiceChoice = {
 
 export type VoiceOverrides = Record<string, VoiceChoice>;
 
+export type VoiceEngine = "neural" | "browser";
+
+export type VoiceOption = {
+  id: string;
+  name: string;
+  lang: string;
+  gender?: Gender;
+  multilingual?: boolean;
+};
+
 export type VoiceContext = {
-  voices: SpeechSynthesisVoice[];
+  voices: VoiceOption[];
   narratorVoiceURI?: string;
   overrides: VoiceOverrides;
   characterVoices: boolean;
 };
 
 export type ResolvedVoice = {
-  voice?: SpeechSynthesisVoice;
+  voice?: VoiceOption;
   style: VoiceStyle;
   pitch: number;
   rate: number;
@@ -64,17 +74,22 @@ const STYLE_BY_NOUN: Record<string, VoiceStyle> = Object.fromEntries([
 ]);
 const MAX_CHUNK = 200;
 
-export function estimateGender(voice: SpeechSynthesisVoice): Gender | undefined {
+export function estimateGender(voice: VoiceOption): Gender | undefined {
+  if (voice.gender) return voice.gender;
   if (FEMALE_VOICE.test(voice.name)) return "female";
   if (MALE_VOICE.test(voice.name)) return "male";
   return undefined;
 }
 
-export function isPortuguese(voice: SpeechSynthesisVoice) {
+export function browserVoiceOption(voice: SpeechSynthesisVoice): VoiceOption {
+  return { id: voice.voiceURI, name: voice.name, lang: voice.lang };
+}
+
+export function isPortuguese(voice: VoiceOption) {
   return voice.lang.toLowerCase().startsWith("pt");
 }
 
-export function defaultNarratorVoice(voices: SpeechSynthesisVoice[]) {
+export function defaultNarratorVoice(voices: VoiceOption[]) {
   return (
     voices.find((voice) => voice.lang.toLowerCase() === "pt-br") ??
     voices.find(isPortuguese) ??
@@ -99,12 +114,15 @@ function clampPitch(pitch: number) {
 function automaticVoice(
   speaker: string,
   gender: Gender | undefined,
-  voices: SpeechSynthesisVoice[],
+  voices: VoiceOption[],
+  narrator?: VoiceOption,
 ) {
-  const portuguese = voices.filter(isPortuguese);
-  const sameGender = portuguese.filter((voice) => gender && estimateGender(voice) === gender);
-  const pool = sameGender.length ? sameGender : portuguese.length ? portuguese : voices;
-  return pool[hash(speaker) % pool.length];
+  const speakable = voices.filter((voice) => isPortuguese(voice) || voice.multilingual);
+  const candidates = speakable.length ? speakable : voices;
+  const sameGender = candidates.filter((voice) => gender && estimateGender(voice) === gender);
+  const pool = sameGender.length ? sameGender : candidates;
+  const distinct = pool.length > 1 ? pool.filter((voice) => voice.id !== narrator?.id) : pool;
+  return distinct[hash(speaker) % distinct.length];
 }
 
 export function characterVoice(
@@ -112,7 +130,7 @@ export function characterVoice(
   gender: Gender | undefined,
   context: VoiceContext,
 ): ResolvedVoice {
-  const byUri = (uri?: string) => context.voices.find((voice) => voice.voiceURI === uri);
+  const byUri = (id?: string) => context.voices.find((voice) => voice.id === id);
   const narrator = byUri(context.narratorVoiceURI) ?? defaultNarratorVoice(context.voices);
   const override = context.overrides[speaker];
   const isNarration = speaker === NARRATOR || !context.characterVoices;
@@ -127,7 +145,7 @@ export function characterVoice(
   return {
     voice:
       byUri(override?.voiceURI) ??
-      (isNarration ? narrator : automaticVoice(speaker, gender, context.voices)) ??
+      (isNarration ? narrator : automaticVoice(speaker, gender, context.voices, narrator)) ??
       narrator,
     style,
     pitch: clampPitch(override?.pitch ?? automaticPitch),

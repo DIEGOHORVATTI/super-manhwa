@@ -3,8 +3,7 @@ import { test, expect } from "bun:test";
 import { buildScript } from "@/lib/player/script";
 import { buildQueue, characterVoice, splitIntoChunks } from "@/lib/player/voices";
 
-const voice = (name: string, lang = "pt-BR") =>
-  ({ name, lang, voiceURI: name, default: false, localService: true }) as SpeechSynthesisVoice;
+const voice = (name: string, lang = "pt-BR") => ({ id: name, name, lang });
 
 const voices = [
   voice("Google português do Brasil"),
@@ -38,10 +37,12 @@ test("frases longas viram pedaços curtos sem perder texto", () => {
 
 test("fila mantém narração e fala do mesmo parágrafo com vozes diferentes", () => {
   const queue = buildQueue(buildScript(["— Não. — disse Orsted."]), context);
-  expect(queue.map((item) => [item.paragraph, item.text, item.voice?.name])).toEqual([
-    [0, "Não.", "Microsoft Antonio"],
-    [0, "disse Orsted.", "Google português do Brasil"],
+  expect(queue.map((item) => [item.paragraph, item.text])).toEqual([
+    [0, "Não."],
+    [0, "disse Orsted."],
   ]);
+  expect(queue[1].voice?.name).toBe("Google português do Brasil");
+  expect(queue[0].voice?.name).not.toBe(queue[1].voice?.name);
 });
 
 test("tom automático fica sempre dentro da faixa do gênero", () => {
@@ -71,4 +72,24 @@ test('estilo muda tom e velocidade, e é inferido de substantivos como "velho"',
   });
   expect(child.pitch).toBeGreaterThan(1.5);
   expect(child.rate).toBeGreaterThan(1);
+});
+
+test("vozes multilíngues entram no sorteio dos personagens e o narrador fica de fora", () => {
+  const neural = [
+    { id: "pt-BR-FranciscaNeural", name: "Francisca", lang: "pt-BR", gender: "female" as const },
+    {
+      id: "en-US-AvaMultilingualNeural",
+      name: "Ava",
+      lang: "en-US",
+      gender: "female" as const,
+      multilingual: true,
+    },
+    { id: "en-US-JennyNeural", name: "Jenny", lang: "en-US", gender: "female" as const },
+  ];
+  const chosen = characterVoice("Sylphie", "female", {
+    voices: neural,
+    overrides: {},
+    characterVoices: true,
+  });
+  expect(chosen.voice?.id).toBe("en-US-AvaMultilingualNeural");
 });

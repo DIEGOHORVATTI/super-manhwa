@@ -78,6 +78,8 @@ export const routes = {
     rpc: "/api/rpc",
     list: "/api/list",
     novelSuggest: "/api/novels/suggest",
+    tts: "/api/tts",
+    ttsVoices: "/api/tts/voices",
     learnExport: "/api/learn/export",
     webhooks: {
       donations: "/api/donations/webhook",
