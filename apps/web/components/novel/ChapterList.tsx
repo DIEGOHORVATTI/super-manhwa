@@ -210,7 +210,9 @@ export function ChapterList({ novelSlug, novelTitle, chapters }: ChapterListProp
               onChange={() => toggle(group.key)}
               slotProps={{ transition: { unmountOnExit: true } }}
               sx={(theme) => ({
-                ...theme.mixins.paperStyles(theme),
+                bgcolor: "background.paper",
+                backgroundImage: "none",
+                "&.Mui-expanded": theme.mixins.paperStyles(theme),
                 borderRadius: 2,
                 border: `1px solid ${theme.vars.palette.divider}`,
                 boxShadow: "none",
