@@ -4,23 +4,29 @@ import type { SelectOption } from "@/components/mui/SelectAutocomplete";
 
 import { SelectAutocomplete } from "@/components/mui/SelectAutocomplete";
 
+import type { VoiceOption } from "@/lib/player/voices";
+
 import { isPortuguese } from "@/lib/player/voices";
 
 type VoiceSelectProps = {
   label: string;
   value: string;
-  voices: SpeechSynthesisVoice[];
+  voices: VoiceOption[];
   emptyLabel?: string;
-  onChange: (voiceURI: string) => void;
+  onChange: (voiceId: string) => void;
 };
 
 export function VoiceSelect({ label, value, voices, emptyLabel, onChange }: VoiceSelectProps) {
   const options: SelectOption<string>[] = [
     ...(emptyLabel ? [{ value: "", label: emptyLabel }] : []),
     ...voices.map((voice) => ({
-      value: voice.voiceURI,
+      value: voice.id,
       label: `${voice.name} (${voice.lang})`,
-      group: isPortuguese(voice) ? "Português" : "Outros idiomas",
+      group: isPortuguese(voice)
+        ? "Português"
+        : voice.multilingual
+          ? "Multilíngues (falam português)"
+          : "Outros idiomas",
     })),
   ];
 

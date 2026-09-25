@@ -1,10 +1,11 @@
 "use client";
 
-import type { VoiceOverrides } from "@/lib/player/voices";
+import type { VoiceEngine, VoiceOverrides } from "@/lib/player/voices";
 
 import { useStoredState } from "@/lib/use-stored-state";
 
 export type ReaderSettings = {
+  engine: VoiceEngine;
   rate: number;
   fontSize: number;
   narratorVoiceURI?: string;
@@ -19,6 +20,7 @@ export const RATE_OPTIONS = [0.5, 0.75, 0.9, 1, 1.1, 1.2, 1.25, 1.5, 1.75, 2, 2.
 }));
 
 const DEFAULT_SETTINGS: ReaderSettings = {
+  engine: "neural",
   rate: 1,
   fontSize: 18,
   characterVoices: true,

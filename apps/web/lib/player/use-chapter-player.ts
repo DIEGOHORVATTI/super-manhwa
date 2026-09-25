@@ -7,8 +7,9 @@ import { useRef, useMemo, useState, useEffect, useSyncExternalStore } from "reac
 
 import { buildQueue } from "@/lib/player/voices";
 import { buildScript } from "@/lib/player/script";
-import { useVoices } from "./use-voices";
+import { useBrowserVoices, useNeuralVoices } from "./use-voices";
 import { SpeechPlayer } from "@/lib/player/speech-player";
+import { NeuralAudioSpeaker, WebSpeechSpeaker } from "@/lib/player/speakers";
 
 type UseChapterPlayerOptions = {
   paragraphs: string[];
@@ -29,8 +30,15 @@ export function useChapterPlayer({
   onParagraphChange,
   onFinished,
 }: UseChapterPlayerOptions) {
-  const voices = useVoices();
-  const [player] = useState(() => new SpeechPlayer(startParagraph));
+  const browserVoices = useBrowserVoices();
+  const neural = useNeuralVoices(settings.engine === "neural");
+  const engine = settings.engine === "neural" && !neural.failed ? "neural" : "browser";
+  const voices = engine === "neural" ? neural.voices : browserVoices;
+  const speaker = useMemo(
+    () => (engine === "neural" ? new NeuralAudioSpeaker() : new WebSpeechSpeaker()),
+    [engine],
+  );
+  const [player] = useState(() => new SpeechPlayer(startParagraph, speaker));
   const state = useSyncExternalStore(player.subscribe, player.getSnapshot);
   const pendingStart = useRef<{ paragraph: number; autoplay: boolean } | null>({
     paragraph: startParagraph,
@@ -44,7 +52,7 @@ export function useChapterPlayer({
 
   const voiceContext = useMemo<VoiceContext>(
     () => ({
-      voices,
+      voices: voices ?? [],
       overrides,
       narratorVoiceURI: settings.narratorVoiceURI,
       characterVoices: settings.characterVoices,
@@ -52,7 +60,12 @@ export function useChapterPlayer({
     [voices, overrides, settings.narratorVoiceURI, settings.characterVoices],
   );
 
-  const queue = useMemo(() => buildQueue(script, voiceContext), [script, voiceContext]);
+  const queue = useMemo(
+    () => (voices ? buildQueue(script, voiceContext) : []),
+    [voices, script, voiceContext],
+  );
+
+  useEffect(() => player.setSpeaker(speaker), [player, speaker]);
 
   useEffect(() => {
     const start = pendingStart.current;
@@ -83,5 +96,5 @@ export function useChapterPlayer({
     callbacks.current.onParagraphChange(state.paragraph);
   }, [state.paragraph]);
 
-  return { player, state, script, voiceContext };
+  return { player, state, script, voiceContext, engine, neuralFailed: neural.failed };
 }

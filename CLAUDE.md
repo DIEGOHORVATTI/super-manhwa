@@ -53,8 +53,16 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
 - `voices.ts`: voz + tom + estilo (criança, adolescente, adulto, idoso, imponente) determinísticos
   por personagem; overrides salvos por obra. Texto quebrado em frases (≤200 chars) por causa do
   corte do Chrome em falas longas.
-- `speech-player.ts`: player sobre `speechSynthesis` com contador de geração (erros de falas
-  canceladas são ignorados; interrupção externa repete o trecho; pausa externa sincroniza o botão).
+- `speech-player.ts`: fila, posição e contador de geração (erros de falas canceladas são
+  ignorados; interrupção externa repete o trecho; pausa externa sincroniza o botão). O som vem de
+  um `Speaker` (`speakers.ts`):
+  - `NeuralAudioSpeaker` (padrão): vozes neurais do Microsoft Edge via `/api/tts` (MP3 num
+    `<audio>`; pausa no lugar, velocidade por `playbackRate`, pré-carrega 3 trechos). A rota fala
+    com o serviço "Read Aloud" do Edge por WebSocket (`lib/tts/edge.ts`, protocolo em
+    `edge-protocol.ts`, não oficial: se quebrar, atualize `CHROMIUM_VERSION` a partir do projeto
+    `rany2/edge-tts`). Respostas são determinísticas e ficam 1 ano no cache da CDN.
+  - `WebSpeechSpeaker`: vozes do navegador (`speechSynthesis`), usado se o usuário escolher ou se
+    as vozes neurais falharem.
 - `use-media-session.ts`: teclas de mídia / fone / controles do SO.
 - O leitor é **client-only** (`ChapterReaderLoader`, `ssr: false`): vozes, preferências e posição
   vivem no navegador. Progresso por parágrafo no histórico local (`ProgressEntry.paragraph`).

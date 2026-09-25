@@ -12,7 +12,6 @@ import { useEffect, useState } from "react";
 import { chapterLabel } from "@/lib/catalog/labels";
 import { markChapterRead, recordProgress, useHistory } from "@/lib/library";
 import { dbRecordProgress } from "@/lib/library-db";
-import { previewVoice } from "@/lib/player/speech-player";
 import { useChapterPlayer } from "@/lib/player/use-chapter-player";
 import { useMediaSession } from "@/lib/player/use-media-session";
 import { useCharacterVoices, useReaderSettings } from "@/lib/player/use-reader-settings";
@@ -83,7 +82,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
     router.push(routes.read(target.slug));
   };
 
-  const { player, state, script, voiceContext } = useChapterPlayer({
+  const { player, state, script, voiceContext, neuralFailed } = useChapterPlayer({
     paragraphs: chapter.paragraphs,
     settings,
     overrides,
@@ -119,15 +118,8 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
     onSkip: (offset) => player.skip(offset),
   });
 
-  const preview = (speaker: string) => {
-    player.pause();
-    const { voice, pitch, rate } = characterVoice(
-      speaker,
-      script.genders.get(speaker),
-      voiceContext,
-    );
-    previewVoice(voice, pitch, settings.rate * rate);
-  };
+  const preview = (speaker: string) =>
+    player.preview(characterVoice(speaker, script.genders.get(speaker), voiceContext));
 
   const navigation = (
     <ChapterNavigation
@@ -192,6 +184,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
         open={settingsDialog.value}
         settings={settings}
         voices={voiceContext.voices}
+        neuralFailed={neuralFailed}
         onChange={setSettings}
         onClose={settingsDialog.onFalse}
       />
