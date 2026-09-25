@@ -6346,3 +6346,35 @@ html[data-reader] .footer {
   background: var(--surface);
   font-size: 13px;
 }
+
+/* Org management: banner+logo editor and invite link */
+.org-banner-edit {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  min-height: 120px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background-color: var(--surface-2);
+  background-size: cover;
+  background-position: center;
+}
+.org-img-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+.org-banner-edit .org-page-avatar {
+  border: 2px solid var(--surface);
+}
+.org-invite-link {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--surface-2);
+  font-size: 12px;
+  word-break: break-all;
+}

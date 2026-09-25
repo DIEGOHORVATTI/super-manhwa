@@ -18,7 +18,7 @@ import { env } from "@/lib/env";
 import { publicUrlFor, r2Enabled } from "@/lib/r2";
 import { routes } from "@/lib/routes";
 import * as schema from "@/lib/db/schema";
-import { authed } from "../base";
+import { authed, pub } from "../base";
 import type { RpcDb } from "../context";
 
 /** Role label for the invitation e-mail. */
@@ -135,6 +135,26 @@ export const orgRouter = {
   }),
 
   invite: {
+    /** Public peek at a pending invite (so the accept page can show context). */
+    peek: pub.input(z.object({ token: z.string() })).handler(async ({ input, context }) => {
+      const { orgInvitations, teams } = schema;
+      const [row] = await context.db
+        .select({
+          email: orgInvitations.email,
+          role: orgInvitations.role,
+          status: orgInvitations.status,
+          orgName: teams.name,
+        })
+        .from(orgInvitations)
+        .leftJoin(teams, eq(orgInvitations.teamId, teams.id))
+        .where(eq(orgInvitations.token, input.token))
+        .limit(1);
+      if (!row || row.status !== "pending") return { invite: null };
+      return {
+        invite: { email: row.email, role: row.role, orgName: row.orgName ?? "Organização" },
+      };
+    }),
+
     /** Invite someone by e-mail (owner only). Returns the link too, so the owner
      *  can share it manually when e-mail isn't configured. */
     send: authed

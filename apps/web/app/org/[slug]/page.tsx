@@ -4,20 +4,22 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Cover } from "@/components/Cover";
+import { getServerSession } from "@/lib/auth/session";
 import { dbEnabled, getDb, schema } from "@/lib/db";
 import { publicUrlFor, r2Enabled } from "@/lib/r2";
 import { routes } from "@/lib/routes";
 
 type Params = Promise<{ slug: string }>;
 
-/** Public org page: identity + members + published works. Private orgs 404. */
+/** Public org page: identity + members + published works. A private org is
+ *  visible only to its members; to everyone else it 404s. */
 async function loadOrg(slug: string) {
   if (!dbEnabled) return null;
   const db = getDb();
   const { teams, teamMembers, userWorks, user } = schema;
 
   const [org] = await db.select().from(teams).where(eq(teams.slug, slug)).limit(1);
-  if (!org || !org.isPublic) return null;
+  if (!org) return null;
 
   const members = await db
     .select({
@@ -29,6 +31,12 @@ async function loadOrg(slug: string) {
     .from(teamMembers)
     .leftJoin(user, eq(teamMembers.userId, user.id))
     .where(eq(teamMembers.teamId, org.id));
+
+  if (!org.isPublic) {
+    const session = await getServerSession();
+    const callerId = session?.user?.id ?? null;
+    if (!callerId || !members.some((m) => m.userId === callerId)) return null;
+  }
 
   const works = await db
     .select({
