@@ -26,6 +26,7 @@ const EnvSchema = z.object({
   API_KEY: opt,
   CRON_SECRET: opt,
   IMAGE_SIGN_SECRET: opt,
+  FLARESOLVERR_URL: opt,
 
   // Auth
   BETTER_AUTH_URL: opt,
@@ -65,6 +66,7 @@ export const env = EnvSchema.parse({
   API_KEY: process.env.API_KEY,
   CRON_SECRET: process.env.CRON_SECRET,
   IMAGE_SIGN_SECRET: process.env.IMAGE_SIGN_SECRET,
+  FLARESOLVERR_URL: process.env.FLARESOLVERR_URL,
   BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
   BETTER_AUTH_API_KEY: process.env.BETTER_AUTH_API_KEY,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
