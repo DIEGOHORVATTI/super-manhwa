@@ -5,7 +5,7 @@ import type { VoiceContext, VoiceOverrides } from "@/lib/player/voices";
 
 import { useRef, useMemo, useState, useEffect, useSyncExternalStore } from "react";
 
-import { buildQueue } from "@/lib/player/voices";
+import { buildQueue, englishQueue, englishVoice } from "@/lib/player/voices";
 import { buildScript } from "@/lib/player/script";
 import { useBrowserVoices, useNeuralVoices } from "./use-voices";
 import { SpeechPlayer } from "@/lib/player/speech-player";
@@ -13,6 +13,8 @@ import { NeuralAudioSpeaker, WebSpeechSpeaker } from "@/lib/player/speakers";
 
 type UseChapterPlayerOptions = {
   paragraphs: string[];
+  /** English paragraphs for the English mode: undefined while loading, null if unavailable. */
+  english?: string[] | null;
   settings: ReaderSettings;
   overrides: VoiceOverrides;
   startParagraph: number;
@@ -23,6 +25,7 @@ type UseChapterPlayerOptions = {
 
 export function useChapterPlayer({
   paragraphs,
+  english,
   settings,
   overrides,
   startParagraph,
@@ -60,10 +63,14 @@ export function useChapterPlayer({
     [voices, overrides, settings.narratorVoiceURI, settings.characterVoices],
   );
 
-  const queue = useMemo(
-    () => (voices ? buildQueue(script, voiceContext) : []),
-    [voices, script, voiceContext],
-  );
+  const englishMode = settings.english;
+  const queue = useMemo(() => {
+    if (!voices) return [];
+    const portuguese = buildQueue(script, voiceContext);
+    if (englishMode === "off" || english === null) return portuguese;
+    if (!english) return [];
+    return englishQueue(portuguese, english, englishVoice(voices), englishMode);
+  }, [voices, script, voiceContext, englishMode, english]);
 
   useEffect(() => player.setSpeaker(speaker), [player, speaker]);
 

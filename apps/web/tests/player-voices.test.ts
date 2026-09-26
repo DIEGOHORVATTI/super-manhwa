@@ -1,7 +1,13 @@
 import { test, expect } from "bun:test";
 
 import { buildScript } from "@/lib/player/script";
-import { buildQueue, characterVoice, splitIntoChunks } from "@/lib/player/voices";
+import {
+  buildQueue,
+  characterVoice,
+  englishQueue,
+  englishVoice,
+  splitIntoChunks,
+} from "@/lib/player/voices";
 
 const voice = (name: string, lang = "pt-BR") => ({ id: name, name, lang });
 
@@ -92,4 +98,26 @@ test("vozes multilíngues entram no sorteio dos personagens e o narrador fica de
     characterVoices: true,
   });
   expect(chosen.voice?.id).toBe("en-US-AvaMultilingualNeural");
+});
+
+test("modo ouvir toca cada parágrafo em inglês e depois em português", () => {
+  const english = voice("en-US-AvaMultilingualNeural", "en-US");
+  const script = buildScript(["Ele sorriu.", "— Vamos — disse Rudeus."]);
+  const portuguese = buildQueue(script, context);
+  const queue = englishQueue(
+    portuguese,
+    ["He smiled.", "Let's go, said Rudeus."],
+    english,
+    "listen",
+  );
+
+  expect(queue.map((item) => [item.paragraph, item.text])).toEqual([
+    [0, "He smiled."],
+    [0, "Ele sorriu."],
+    [1, "Let's go, said Rudeus."],
+    ...portuguese.filter((item) => item.paragraph === 1).map((item) => [1, item.text]),
+  ]);
+  expect(queue[0].voice).toBe(english);
+  expect(englishQueue(portuguese, ["He smiled."], english, "read")).toHaveLength(1);
+  expect(englishVoice([...voices, english])).toBe(english);
 });

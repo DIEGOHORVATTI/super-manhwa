@@ -38,6 +38,26 @@ function hasPendingAutoplay(chapterSlug: string) {
   return sessionStorage.getItem(AUTOPLAY_KEY) === chapterSlug;
 }
 
+/** English paragraphs of the chapter: undefined while loading, null if the translation failed. */
+function useEnglish(chapterSlug: string, enabled: boolean) {
+  const [english, setEnglish] = useState<{ slug: string; paragraphs: string[] | null }>();
+
+  useEffect(() => {
+    if (!enabled) return;
+    let active = true;
+    fetch(routes.api.translate(chapterSlug))
+      .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
+      .then(({ paragraphs }: { paragraphs: string[] }) => paragraphs)
+      .catch(() => null)
+      .then((paragraphs) => active && setEnglish({ slug: chapterSlug, paragraphs }));
+    return () => {
+      active = false;
+    };
+  }, [chapterSlug, enabled]);
+
+  return english?.slug === chapterSlug ? english.paragraphs : undefined;
+}
+
 export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) {
   const router = useRouter();
   const voicesDialog = useBoolean();
@@ -45,6 +65,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
   const history = useHistory();
   const { state: settings, setState: setSettings } = useReaderSettings();
   const { overrides, setOverrides } = useCharacterVoices(novel.slug);
+  const english = useEnglish(chapter.slug, settings.english !== "off");
 
   const index = chapters.findIndex((item) => item.slug === chapter.slug);
   const previous = index >= 0 ? chapters[index + 1] : undefined;
@@ -85,6 +106,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
 
   const { player, state, script, voiceContext, neuralFailed } = useChapterPlayer({
     paragraphs: chapter.paragraphs,
+    english,
     settings,
     overrides,
     startParagraph: start.paragraph,
@@ -133,6 +155,12 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
 
   return (
     <Container maxWidth="md" disableGutters sx={{ pb: 18 }}>
+      {settings.english !== "off" && english === null && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          A tradução em inglês está indisponível agora; lendo em português.
+        </Alert>
+      )}
+
       {state.error && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           {state.error}
@@ -144,6 +172,8 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
       <Box sx={{ my: 3 }}>
         <ChapterText
           paragraphs={chapter.paragraphs}
+          english={settings.english !== "off" ? (english ?? undefined) : undefined}
+          englishMode={settings.english}
           lines={script.lines}
           activeParagraph={state.paragraph}
           followPlayback={isPlaying}

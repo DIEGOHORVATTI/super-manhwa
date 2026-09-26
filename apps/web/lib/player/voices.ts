@@ -14,6 +14,9 @@ export type VoiceOverrides = Record<string, VoiceChoice>;
 
 export type VoiceEngine = "neural" | "browser";
 
+/** How much English the reader mixes in: listen (EN then PT), read (EN, PT below), immersion (EN only). */
+export type EnglishMode = "off" | "listen" | "read" | "immersion";
+
 export type VoiceOption = {
   id: string;
   name: string;
@@ -186,4 +189,34 @@ export function buildQueue(script: Script, context: VoiceContext): Utterance[] {
       })),
     ),
   );
+}
+
+// ponytail: one slower narrator for all English; per-character English voices if it feels flat.
+const ENGLISH_RATE = 0.85;
+
+export function englishVoice(voices: VoiceOption[]) {
+  const english = voices.filter((voice) => voice.lang.toLowerCase().startsWith("en"));
+  return english.find((voice) => voice.multilingual) ?? english[0];
+}
+
+/** English narration: `listen` plays each paragraph in English and then in Portuguese. */
+export function englishQueue(
+  portuguese: Utterance[],
+  english: string[],
+  voice: VoiceOption | undefined,
+  mode: EnglishMode,
+): Utterance[] {
+  const narrated = english.flatMap((text, paragraph) =>
+    splitIntoChunks(text).map((chunk) => ({
+      paragraph,
+      text: chunk,
+      voice,
+      style: "adulto" as const,
+      pitch: 1,
+      rate: ENGLISH_RATE,
+    })),
+  );
+  if (mode !== "listen") return narrated;
+  // Stable sort keeps English ahead of Portuguese inside each paragraph.
+  return [...narrated, ...portuguese].toSorted((a, b) => a.paragraph - b.paragraph);
 }

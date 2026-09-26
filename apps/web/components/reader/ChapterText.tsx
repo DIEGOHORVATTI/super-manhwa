@@ -1,6 +1,7 @@
 "use client";
 
 import type { Segment } from "@/lib/player/script";
+import type { EnglishMode } from "@/lib/player/voices";
 
 import { useRef, useEffect } from "react";
 import { varAlpha } from "minimal-shared/utils";
@@ -13,6 +14,8 @@ import { NARRATOR } from "@/lib/player/script";
 
 type ChapterTextProps = {
   paragraphs: string[];
+  english?: string[];
+  englishMode: EnglishMode;
   lines: Segment[][];
   activeParagraph: number;
   followPlayback: boolean;
@@ -20,12 +23,26 @@ type ChapterTextProps = {
   onSelectParagraph: (paragraph: number) => void;
 };
 
+/** Main text plus the smaller line under it: listen shows PT over EN, read EN over PT, immersion EN (PT only on the paragraph being narrated). */
+function textsFor(
+  portuguese: string,
+  english: string | undefined,
+  mode: EnglishMode,
+  isActive: boolean,
+) {
+  if (english === undefined || mode === "off") return { main: portuguese };
+  if (mode === "listen") return { main: portuguese, sub: english };
+  return { main: english, sub: mode === "read" || isActive ? portuguese : undefined };
+}
+
 function speakerOf(line: Segment[]) {
   return line.find((segment) => segment.speaker !== NARRATOR)?.speaker;
 }
 
 export function ChapterText({
   paragraphs,
+  english,
+  englishMode,
   lines,
   activeParagraph,
   followPlayback,
@@ -47,6 +64,7 @@ export function ChapterText({
       {paragraphs.map((paragraph, index) => {
         const isActive = index === activeParagraph;
         const speaker = speakerOf(lines[index]);
+        const { main, sub } = textsFor(paragraph, english?.[index], englishMode, isActive);
 
         return (
           <Box
@@ -71,7 +89,15 @@ export function ChapterText({
                 {speaker}
               </Typography>
             )}
-            <Typography sx={{ fontSize, lineHeight: 1.8 }}>{paragraph}</Typography>
+            <Typography sx={{ fontSize, lineHeight: 1.8 }}>{main}</Typography>
+            {sub && (
+              <Typography
+                color="text.secondary"
+                sx={{ fontSize: fontSize * 0.85, lineHeight: 1.7 }}
+              >
+                {sub}
+              </Typography>
+            )}
           </Box>
         );
       })}

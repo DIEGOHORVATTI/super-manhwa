@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReaderSettings } from "@/lib/player/use-reader-settings";
-import type { VoiceEngine, VoiceOption } from "@/lib/player/voices";
+import type { EnglishMode, VoiceEngine, VoiceOption } from "@/lib/player/voices";
 
 import Alert from "@mui/material/Alert";
 import Stack from "@mui/material/Stack";
@@ -22,6 +22,13 @@ import { RATE_OPTIONS } from "@/lib/player/use-reader-settings";
 const ENGINE_OPTIONS: { value: VoiceEngine; label: string }[] = [
   { value: "neural", label: "Neurais (Microsoft Edge) — mais naturais" },
   { value: "browser", label: "Do navegador — funcionam offline" },
+];
+
+const ENGLISH_OPTIONS: { value: EnglishMode; label: string }[] = [
+  { value: "off", label: "Desligado — só português" },
+  { value: "listen", label: "1. Ouvir — inglês e depois português" },
+  { value: "read", label: "2. Ler junto — inglês com o português embaixo" },
+  { value: "immersion", label: "3. Imersão — só inglês" },
 ];
 
 type ReaderSettingsDialogProps = {
@@ -62,6 +69,13 @@ export function ReaderSettingsDialog({
               </Alert>
             )}
           </Stack>
+
+          <SelectAutocomplete
+            label="Aprender inglês"
+            value={settings.english}
+            options={ENGLISH_OPTIONS}
+            onChange={(english) => onChange({ english })}
+          />
 
           <VoiceSelect
             label="Voz do narrador"
