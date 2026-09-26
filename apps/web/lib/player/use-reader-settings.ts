@@ -12,6 +12,8 @@ export type ReaderSettings = {
   characterVoices: boolean;
   autoAdvance: boolean;
   playerHidden: boolean;
+  music: boolean;
+  musicVolume: number;
 };
 
 export const RATE_OPTIONS = [0.5, 0.75, 0.9, 1, 1.1, 1.2, 1.25, 1.5, 1.75, 2, 2.5].map((rate) => ({
@@ -26,6 +28,8 @@ const DEFAULT_SETTINGS: ReaderSettings = {
   characterVoices: true,
   autoAdvance: true,
   playerHidden: false,
+  music: false,
+  musicVolume: 20,
 };
 
 const NO_OVERRIDES: VoiceOverrides = {};

@@ -87,6 +87,18 @@ export function ReaderSettingsDialog({
             />
           </div>
 
+          <div>
+            <Typography variant="subtitle2">
+              Volume da música ambiente: {settings.musicVolume}%
+            </Typography>
+            <Slider
+              value={settings.musicVolume}
+              min={0}
+              max={100}
+              onChange={(_, musicVolume) => onChange({ musicVolume: musicVolume as number })}
+            />
+          </div>
+
           <FormControlLabel
             control={
               <Switch
