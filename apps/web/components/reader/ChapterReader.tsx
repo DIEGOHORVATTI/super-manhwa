@@ -19,6 +19,7 @@ import { characterVoice } from "@/lib/player/voices";
 import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
+import { AmbientMusic } from "./AmbientMusic";
 import { ChapterNavigation } from "./ChapterNavigation";
 import { ChapterText } from "./ChapterText";
 import { CharacterVoicesDialog } from "./CharacterVoicesDialog";
@@ -167,9 +168,13 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
         onNextChapter={() => next && goTo(next, isPlaying)}
         onOpenVoices={voicesDialog.onTrue}
         onOpenSettings={settingsDialog.onTrue}
+        music={settings.music}
+        onMusicChange={(music) => setSettings({ music })}
         hidden={settings.playerHidden}
         onHiddenChange={(playerHidden) => setSettings({ playerHidden })}
       />
+
+      {settings.music && <AmbientMusic volume={settings.musicVolume} />}
 
       <CharacterVoicesDialog
         open={voicesDialog.value}

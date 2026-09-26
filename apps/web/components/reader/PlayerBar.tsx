@@ -14,6 +14,8 @@ import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
 import Typography from "@mui/material/Typography";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import MusicNoteRoundedIcon from "@mui/icons-material/MusicNoteRounded";
+import MusicOffRoundedIcon from "@mui/icons-material/MusicOffRounded";
 import PauseRoundedIcon from "@mui/icons-material/PauseRounded";
 import SkipNextRoundedIcon from "@mui/icons-material/SkipNextRounded";
 import PlayArrowRoundedIcon from "@mui/icons-material/PlayArrowRounded";
@@ -42,6 +44,8 @@ type PlayerBarProps = {
   onNextChapter: () => void;
   onOpenVoices: () => void;
   onOpenSettings: () => void;
+  music: boolean;
+  onMusicChange: (music: boolean) => void;
   hidden: boolean;
   onHiddenChange: (hidden: boolean) => void;
 };
@@ -86,6 +90,8 @@ export function PlayerBar({
   onNextChapter,
   onOpenVoices,
   onOpenSettings,
+  music,
+  onMusicChange,
   hidden,
   onHiddenChange,
 }: PlayerBarProps) {
@@ -200,10 +206,15 @@ export function PlayerBar({
             </Tooltip>
           </Stack>
 
-          <Stack direction="row" justifyContent="flex-end" sx={{ width: 150 }}>
+          <Stack direction="row" justifyContent="flex-end" sx={{ minWidth: 150 }}>
             <Tooltip title="Vozes dos personagens">
               <IconButton onClick={onOpenVoices}>
                 <RecordVoiceOverRoundedIcon />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title={music ? "Desligar música ambiente" : "Música ambiente"}>
+              <IconButton onClick={() => onMusicChange(!music)} aria-pressed={music}>
+                {music ? <MusicNoteRoundedIcon /> : <MusicOffRoundedIcon />}
               </IconButton>
             </Tooltip>
             <Tooltip title="Configurações">
