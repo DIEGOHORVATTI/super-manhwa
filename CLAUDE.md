@@ -64,6 +64,10 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
   - `WebSpeechSpeaker`: vozes do navegador (`speechSynthesis`), usado se o usuário escolher ou se
     as vozes neurais falharem.
 - `use-media-session.ts`: teclas de mídia / fone / controles do SO.
+- **Aprender inglês** (`settings.english`: ouvir / ler junto / imersão): `/api/translate?c=<capítulo>`
+  traduz o capítulo por parágrafo (`lib/translate.ts`, API Google não oficial em lotes < 5000
+  chars, 1 ano no cache da CDN); `englishQueue` narra em inglês com voz Multilingual a 0.85x e,
+  no modo ouvir, intercala EN → PT por parágrafo.
 - O leitor é **client-only** (`ChapterReaderLoader`, `ssr: false`): vozes, preferências e posição
   vivem no navegador. Progresso por parágrafo no histórico local (`ProgressEntry.paragraph`).
 

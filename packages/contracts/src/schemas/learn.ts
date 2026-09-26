@@ -7,6 +7,13 @@ export const wordStatusSchema = z.object({
   status: z.enum(["new", "learning", "known", "ignored"]),
 });
 
+/** A word tapped in the English reader, with its sentence (for the cloze card) and meaning. */
+export const saveWordSchema = z.object({
+  word: z.string().trim().min(1).max(64),
+  sentence: z.string().trim().min(1).max(1000),
+  meaning: z.string().trim().max(200).optional(),
+});
+
 export const reviewGradeSchema = z.object({
   cardId: z.number().int().positive(),
   rating: z.number().int().min(1).max(4),

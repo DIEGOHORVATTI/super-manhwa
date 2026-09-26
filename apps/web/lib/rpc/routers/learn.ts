@@ -1,5 +1,10 @@
 import { ORPCError } from "@orpc/server";
-import { mineSentenceSchema, reviewGradeSchema, wordStatusSchema } from "@packages/contracts";
+import {
+  mineSentenceSchema,
+  reviewGradeSchema,
+  saveWordSchema,
+  wordStatusSchema,
+} from "@packages/contracts";
 import { and, asc, count, eq, isNull, lte, or } from "drizzle-orm";
 import { z } from "zod";
 
@@ -16,11 +21,12 @@ import {
 } from "@/lib/learning/entitlements";
 import { type MemoryState, type Rating, schedule } from "@/lib/learning/fsrs";
 import { xpFor } from "@/lib/learning/gamification";
+import { normalizeLemma } from "@/lib/learning/tokenize";
 import { awardXpAndStreak, bumpDaily, getDailyUsage, today } from "@/lib/learning/study-day";
 import { getWorkAccess } from "@/lib/perms";
 import { createSubscription, mpEnabled } from "@/lib/payments/mercadopago";
 import { authed, base } from "../base";
-import type { RpcUser } from "../context";
+import type { RpcDb, RpcUser } from "../context";
 
 const MAX_QUEUE = 30;
 const KNOWN_INTERVAL_DAYS = 21; // graduate to "known" once intervals get long
@@ -35,6 +41,91 @@ function planOf(user: RpcUser, now: Date): Plan {
 }
 
 /**
+ * Set a word's per-user status (creating the dictionary word if needed). The first
+ * "learning"/"known" counts as a new word: gated by the freemium cap, rewards XP.
+ */
+async function setWordStatus(
+  context: { user: RpcUser; db: RpcDb },
+  { language, lemma, status }: { language: string; lemma: string; status: string },
+) {
+  const userId = context.user.id;
+  const db = context.db;
+  const { words, userWords } = schema;
+
+  // Resolve (or create) the dictionary word.
+  let [word] = await db
+    .select({ id: words.id })
+    .from(words)
+    .where(and(eq(words.language, language), eq(words.lemma, lemma)))
+    .limit(1);
+  if (!word) {
+    [word] = await db
+      .insert(words)
+      .values({ language, lemma })
+      .onConflictDoNothing()
+      .returning({ id: words.id });
+    if (!word) {
+      [word] = await db
+        .select({ id: words.id })
+        .from(words)
+        .where(and(eq(words.language, language), eq(words.lemma, lemma)))
+        .limit(1);
+    }
+  }
+
+  const [existing] = await db
+    .select({ id: userWords.id, status: userWords.status })
+    .from(userWords)
+    .where(and(eq(userWords.userId, userId), eq(userWords.wordId, word.id)))
+    .limit(1);
+
+  const wasTracked = existing && existing.status !== "new";
+  const isNowLearned = status === "learning" || status === "known";
+  const countsAsNew = !wasTracked && isNowLearned;
+
+  // Freemium gate: only the "new word" transition is capped.
+  const date = today();
+  const plan = planOf(context.user, new Date());
+  if (countsAsNew) {
+    const usage = await getDailyUsage(userId, date);
+    const ent = entitlementsFor(plan, usage);
+    if (!canLearnNewWord(ent)) {
+      throw new ORPCError("PAYMENT_REQUIRED", {
+        message: "Limite diário de palavras novas atingido. Premium = ilimitado.",
+        data: { reason: "daily_limit" },
+      });
+    }
+  }
+
+  const [saved] = existing
+    ? await db
+        .update(userWords)
+        .set({ status })
+        .where(eq(userWords.id, existing.id))
+        .returning({ id: userWords.id })
+    : await db
+        .insert(userWords)
+        .values({ userId, wordId: word.id, status })
+        .returning({ id: userWords.id });
+
+  let profile: { xp: number; streakDays: number } | undefined;
+  let unlocked: string[] = [];
+  if (countsAsNew) {
+    await bumpDaily(userId, date, { newWords: 1, xp: xpFor("newWordLearned") });
+    profile = await awardXpAndStreak(userId, xpFor("newWordLearned"), date);
+    unlocked = await syncAchievements(userId, profile.streakDays);
+  }
+
+  return {
+    wordId: word.id,
+    userWordId: saved.id,
+    status,
+    ...(profile ? { profile } : {}),
+    ...(unlocked.length ? { unlocked } : {}),
+  };
+}
+
+/**
  * Language-learning surface (LingQ-style): per-word status tracking, FSRS-scheduled
  * cloze reviews, sentence mining, dashboard stats, tokenized chapter reader and the
  * premium subscription kickoff. Freemium caps gate "new word" learning and reviews;
@@ -42,76 +133,45 @@ function planOf(user: RpcUser, now: Date): Plan {
  */
 export const learnRouter = {
   /** Set a word's per-user status; first "learning"/"known" counts as a new word. */
-  setWord: authed.input(wordStatusSchema).handler(async ({ input, context }) => {
-    const { language, lemma, status } = input;
-    const userId = context.user.id;
+  setWord: authed
+    .input(wordStatusSchema)
+    .handler(({ input, context }) => setWordStatus(context, input)),
+
+  /**
+   * Save a word tapped in the English reader: marks it "learning" and mints its cloze
+   * card from the sentence it came from (catalog chapters have no chapter_tokens).
+   */
+  saveWord: authed.input(saveWordSchema).handler(async ({ input, context }) => {
+    const { words, srsCards } = schema;
     const db = context.db;
-    const { words, userWords } = schema;
+    const lemma = normalizeLemma(input.word, "en");
+    const result = await setWordStatus(context, { language: "en", lemma, status: "learning" });
 
-    // Resolve (or create) the dictionary word.
-    let [word] = await db
-      .select({ id: words.id })
-      .from(words)
-      .where(and(eq(words.language, language), eq(words.lemma, lemma)))
+    if (input.meaning) {
+      await db
+        .update(words)
+        .set({ definition: input.meaning })
+        .where(and(eq(words.id, result.wordId), isNull(words.definition)));
+    }
+
+    const [card] = await db
+      .select({ id: srsCards.id })
+      .from(srsCards)
+      .where(and(eq(srsCards.userWordId, result.userWordId), eq(srsCards.type, "cloze")))
       .limit(1);
-    if (!word) {
-      [word] = await db
-        .insert(words)
-        .values({ language, lemma })
-        .onConflictDoNothing()
-        .returning({ id: words.id });
-      if (!word) {
-        [word] = await db
-          .select({ id: words.id })
-          .from(words)
-          .where(and(eq(words.language, language), eq(words.lemma, lemma)))
-          .limit(1);
-      }
+    if (!card) {
+      const cloze = makeCloze(input.sentence, input.word);
+      await db.insert(srsCards).values({
+        userId: context.user.id,
+        userWordId: result.userWordId,
+        type: "cloze",
+        // The meaning on the front makes the blank solvable for a beginner.
+        front: input.meaning ? `${cloze.front} (${input.meaning})` : cloze.front,
+        back: cloze.back,
+      });
     }
 
-    const [existing] = await db
-      .select({ id: userWords.id, status: userWords.status })
-      .from(userWords)
-      .where(and(eq(userWords.userId, userId), eq(userWords.wordId, word.id)))
-      .limit(1);
-
-    const wasTracked = existing && existing.status !== "new";
-    const isNowLearned = status === "learning" || status === "known";
-    const countsAsNew = !wasTracked && isNowLearned;
-
-    // Freemium gate: only the "new word" transition is capped.
-    const date = today();
-    const plan = planOf(context.user, new Date());
-    if (countsAsNew) {
-      const usage = await getDailyUsage(userId, date);
-      const ent = entitlementsFor(plan, usage);
-      if (!canLearnNewWord(ent)) {
-        throw new ORPCError("PAYMENT_REQUIRED", {
-          message: "Limite diário de palavras novas atingido. Premium = ilimitado.",
-          data: { reason: "daily_limit" },
-        });
-      }
-    }
-
-    if (existing) {
-      await db.update(userWords).set({ status }).where(eq(userWords.id, existing.id));
-    } else {
-      await db.insert(userWords).values({ userId, wordId: word.id, status });
-    }
-
-    let profile: { xp: number; streakDays: number } | undefined;
-    let unlocked: string[] = [];
-    if (countsAsNew) {
-      await bumpDaily(userId, date, { newWords: 1, xp: xpFor("newWordLearned") });
-      profile = await awardXpAndStreak(userId, xpFor("newWordLearned"), date);
-      unlocked = await syncAchievements(userId, profile.streakDays);
-    }
-
-    return {
-      status,
-      ...(profile ? { profile } : {}),
-      ...(unlocked.length ? { unlocked } : {}),
-    };
+    return result;
   }),
 
   /** Build the due review queue: cloze cards for "learning" words past their due. */
