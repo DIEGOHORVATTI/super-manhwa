@@ -14,11 +14,11 @@ export function batchParagraphs(paragraphs: string[], max = MAX_BATCH) {
   }, []);
 }
 
-async function translate(text: string, to: string) {
+export async function translate(text: string, to: string, from = "pt") {
   const response = await fetch(API, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text, from: "pt", to }),
+    body: JSON.stringify({ text, from, to }),
   });
   if (!response.ok) throw new Error(`Tradução falhou (${response.status})`);
   return (await response.json()) as string;

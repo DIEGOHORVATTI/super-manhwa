@@ -81,6 +81,7 @@ export const routes = {
     tts: "/api/tts",
     ttsVoices: "/api/tts/voices",
     translate: (chapterSlug: string) => `/api/translate?c=${encodeURIComponent(chapterSlug)}`,
+    wordMeaning: (word: string) => `/api/translate?w=${encodeURIComponent(word.toLowerCase())}`,
     learnExport: "/api/learn/export",
     webhooks: {
       donations: "/api/donations/webhook",

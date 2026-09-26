@@ -25,6 +25,7 @@ import { ChapterText } from "./ChapterText";
 import { CharacterVoicesDialog } from "./CharacterVoicesDialog";
 import { PlayerBar } from "./PlayerBar";
 import { ReaderSettingsDialog } from "./ReaderSettingsDialog";
+import { type WordTarget, WordPopover } from "./WordPopover";
 
 type ChapterReaderProps = {
   novel: { slug: string; title: string; cover?: string };
@@ -66,6 +67,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
   const { state: settings, setState: setSettings } = useReaderSettings();
   const { overrides, setOverrides } = useCharacterVoices(novel.slug);
   const english = useEnglish(chapter.slug, settings.english !== "off");
+  const [wordTarget, setWordTarget] = useState<WordTarget | null>(null);
 
   const index = chapters.findIndex((item) => item.slug === chapter.slug);
   const previous = index >= 0 ? chapters[index + 1] : undefined;
@@ -175,6 +177,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
           english={settings.english !== "off" ? (english ?? undefined) : undefined}
           englishMode={settings.english}
           lines={script.lines}
+          onWord={setWordTarget}
           activeParagraph={state.paragraph}
           followPlayback={isPlaying}
           fontSize={settings.fontSize}
@@ -214,6 +217,8 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
         onPreview={preview}
         onClose={voicesDialog.onFalse}
       />
+
+      <WordPopover target={wordTarget} onClose={() => setWordTarget(null)} />
 
       <ReaderSettingsDialog
         open={settingsDialog.value}
