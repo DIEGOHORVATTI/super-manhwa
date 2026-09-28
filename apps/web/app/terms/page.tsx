@@ -4,14 +4,14 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Termos de Serviço",
-  description: "Termos de uso do Super Manhwa.",
+  description: "Termos de uso do Super Novel.",
 };
 
 export default function TermosPage() {
   return (
     <StaticPage title="Termos de Serviço" updated="28 de maio de 2026">
       <p>
-        Ao acessar o <strong>Super Manhwa</strong>, você concorda com os termos abaixo. Se não
+        Ao acessar o <strong>Super Novel</strong>, você concorda com os termos abaixo. Se não
         concordar, por favor não utilize o serviço.
       </p>
       <h2>1. Uso do serviço</h2>

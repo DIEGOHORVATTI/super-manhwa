@@ -4,14 +4,14 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Política de Privacidade",
-  description: "Como o Super Manhwa lida com seus dados.",
+  description: "Como o Super Novel lida com seus dados.",
 };
 
 export default function PrivacidadePage() {
   return (
     <StaticPage title="Política de Privacidade" updated="28 de maio de 2026">
       <p>
-        Esta política explica como o <strong>Super Manhwa</strong> trata informações ao usar o site.
+        Esta política explica como o <strong>Super Novel</strong> trata informações ao usar o site.
         Levamos sua privacidade a sério e coletamos o mínimo necessário para o serviço funcionar.
       </p>
       <h2>Dados que coletamos</h2>

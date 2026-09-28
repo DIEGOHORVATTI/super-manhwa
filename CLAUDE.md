@@ -81,7 +81,7 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
 - **Sobreposições:** use `BottomSheet` (`components/mui/BottomSheet.tsx`), não `Dialog`/`Popover`.
 - **PWA / Play Store (TWA):** `app/manifest.ts`, ícones `public/icon-*.png`, service worker
   `public/sw.js` (estáticos + páginas offline) e `/.well-known/assetlinks.json`, que lê
-  `ANDROID_CERT_SHA256` (pacote `com.supermanhwa.app`). Layout fixo embaixo respeita
+  `ANDROID_CERT_SHA256` (pacote `com.diegohorvatti.supernovel`). Layout fixo embaixo respeita
   `env(safe-area-inset-bottom)`.
 - **App Android:** `android/twa-manifest.json` → workflow manual `android-release.yml` (gera o
   projeto com `@bubblewrap/core`, builda o AAB assinado e envia à Play, alpha por padrão). Nunca

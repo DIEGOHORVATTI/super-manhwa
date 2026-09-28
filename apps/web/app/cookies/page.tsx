@@ -4,15 +4,15 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Política de Cookies",
-  description: "Como o Super Manhwa usa cookies.",
+  description: "Como o Super Novel usa cookies.",
 };
 
 export default function CookiesPage() {
   return (
     <StaticPage title="Política de Cookies" updated="28 de maio de 2026">
       <p>
-        Cookies são pequenos arquivos guardados no seu navegador. O <strong>Super Manhwa</strong>{" "}
-        usa apenas o estritamente necessário para o site funcionar.
+        Cookies são pequenos arquivos guardados no seu navegador. O <strong>Super Novel</strong> usa
+        apenas o estritamente necessário para o site funcionar.
       </p>
       <h2>Tipos de cookies que usamos</h2>
       <ul>

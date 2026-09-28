@@ -81,7 +81,7 @@ export function DonateView() {
 
   return (
     <div className="donate-wrap">
-      <h1 className="donate-title">Gostou do Super Manhwa?</h1>
+      <h1 className="donate-title">Gostou do Super Novel?</h1>
       <p className="donate-sub">
         Sua doação via Pix ajuda a pagar os servidores e manter todo o catálogo disponível para
         todos, gratuitamente e sem anúncios.

@@ -4,22 +4,22 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Sobre nós",
-  description: "O que é o Super Manhwa e como ele funciona.",
+  description: "O que é o Super Novel e como ele funciona.",
 };
 
 export default function SobrePage() {
   return (
     <StaticPage title="Sobre nós">
       <p>
-        O <strong>Super Manhwa</strong> é um leitor e catálogo web de mangás, manhwas e webtoons que
-        agrega obras de várias fontes públicas em um só lugar, com busca rápida e uma experiência de
-        leitura limpa.
+        O <strong>Super Novel</strong> é um leitor de light novels e web novels em português: você
+        lê ou ouve os capítulos, com uma voz diferente para cada personagem, e pode usar as
+        histórias para aprender inglês.
       </p>
       <p>
         O projeto é gratuito e tem propósito educacional e de demonstração técnica. Não hospedamos
-        nenhum arquivo de imagem ou capítulo: apenas indexamos e exibimos conteúdo disponibilizado
-        publicamente pelas fontes originais. Todos os direitos das obras pertencem aos seus
-        respectivos autores, editoras e detentores de licença.
+        nenhum capítulo: apenas indexamos e exibimos conteúdo disponibilizado publicamente pelas
+        fontes originais. Todos os direitos das obras pertencem aos seus respectivos autores,
+        editoras e detentores de licença.
       </p>
       <h2>Como funciona</h2>
       <ul>

@@ -10,7 +10,7 @@ export default function RecoverPasswordEmail({ url }: Props) {
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview="Redefina sua senha no Super Manhwa">
+    <Main preview="Redefina sua senha no Super Novel">
       <Text
         style={{
           fontSize: typography.fontSize.lg,

@@ -26,7 +26,7 @@ export const donationsRouter = {
     try {
       pix = await createPixPayment({
         amount: input.amountCents / 100,
-        description: "Doação | Super Manhwa",
+        description: "Doação | Super Novel",
         email,
         notificationUrl: publicWebhookUrl(routes.api.webhooks.donations),
       });

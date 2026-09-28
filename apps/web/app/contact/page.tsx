@@ -5,7 +5,7 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Contato",
-  description: "Como falar com a equipe do Super Manhwa.",
+  description: "Como falar com a equipe do Super Novel.",
 };
 
 export default function ContatoPage() {

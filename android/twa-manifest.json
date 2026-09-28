@@ -1,8 +1,8 @@
 {
-  "packageId": "com.supermanhwa.app",
+  "packageId": "com.diegohorvatti.supernovel",
   "host": "supermanhwa.com",
-  "name": "Super Manhwa",
-  "launcherName": "Super Manhwa",
+  "name": "Super Novel",
+  "launcherName": "Super Novel",
   "display": "standalone",
   "orientation": "default",
   "themeColor": "#0D0D0D",

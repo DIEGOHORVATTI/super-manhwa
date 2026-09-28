@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: NovelPageProps): Promise<Meta
 
   const title = `${novel.title} | Ler e ouvir em português`;
   const description =
-    teaser(novel.synopsis) || `Leia ou ouça ${novel.title} em português no Super Manhwa.`;
+    teaser(novel.synopsis) || `Leia ou ouça ${novel.title} em português no Super Novel.`;
   const images = novel.cover ? [novel.cover] : undefined;
 
   return {

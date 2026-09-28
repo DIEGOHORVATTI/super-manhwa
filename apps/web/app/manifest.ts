@@ -3,8 +3,8 @@ import type { MetadataRoute } from "next";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     id: "/",
-    name: "Super Manhwa | Novels em português",
-    short_name: "Super Manhwa",
+    name: "Super Novel | Novels em português",
+    short_name: "Super Novel",
     description:
       "Leia ou ouça light novels e web novels em português, com uma voz diferente para cada personagem.",
     lang: "pt-BR",

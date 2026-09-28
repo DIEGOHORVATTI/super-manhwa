@@ -189,7 +189,7 @@ export const orgRouter = {
             );
             await sendEmail({
               to: input.email,
-              subject: `Convite para ${org.name} | Super Manhwa`,
+              subject: `Convite para ${org.name} | Super Novel`,
               html,
             });
           } catch {

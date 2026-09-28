@@ -35,7 +35,7 @@ export async function handleLegalSubmission(
   if (emailEnabled && admin) {
     await sendEmail({
       to: admin,
-      subject: `[${type}] nova solicitação | Super Manhwa`,
+      subject: `[${type}] nova solicitação | Super Novel`,
       html: await render(LegalRequestEmail({ type, fields: toFields(payload) })),
     });
   }

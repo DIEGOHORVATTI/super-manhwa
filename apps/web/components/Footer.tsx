@@ -53,7 +53,7 @@ export function Footer() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="brand-name brand-name-lg">
-              Super Manhwa<span className="dot">.</span>
+              Super Novel<span className="dot">.</span>
             </span>
           </Link>
           <p className="muted">
@@ -122,7 +122,7 @@ export function Footer() {
         </nav>
       </div>
 
-      <div className="footer-copy">© {YEAR} Super Manhwa. Todos os direitos reservados.</div>
+      <div className="footer-copy">© {YEAR} Super Novel. Todos os direitos reservados.</div>
     </footer>
   );
 }

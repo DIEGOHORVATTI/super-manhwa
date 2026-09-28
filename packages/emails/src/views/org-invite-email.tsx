@@ -11,7 +11,7 @@ export default function OrgInviteEmail({ url, orgName, role }: Props) {
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview={`Convite para ${orgName} no Super Manhwa`}>
+    <Main preview={`Convite para ${orgName} no Super Novel`}>
       <Text
         style={{
           fontSize: typography.fontSize.lg,

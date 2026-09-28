@@ -9,7 +9,7 @@ import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Doar",
-  description: "Apoie a Super Manhwa com uma doação via Pix.",
+  description: "Apoie a Super Novel com uma doação via Pix.",
 };
 
 export default async function DonatePage() {

@@ -1,6 +1,6 @@
 import { env } from "@/lib/env";
 
-const ANDROID_PACKAGE = "com.supermanhwa.app";
+const ANDROID_PACKAGE = "com.diegohorvatti.supernovel";
 
 /**
  * Digital Asset Links: proves to Android that the Play Store app (a Trusted Web

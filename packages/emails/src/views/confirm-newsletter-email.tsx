@@ -11,7 +11,7 @@ export default function ConfirmNewsletterEmail({ confirmUrl }: Props) {
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview="Confirme sua inscrição na newsletter do Super Manhwa">
+    <Main preview="Confirme sua inscrição na newsletter do Super Novel">
       <Text
         style={{
           fontSize: typography.fontSize.lg,

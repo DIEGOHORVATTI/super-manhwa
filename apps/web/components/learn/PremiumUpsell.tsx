@@ -41,7 +41,7 @@ export function PremiumUpsell() {
 
   return (
     <div className="donate-wrap">
-      <h1 className="donate-title">Super Manhwa Premium</h1>
+      <h1 className="donate-title">Super Novel Premium</h1>
       <p className="donate-sub">Aprenda sem limites enquanto lê suas novels favoritas.</p>
 
       <div className="settings-card">

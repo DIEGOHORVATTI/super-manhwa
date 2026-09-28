@@ -26,7 +26,7 @@ export function useMediaSession({ status, title, album, cover, ...handlers }: Me
     navigator.mediaSession.metadata = new MediaMetadata({
       title,
       album,
-      artist: "Super Manhwa",
+      artist: "Super Novel",
       artwork: cover ? [{ src: cover }] : [],
     });
   }, [title, album, cover]);

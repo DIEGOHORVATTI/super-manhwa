@@ -135,7 +135,7 @@ export const pixelsRouter = {
     try {
       pix = await createPixPayment({
         amount: priceCents(rect) / 100,
-        description: `Espaço publicitário ${rect.w}x${rect.h} | Super Manhwa`,
+        description: `Espaço publicitário ${rect.w}x${rect.h} | Super Novel`,
         email,
         notificationUrl: publicWebhookUrl(routes.api.webhooks.pixels),
       });

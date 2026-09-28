@@ -102,7 +102,7 @@ export default function NewsletterDigestEmail({
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview="Os destaques da semana no Super Manhwa">
+    <Main preview="Os destaques da semana no Super Novel">
       <Text
         style={{
           fontSize: typography.fontSize.xl,

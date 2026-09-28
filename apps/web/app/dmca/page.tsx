@@ -11,7 +11,7 @@ export default function DmcaPage() {
   return (
     <StaticPage title="DMCA | Direitos Autorais" updated="28 de maio de 2026">
       <p>
-        O <strong>Super Manhwa</strong> respeita os direitos de propriedade intelectual. Não
+        O <strong>Super Novel</strong> respeita os direitos de propriedade intelectual. Não
         hospedamos arquivos: apenas indexamos e exibimos conteúdo disponibilizado publicamente por
         fontes de terceiros.
       </p>
@@ -22,7 +22,7 @@ export default function DmcaPage() {
       </p>
       <ul>
         <li>Identificação da obra protegida.</li>
-        <li>O link (URL) exato no Super Manhwa onde o conteúdo aparece.</li>
+        <li>O link (URL) exato no Super Novel onde o conteúdo aparece.</li>
         <li>Seus dados de contato (nome, e-mail e organização, se houver).</li>
         <li>
           Uma declaração de boa-fé de que o uso não foi autorizado pelo titular, seu agente ou pela
@@ -51,7 +51,7 @@ export default function DmcaPage() {
           { name: "work", label: "Obra protegida", type: "text", required: true },
           {
             name: "urls",
-            label: "URL(s) no Super Manhwa",
+            label: "URL(s) no Super Novel",
             type: "textarea",
             required: true,
             placeholder: "Uma por linha",

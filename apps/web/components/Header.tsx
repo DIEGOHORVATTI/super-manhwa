@@ -172,7 +172,7 @@ export function Header() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="brand-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="brand-name">
-              Super Manhwa<span className="dot">.</span>
+              Super Novel<span className="dot">.</span>
             </span>
           </Link>
 

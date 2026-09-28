@@ -20,8 +20,8 @@ import { ThemeProvider, themeConfig } from "@/theme";
 export const metadata: Metadata = {
   metadataBase: new URL(env.SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Super Manhwa | Ler e Ouvir Novels em Português",
-    template: "%s · Super Manhwa",
+    default: "Super Novel | Ler e Ouvir Novels em Português",
+    template: "%s · Super Novel",
   },
   description:
     "Leia ou ouça light novels e web novels em português, de graça, com uma voz diferente para cada personagem. Capítulos novos todo dia.",
@@ -32,9 +32,10 @@ export const metadata: Metadata = {
     "ouvir novel",
     "audiobook novel",
     "novel online grátis",
+    "super novel",
     "super manhwa",
   ],
-  applicationName: "Super Manhwa",
+  applicationName: "Super Novel",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -44,10 +45,10 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon-180x180.png", sizes: "180x180" }],
   },
-  appleWebApp: { capable: true, title: "Super Manhwa", statusBarStyle: "black" },
+  appleWebApp: { capable: true, title: "Super Novel", statusBarStyle: "black" },
   openGraph: {
     type: "website",
-    siteName: "Super Manhwa",
+    siteName: "Super Novel",
     images: [{ url: "/banner_1500x500.jpeg", width: 1500, height: 500 }],
   },
   twitter: { card: "summary_large_image", images: ["/banner_1500x500.jpeg"] },
@@ -62,8 +63,8 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
   const siteLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Super Manhwa",
-    alternateName: "SuperManhwa",
+    name: "Super Novel",
+    alternateName: ["SuperNovel", "Super Manhwa"],
     url: base,
     potentialAction: {
       "@type": "SearchAction",
@@ -74,7 +75,7 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
   const orgLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "Super Manhwa",
+    name: "Super Novel",
     url: base,
     logo: `${base}/android-icon-192x192.png`,
   };

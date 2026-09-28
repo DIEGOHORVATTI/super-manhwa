@@ -26,7 +26,7 @@ export default function VerifyEmailPage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img className="auth-logo" src="/white_logo_super_manhuwa.png" alt="" />
             <span className="auth-wordmark">
-              Super Manhwa<span className="dot">.</span>
+              Super Novel<span className="dot">.</span>
             </span>
           </div>
 

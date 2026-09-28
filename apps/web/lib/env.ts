@@ -36,7 +36,7 @@ const EnvSchema = z.object({
 
   // E-mail
   RESEND_API_KEY: opt,
-  MAIL_FROM: z.string().default("Super Manhwa <no-reply@supermanhwa.com>"),
+  MAIL_FROM: z.string().default("Super Novel <no-reply@supermanhwa.com>"),
   ADMIN_EMAIL: opt,
 
   // Cloudflare R2

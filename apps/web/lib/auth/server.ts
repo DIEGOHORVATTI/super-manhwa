@@ -38,7 +38,7 @@ const lastVerifyAt = new Map<string, number>();
 function build() {
   const db = getDb();
   return betterAuth({
-    appName: "Super Manhwa",
+    appName: "Super Novel",
     baseURL: env.BETTER_AUTH_URL,
     secret: env.BETTER_AUTH_API_KEY,
     database: drizzleAdapter(db, { provider: "pg", schema }),
@@ -48,7 +48,7 @@ function build() {
       async sendResetPassword({ user, url }) {
         await deliver(
           user.email,
-          "Redefinir sua senha | Super Manhwa",
+          "Redefinir sua senha | Super Novel",
           await render(RecoverPasswordEmail({ url })),
         );
       },
@@ -65,7 +65,7 @@ function build() {
         lastVerifyAt.set(user.email, now);
         await deliver(
           user.email,
-          "Confirme seu e-mail | Super Manhwa",
+          "Confirme seu e-mail | Super Novel",
           await render(VerificationEmail({ url })),
         );
       },

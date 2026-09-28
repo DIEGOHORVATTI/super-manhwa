@@ -7,7 +7,7 @@ import { Resend } from "resend";
  * lets callers (legal forms, newsletter) skip sending when not configured.
  */
 const key = env.RESEND_API_KEY;
-const FROM = env.MAIL_FROM ?? "Super Manhwa <no-reply@supermanhwa.com>";
+const FROM = env.MAIL_FROM ?? "Super Novel <no-reply@supermanhwa.com>";
 
 export const emailEnabled = Boolean(key);
 

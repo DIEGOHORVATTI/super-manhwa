@@ -55,7 +55,7 @@ export async function GET(req: Request): Promise<Response> {
           unsubscribeUrl: `${base}${routes.api.newsletter.unsubscribe}?token=${sub.token}`,
         }),
       );
-      await sendEmail({ to: sub.email, subject: "Super Manhwa | destaques da semana", html });
+      await sendEmail({ to: sub.email, subject: "Super Novel | destaques da semana", html });
       sent++;
     } catch {
       /* skip individual failures */

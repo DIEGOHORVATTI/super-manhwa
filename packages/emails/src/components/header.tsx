@@ -17,7 +17,7 @@ export default function Header() {
     >
       <Img
         src={Brand.logoUrl}
-        alt="Super Manhwa"
+        alt="Super Novel"
         height="40"
         style={{ height: "40px", width: "auto", margin: "0 auto" }}
       />

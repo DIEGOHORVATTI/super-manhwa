@@ -57,7 +57,7 @@ export default function Footer() {
         {Brand.tagline}
       </Text>
       <Text style={{ fontSize: typography.fontSize.xs, color: colors.bandText, margin: "4px 0 0" }}>
-        © {year} Super Manhwa. Todos os direitos reservados.
+        © {year} Super Novel. Todos os direitos reservados.
       </Text>
     </Section>
   );

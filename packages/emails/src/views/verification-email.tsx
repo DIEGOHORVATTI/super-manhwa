@@ -10,7 +10,7 @@ export default function VerificationEmail({ url }: Props) {
   const { colors, typography, spacing } = EmailStyles;
 
   return (
-    <Main preview="Confirme seu e-mail no Super Manhwa">
+    <Main preview="Confirme seu e-mail no Super Novel">
       <Text
         style={{
           fontSize: typography.fontSize.lg,
@@ -29,7 +29,7 @@ export default function VerificationEmail({ url }: Props) {
           margin: "0 0 18px",
         }}
       >
-        Bem-vindo à Super Manhwa! Toque no botão abaixo para ativar sua conta.
+        Bem-vindo à Super Novel! Toque no botão abaixo para ativar sua conta.
       </Text>
       <Section style={{ margin: `${spacing.sm} 0` }}>
         <CtaButton href={url}>Confirmar e-mail</CtaButton>
