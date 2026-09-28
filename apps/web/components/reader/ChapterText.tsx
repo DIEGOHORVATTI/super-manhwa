@@ -68,7 +68,7 @@ function wordFrom(event: React.MouseEvent, text: string): WordTarget | undefined
   event.stopPropagation();
   const start = Number(span.dataset.start);
   const sentence = splitSentences(text).find((item) => start < item.end)?.text ?? text;
-  return { word: span.textContent ?? "", sentence, anchor: span };
+  return { word: span.textContent ?? "", sentence };
 }
 
 const TAPPABLE_SX = {

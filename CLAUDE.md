@@ -78,6 +78,17 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
 - **UI:** MUI com o tema do scale em `apps/web/theme/` (Minimal). Páginas de catálogo, leitor e
   biblioteca são MUI; o restante da plataforma ainda usa `app/globals.css`, cujos tokens (`:root`)
   seguem a paleta do tema. Página nova: faça em MUI.
+- **Sobreposições:** use `BottomSheet` (`components/mui/BottomSheet.tsx`), não `Dialog`/`Popover`.
+- **PWA / Play Store (TWA):** `app/manifest.ts`, ícones `public/icon-*.png`, service worker
+  `public/sw.js` (estáticos + páginas offline) e `/.well-known/assetlinks.json`, que lê
+  `ANDROID_CERT_SHA256` (pacote `com.supermanhwa.app`). Layout fixo embaixo respeita
+  `env(safe-area-inset-bottom)`.
+- **App Android:** `android/twa-manifest.json` → workflow manual `android-release.yml` (gera o
+  projeto com `@bubblewrap/core`, builda o AAB assinado e envia à Play, alpha por padrão). Nunca
+  builde na máquina. O app só abre o site: deploy na Vercel já é o "OTA"; AAB novo só quando
+  mudar o `twa-manifest.json` (nome, ícone, cores, pacote).
+- **Analytics:** Vercel Analytics + Firebase Analytics (`FirebaseAnalytics.tsx`, gtag com
+  `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`; user property `app_platform` = android | web).
 - **Features de plataforma** (auth, comentários, doações, studio, admin, afiliados, pixels,
   aprendizado): **oRPC próprio do web** via adaptador Next (`@orpc/server/fetch`). Router em
   `lib/rpc/` (`base.ts` builders + `routers/<domínio>.ts`), montado em `app/api/rpc/[...rest]`,

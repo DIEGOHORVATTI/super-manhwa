@@ -1,25 +1,29 @@
 /**
  * Hand-written service worker (no bundler | robust under Turbopack builds).
- * Goals: serve cached covers + downloaded chapter pages offline, and keep
- * recently visited pages available when the network drops.
+ * Goal: the installed app (PWA / Play Store TWA) opens without network.
  *
- * - /api/img/*  → cache-first (covers + pages the reader pre-downloaded into the
- *   same `mr-images-v1` cache; see DownloadChapterButton).
- * - navigations → network-first, falling back to cache / the home shell.
+ * - /_next/static/* → cache-first (hashed, immutable build assets).
+ * - navigations     → network-first, falling back to the cached page / the home shell.
  *
- * Bump the cache suffix to invalidate everything.
+ * Narration (/api/tts) and translations already live in the HTTP cache (immutable).
+ * Bump VERSION to invalidate everything.
  */
-const IMG_CACHE = "mr-images-v1";
-const PAGE_CACHE = "mr-pages-v1";
+const VERSION = "v2";
+const STATIC_CACHE = `sm-static-${VERSION}`;
+const PAGE_CACHE = `sm-pages-${VERSION}`;
 
-self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+  event.waitUntil(caches.open(PAGE_CACHE).then((cache) => cache.add("/").catch(() => {})));
+});
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
       await self.clients.claim();
+      const keep = [STATIC_CACHE, PAGE_CACHE];
       const keys = await caches.keys();
-      await Promise.all(keys.filter((k) => !k.endsWith("-v1")).map((k) => caches.delete(k)));
+      await Promise.all(keys.filter((k) => !keep.includes(k)).map((k) => caches.delete(k)));
     })(),
   );
 });
@@ -28,13 +32,9 @@ async function cacheFirst(cacheName, request) {
   const cache = await caches.open(cacheName);
   const hit = await cache.match(request);
   if (hit) return hit;
-  try {
-    const res = await fetch(request);
-    if (res.ok) cache.put(request, res.clone());
-    return res;
-  } catch {
-    return hit || Response.error();
-  }
+  const res = await fetch(request);
+  if (res.ok) cache.put(request, res.clone());
+  return res;
 }
 
 async function networkFirst(cacheName, request) {
@@ -54,8 +54,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
-  if (url.pathname.startsWith("/api/img/")) {
-    event.respondWith(cacheFirst(IMG_CACHE, request));
+  if (url.pathname.startsWith("/_next/static/")) {
+    event.respondWith(cacheFirst(STATIC_CACHE, request));
   } else if (request.mode === "navigate") {
     event.respondWith(networkFirst(PAGE_CACHE, request));
   }

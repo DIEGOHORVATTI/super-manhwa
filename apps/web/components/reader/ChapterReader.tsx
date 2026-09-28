@@ -156,7 +156,7 @@ export function ChapterReader({ novel, chapter, chapters }: ChapterReaderProps) 
   );
 
   return (
-    <Container maxWidth="md" disableGutters sx={{ pb: 18 }}>
+    <Container maxWidth="md" disableGutters sx={{ pb: { xs: 26, md: 18 } }}>
       {settings.english !== "off" && english === null && (
         <Alert severity="warning" sx={{ mb: 2 }}>
           A tradução em inglês está indisponível agora; lendo em português.

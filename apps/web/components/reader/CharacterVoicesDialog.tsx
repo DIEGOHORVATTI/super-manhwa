@@ -4,12 +4,10 @@ import type { Script } from "@/lib/player/script";
 import type { VoiceChoice, VoiceContext, VoiceOverrides } from "@/lib/player/voices";
 
 import Stack from "@mui/material/Stack";
-import Dialog from "@mui/material/Dialog";
 import Divider from "@mui/material/Divider";
 import Typography from "@mui/material/Typography";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
 
+import { BottomSheet } from "@/components/mui/BottomSheet";
 import { characterVoice } from "@/lib/player/voices";
 import { CharacterVoiceRow } from "./CharacterVoiceRow";
 
@@ -52,32 +50,29 @@ export function CharacterVoicesDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Vozes dos personagens</DialogTitle>
-      <DialogContent>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          Cada personagem mantém a mesma voz em todos os capítulos desta obra. Escolha um estilo
-          (criança, idoso…) e ajuste o tom se precisar.
-        </Typography>
-        <Stack divider={<Divider />} spacing={2}>
-          {speakersOf(script).map(({ speaker, count }) => {
-            const gender = script.genders.get(speaker);
-            return (
-              <CharacterVoiceRow
-                key={speaker}
-                speaker={speaker}
-                count={count}
-                gender={gender}
-                resolved={characterVoice(speaker, gender, context)}
-                override={overrides[speaker]}
-                voices={context.voices}
-                onChange={(choice) => update(speaker, choice)}
-                onPreview={() => onPreview(speaker)}
-              />
-            );
-          })}
-        </Stack>
-      </DialogContent>
-    </Dialog>
+    <BottomSheet open={open} onClose={onClose} title="Vozes dos personagens">
+      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        Cada personagem mantém a mesma voz em todos os capítulos desta obra. Escolha um estilo
+        (criança, idoso…) e ajuste o tom se precisar.
+      </Typography>
+      <Stack divider={<Divider />} spacing={2} sx={{ pb: 1 }}>
+        {speakersOf(script).map(({ speaker, count }) => {
+          const gender = script.genders.get(speaker);
+          return (
+            <CharacterVoiceRow
+              key={speaker}
+              speaker={speaker}
+              count={count}
+              gender={gender}
+              resolved={characterVoice(speaker, gender, context)}
+              override={overrides[speaker]}
+              voices={context.voices}
+              onChange={(choice) => update(speaker, choice)}
+              onPreview={() => onPreview(speaker)}
+            />
+          );
+        })}
+      </Stack>
+    </BottomSheet>
   );
 }

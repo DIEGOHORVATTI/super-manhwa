@@ -1,16 +1,16 @@
 "use client";
 
 import Button from "@mui/material/Button";
-import Popover from "@mui/material/Popover";
 import Stack from "@mui/material/Stack";
 import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 
+import { BottomSheet } from "@/components/mui/BottomSheet";
 import { useSession } from "@/lib/auth/client";
 import { routes } from "@/lib/routes";
 import { rpc } from "@/lib/rpc/client";
 
-export type WordTarget = { word: string; sentence: string; anchor: HTMLElement };
+export type WordTarget = { word: string; sentence: string };
 
 type SaveState = "idle" | "saving" | "saved" | string;
 
@@ -59,31 +59,27 @@ export function WordPopover({
   };
 
   return (
-    <Popover
-      open={!!target}
-      anchorEl={target?.anchor}
-      onClose={onClose}
-      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      transformOrigin={{ vertical: "top", horizontal: "center" }}
-    >
-      <Stack spacing={1} sx={{ p: 2, minWidth: 200, maxWidth: 300 }}>
-        <Typography variant="h6">{word}</Typography>
-        <Typography color="text.secondary">
+    <BottomSheet open={!!target} onClose={onClose} title={word}>
+      <Stack spacing={1.5} sx={{ pb: 1 }}>
+        <Typography variant="body2" color="text.secondary" sx={{ fontStyle: "italic" }}>
+          {target?.sentence}
+        </Typography>
+        <Typography variant="h5">
           {current ? (current.text ?? "Tradução indisponível") : "Traduzindo…"}
         </Typography>
 
         {!session?.user ? (
-          <Button href={routes.login} size="small" variant="outlined">
+          <Button href={routes.login} size="large" variant="outlined">
             Entre para salvar palavras
           </Button>
         ) : save === "saved" ? (
-          <Button href={routes.learnReview} size="small" variant="outlined" color="success">
+          <Button href={routes.learnReview} size="large" variant="outlined" color="success">
             Salva! Revisar agora
           </Button>
         ) : (
           <Button
             onClick={onSave}
-            size="small"
+            size="large"
             variant="contained"
             loading={save === "saving"}
             disabled={!current}
@@ -98,6 +94,6 @@ export function WordPopover({
           </Typography>
         )}
       </Stack>
-    </Popover>
+    </BottomSheet>
   );
 }

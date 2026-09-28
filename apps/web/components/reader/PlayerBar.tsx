@@ -12,7 +12,6 @@ import Slider from "@mui/material/Slider";
 import Tooltip from "@mui/material/Tooltip";
 import Container from "@mui/material/Container";
 import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 import MusicNoteRoundedIcon from "@mui/icons-material/MusicNoteRounded";
 import MusicOffRoundedIcon from "@mui/icons-material/MusicOffRounded";
@@ -59,7 +58,8 @@ function isTyping(target: EventTarget | null) {
 function usePlayerShortcuts(onToggle: () => void, onSkip: (offset: 1 | -1) => void) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (isTyping(event.target) || document.querySelector('[role="dialog"]')) return;
+      if (isTyping(event.target) || document.querySelector(".MuiModal-root:not(.MuiModal-hidden)"))
+        return;
       const actions: Record<string, () => void> = {
         Space: onToggle,
         ArrowRight: () => onSkip(1),
@@ -107,7 +107,7 @@ export function PlayerBar({
         sx={(theme) => ({
           position: "fixed",
           right: 24,
-          bottom: 24,
+          bottom: "calc(24px + env(safe-area-inset-bottom))",
           zIndex: theme.zIndex.appBar,
           p: 0.75,
           borderRadius: 99,
@@ -148,30 +148,37 @@ export function PlayerBar({
         backdropFilter: "blur(14px)",
       })}
     >
-      <Container maxWidth="md" sx={{ py: 1 }}>
-        <Stack direction="row" alignItems="center" spacing={2}>
-          <Typography variant="caption" color="text.secondary" sx={{ minWidth: 56 }}>
-            {state.paragraph + 1} / {totalParagraphs}
-          </Typography>
-          <Slider
-            size="small"
-            value={state.paragraph}
-            min={0}
-            max={Math.max(totalParagraphs - 1, 0)}
-            onChange={(_, value) => onSeek(value as number)}
-            aria-label="Parágrafo atual"
-          />
-        </Stack>
+      <Container maxWidth="md" sx={{ pt: 1, pb: "max(8px, env(safe-area-inset-bottom))" }}>
+        <Slider
+          size="small"
+          value={state.paragraph}
+          min={0}
+          max={Math.max(totalParagraphs - 1, 0)}
+          onChange={(_, value) => onSeek(value as number)}
+          aria-label="Parágrafo atual"
+        />
 
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
+        <Stack
+          direction="row"
+          alignItems="center"
+          flexWrap="wrap"
+          justifyContent={{ xs: "center", md: "space-between" }}
+          columnGap={1}
+        >
           <SelectAutocomplete
             value={rate}
             options={RATE_OPTIONS}
             onChange={onChangeRate}
-            sx={{ width: 150 }}
+            sx={{ width: { xs: 110, md: 150 } }}
           />
 
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            justifyContent="center"
+            spacing={0.5}
+            sx={{ order: { xs: -1, md: 0 }, width: { xs: 1, md: "auto" } }}
+          >
             <Tooltip title="Capítulo anterior">
               <span>
                 <IconButton disabled={!hasPrevious} onClick={onPreviousChapter}>
@@ -206,7 +213,7 @@ export function PlayerBar({
             </Tooltip>
           </Stack>
 
-          <Stack direction="row" justifyContent="flex-end" sx={{ minWidth: 150 }}>
+          <Stack direction="row" justifyContent="flex-end" sx={{ minWidth: { md: 150 } }}>
             <Tooltip title="Vozes dos personagens">
               <IconButton onClick={onOpenVoices}>
                 <RecordVoiceOverRoundedIcon />

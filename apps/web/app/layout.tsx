@@ -8,9 +8,10 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import InitColorSchemeScript from "@mui/material/InitColorSchemeScript";
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v16-appRouter";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { AffiliateAttributor } from "@/components/AffiliateAttributor";
 import { LibrarySync } from "@/components/LibrarySync";
+import { FirebaseAnalytics } from "@/components/FirebaseAnalytics";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
@@ -34,7 +35,6 @@ export const metadata: Metadata = {
     "super manhwa",
   ],
   applicationName: "Super Manhwa",
-  manifest: "/manifest.json",
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     ],
     apple: [{ url: "/apple-icon-180x180.png", sizes: "180x180" }],
   },
-  appleWebApp: { capable: true, title: "Super Manhwa", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Super Manhwa", statusBarStyle: "black" },
   openGraph: {
     type: "website",
     siteName: "Super Manhwa",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: ["/banner_1500x500.jpeg"] },
 };
 
-export const viewport = { themeColor: "#0D0D0D" };
+export const viewport: Viewport = { themeColor: "#0D0D0D", viewportFit: "cover" };
 
 export default function RootLayout({ children }: React.PropsWithChildren) {
   const base = env.SITE_URL ?? "http://localhost:3000";
@@ -105,6 +105,7 @@ export default function RootLayout({ children }: React.PropsWithChildren) {
             </main>
             <Analytics />
             <SpeedInsights />
+            <FirebaseAnalytics />
             <ServiceWorkerRegister />
             <AffiliateAttributor />
             <LibrarySync />
