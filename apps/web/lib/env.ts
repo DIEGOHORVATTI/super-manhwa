@@ -53,9 +53,6 @@ const EnvSchema = z.object({
   // Firebase Analytics (GA4 measurement id of the Firebase web app, "G-…")
   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: opt,
 
-  // Android app (TWA): SHA-256 fingerprints of the signing keys, comma-separated
-  ANDROID_CERT_SHA256: opt,
-
   // Pricing
   PIXEL_BLOCK_PRICE_CENTS: num(500),
   LEARN_PREMIUM_PRICE: num(14.9),
@@ -85,7 +82,6 @@ export const env = EnvSchema.parse({
   R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
   MP_ACCESS_TOKEN: process.env.MP_ACCESS_TOKEN,
   NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  ANDROID_CERT_SHA256: process.env.ANDROID_CERT_SHA256,
   PIXEL_BLOCK_PRICE_CENTS: process.env.PIXEL_BLOCK_PRICE_CENTS,
   LEARN_PREMIUM_PRICE: process.env.LEARN_PREMIUM_PRICE,
 });
