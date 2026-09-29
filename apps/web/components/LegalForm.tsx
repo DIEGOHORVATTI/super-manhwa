@@ -21,12 +21,10 @@ export function LegalForm({
   kind,
   fields,
   submitLabel,
-  fallbackEmail,
 }: {
   kind: "contact" | "dmca";
   fields: LegalField[];
   submitLabel: string;
-  fallbackEmail: string;
 }) {
   const [values, setValues] = useState<Record<string, string | boolean>>({});
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
@@ -111,10 +109,7 @@ export function LegalForm({
       />
 
       {state === "error" && (
-        <p className="notice">
-          Não foi possível enviar agora. Você pode mandar direto para{" "}
-          <a href={`mailto:${fallbackEmail}`}>{fallbackEmail}</a>.
-        </p>
+        <p className="notice">Não foi possível enviar agora. Tente de novo em alguns minutos.</p>
       )}
 
       <button type="submit" className="pager-btn" disabled={state === "sending"}>

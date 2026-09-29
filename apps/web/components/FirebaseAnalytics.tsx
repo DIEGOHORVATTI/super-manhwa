@@ -4,7 +4,8 @@ import { env } from "@/lib/env";
 
 /**
  * Firebase Analytics for the web app (gtag with the Firebase measurement id). Visits
- * from the installed app (standalone display mode) carry `app_platform: pwa`.
+ * from the installed app (standalone display mode) carry `app_platform: pwa`; the
+ * opt-out on the cookies page (AnalyticsOptOut) sets `ga-disable-<id>` before config.
  */
 export function FirebaseAnalytics() {
   const id = env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID;
@@ -19,6 +20,9 @@ export function FirebaseAnalytics() {
       <Script id="firebase-analytics" strategy="afterInteractive">
         {`window.dataLayer = window.dataLayer || [];
 function gtag(){dataLayer.push(arguments);}
+try {
+  if (localStorage.getItem("sm-no-analytics") === "1") window[${JSON.stringify(`ga-disable-${id}`)}] = true;
+} catch (e) {}
 var installed = matchMedia("(display-mode: standalone)").matches || navigator.standalone === true;
 gtag("js", new Date());
 gtag("set", "user_properties", { app_platform: installed ? "pwa" : "web" });

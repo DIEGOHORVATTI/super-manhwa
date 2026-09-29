@@ -34,17 +34,15 @@ export default function DmcaPage() {
         </li>
       </ul>
       <p>
-        Preencha o formulário abaixo (ou envie para{" "}
-        <a href="mailto:dmca@supermanhwa.app">dmca@supermanhwa.app</a>). Avaliaremos e, quando
-        cabível, removeremos o item indexado o mais rápido possível. Como não hospedamos os
-        arquivos, recomendamos também contatar a fonte original.
+        Preencha o formulário abaixo. Avaliaremos e, quando cabível, removeremos o item indexado o
+        mais rápido possível. Como não hospedamos os arquivos, recomendamos também contatar a fonte
+        original.
       </p>
 
       <h2>Enviar pedido de remoção</h2>
       <LegalForm
         kind="dmca"
         submitLabel="Enviar pedido"
-        fallbackEmail="dmca@supermanhwa.app"
         fields={[
           { name: "name", label: "Nome / organização", type: "text", required: true },
           { name: "email", label: "E-mail de contato", type: "email", required: true },

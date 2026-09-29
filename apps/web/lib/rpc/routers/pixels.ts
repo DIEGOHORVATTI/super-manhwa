@@ -130,7 +130,7 @@ export const pixelsRouter = {
     const key = `pixels/${block.id}.${ext}`;
     await putObject(key, new Uint8Array(await image.arrayBuffer()), image.type || "image/png");
 
-    const email = (context.user as { email?: string }).email ?? "anunciante@supermanhwa.app";
+    const email = (context.user as { email?: string }).email ?? "anunciante@supermanhwa.com";
     let pix: Awaited<ReturnType<typeof createPixPayment>>;
     try {
       pix = await createPixPayment({

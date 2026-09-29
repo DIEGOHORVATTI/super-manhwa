@@ -12,21 +12,10 @@ export default function ContatoPage() {
   return (
     <StaticPage title="Contato">
       <p>
-        Quer mandar uma sugestão, relatar um bug ou tirar uma dúvida? Use um dos canais abaixo |
-        respondemos assim que possível.
+        Quer mandar uma sugestão, relatar um bug, denunciar um comentário ou exercer seus direitos
+        sobre seus dados (acesso, correção, exclusão da conta)? Use o formulário abaixo. Respondemos
+        assim que possível, em até 15 dias para pedidos sobre dados.
       </p>
-      <ul>
-        <li>
-          <strong>E-mail:</strong>{" "}
-          <a href="mailto:contato@supermanhwa.app">contato@supermanhwa.app</a>
-        </li>
-        <li>
-          <strong>GitHub:</strong>{" "}
-          <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-            abra uma issue
-          </a>
-        </li>
-      </ul>
       <p>
         Para pedidos de remoção de conteúdo protegido por direitos autorais, use o procedimento
         descrito na página de <a href={routes.dmca}>DMCA</a>.
@@ -36,7 +25,6 @@ export default function ContatoPage() {
       <LegalForm
         kind="contact"
         submitLabel="Enviar"
-        fallbackEmail="contato@supermanhwa.app"
         fields={[
           { name: "name", label: "Nome", type: "text", required: true },
           { name: "email", label: "E-mail", type: "email", required: true },
