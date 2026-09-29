@@ -79,16 +79,13 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
   biblioteca são MUI; o restante da plataforma ainda usa `app/globals.css`, cujos tokens (`:root`)
   seguem a paleta do tema. Página nova: faça em MUI.
 - **Sobreposições:** use `BottomSheet` (`components/mui/BottomSheet.tsx`), não `Dialog`/`Popover`.
-- **PWA / Play Store (TWA):** `app/manifest.ts`, ícones `public/icon-*.png`, service worker
-  `public/sw.js` (estáticos + páginas offline) e `/.well-known/assetlinks.json`, que lê
-  `ANDROID_CERT_SHA256` (pacote `com.diegohorvatti.supernovel`). Layout fixo embaixo respeita
-  `env(safe-area-inset-bottom)`.
-- **App Android:** `android/twa-manifest.json` → workflow manual `android-release.yml` (gera o
-  projeto com `@bubblewrap/core`, builda o AAB assinado e envia à Play, alpha por padrão). Nunca
-  builde na máquina. O app só abre o site: deploy na Vercel já é o "OTA"; AAB novo só quando
-  mudar o `twa-manifest.json` (nome, ícone, cores, pacote).
+- **PWA (app instalável, sem loja):** `app/manifest.ts`, ícones `public/icon-*.png`, service worker
+  `public/sw.js` (estáticos + páginas offline) e `InstallAppButton` no cabeçalho (só em telas de
+  toque; prompt nativo do Chrome ou passo a passo no Safari/Firefox). Layout fixo embaixo respeita
+  `env(safe-area-inset-bottom)`. Play Store foi descartada (catálogo sem licença arriscaria a conta
+  de desenvolvedor); a pipeline TWA está no histórico do git (commit 8d9b675) se um dia voltar.
 - **Analytics:** Vercel Analytics + Firebase Analytics (`FirebaseAnalytics.tsx`, gtag com
-  `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`; user property `app_platform` = android | web).
+  `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`; user property `app_platform` = pwa | web).
 - **Features de plataforma** (auth, comentários, doações, studio, admin, afiliados, pixels,
   aprendizado): **oRPC próprio do web** via adaptador Next (`@orpc/server/fetch`). Router em
   `lib/rpc/` (`base.ts` builders + `routers/<domínio>.ts`), montado em `app/api/rpc/[...rest]`,

@@ -5,6 +5,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { ColorModeToggle } from "@/components/ColorModeToggle";
 import { NovelSearch } from "@/components/novel/NovelSearch";
 import { Icon, type IconName } from "@/components/Icon";
+import { InstallAppButton } from "@/components/InstallAppButton";
 import { UserMenu } from "@/components/UserMenu";
 import { donationsEnabled } from "@/lib/flags";
 import { routes } from "@/lib/routes";
@@ -186,6 +187,7 @@ export function Header() {
             <NovelSearch />
           </div>
 
+          <InstallAppButton />
           <ColorModeToggle />
           <UserMenu />
         </div>
