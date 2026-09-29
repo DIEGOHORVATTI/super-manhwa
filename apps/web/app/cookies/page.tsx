@@ -1,38 +1,60 @@
 import type { Metadata } from "next";
+
+import { AnalyticsOptOut } from "@/components/AnalyticsOptOut";
 import { StaticPage } from "@/components/StaticPage";
 import { routes } from "@/lib/routes";
 
 export const metadata: Metadata = {
   title: "Política de Cookies",
-  description: "Como o Super Novel usa cookies.",
+  description: "Como o Super Novel usa cookies e o armazenamento do navegador.",
 };
 
 export default function CookiesPage() {
   return (
-    <StaticPage title="Política de Cookies" updated="28 de maio de 2026">
+    <StaticPage title="Política de Cookies" updated="28 de setembro de 2026">
       <p>
         Cookies são pequenos arquivos guardados no seu navegador. O <strong>Super Novel</strong> usa
-        apenas o estritamente necessário para o site funcionar.
+        cookies e o armazenamento local do navegador para o site funcionar e para medir o uso.
       </p>
-      <h2>Tipos de cookies que usamos</h2>
+
+      <h2>Essenciais</h2>
       <ul>
         <li>
-          <strong>Essenciais:</strong> mantêm preferências de exibição e o funcionamento básico do
-          site.
+          <strong>Sessão de login:</strong> mantém você conectado à sua conta.
         </li>
         <li>
-          <strong>Analíticos (opcionais):</strong> nos ajudam a entender, de forma anônima e
-          agregada, como o site é usado.
+          <strong>Indicação (ref):</strong> guarda o código de quem indicou o site até você criar a
+          conta.
+        </li>
+        <li>
+          <strong>Armazenamento do navegador:</strong> tema, preferências do leitor e das vozes,
+          biblioteca, posição de leitura e os arquivos que deixam o app instalado funcionar sem
+          internet.
         </li>
       </ul>
-      <p>Não usamos cookies de publicidade nem rastreamento entre sites de terceiros.</p>
+
+      <h2>Medição de uso</h2>
+      <ul>
+        <li>
+          <strong>Vercel Web Analytics e Speed Insights:</strong> contam visitas e medem o
+          desempenho das páginas de forma agregada, sem cookies.
+        </li>
+        <li>
+          <strong>Google Analytics para Firebase:</strong> usa cookies (<code>_ga</code>) com um
+          identificador aleatório para entender quais páginas e recursos são usados. Não usamos
+          esses dados para publicidade.
+        </li>
+      </ul>
+      <p>Você pode desligar o Google Analytics neste navegador quando quiser:</p>
+      <AnalyticsOptOut />
+
       <h2>Como controlar</h2>
       <p>
-        Você pode bloquear ou apagar cookies nas configurações do seu navegador. Desativar os
-        cookies essenciais pode afetar o funcionamento do site.
+        Você também pode bloquear ou apagar cookies nas configurações do navegador. Bloquear os
+        essenciais impede o login e pode apagar sua biblioteca local.
       </p>
       <p>
-        Para mais detalhes sobre dados, veja a <a href={routes.privacy}>Política de Privacidade</a>.
+        Mais detalhes sobre dados na <a href={routes.privacy}>Política de Privacidade</a>.
       </p>
     </StaticPage>
   );

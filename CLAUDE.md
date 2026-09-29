@@ -84,8 +84,13 @@ descartados por `isNovelSlug` em `lib/library.ts`; `/manga/*` redireciona para a
   toque; prompt nativo do Chrome ou passo a passo no Safari/Firefox). Layout fixo embaixo respeita
   `env(safe-area-inset-bottom)`. Play Store foi descartada (catálogo sem licença arriscaria a conta
   de desenvolvedor); a pipeline TWA está no histórico do git (commit 8d9b675) se um dia voltar.
+- **Páginas legais** (`privacy`, `cookies`, `terms`): listam os dados coletados e os fornecedores
+  (Vercel, Neon, Resend, Mercado Pago, Google, Microsoft Edge). Dado novo ou serviço externo novo
+  → atualize-as (LGPD). Contato e DMCA são só por formulário (`legal_requests` + `ADMIN_EMAIL`);
+  o domínio não recebe e-mail.
 - **Analytics:** Vercel Analytics + Firebase Analytics (`FirebaseAnalytics.tsx`, gtag com
-  `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`; user property `app_platform` = pwa | web).
+  `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID`; user property `app_platform` = pwa | web). Opt-out em
+  `/cookies` (`AnalyticsOptOut`, `localStorage sm-no-analytics` → `ga-disable-<id>`).
 - **Features de plataforma** (auth, comentários, doações, studio, admin, afiliados, pixels,
   aprendizado): **oRPC próprio do web** via adaptador Next (`@orpc/server/fetch`). Router em
   `lib/rpc/` (`base.ts` builders + `routers/<domínio>.ts`), montado em `app/api/rpc/[...rest]`,

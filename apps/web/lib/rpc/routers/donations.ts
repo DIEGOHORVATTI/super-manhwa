@@ -20,7 +20,7 @@ export const donationsRouter = {
     }
 
     const userId = context.session?.user?.id ?? null;
-    const email = input.email ?? "doador@supermanhwa.app";
+    const email = input.email ?? "doador@supermanhwa.com";
 
     let pix: Awaited<ReturnType<typeof createPixPayment>>;
     try {
